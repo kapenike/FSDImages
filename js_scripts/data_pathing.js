@@ -15,7 +15,7 @@ function isComparator(v) {
 }
 
 function isPointer(v) {
-	if (v.indexOf('$pointer$') > -1 && v.indexOf('$/pointer$') > -1) {
+	if (typeof v === 'string' && v.indexOf('$pointer$') > -1 && v.indexOf('$/pointer$') > -1) {
 		return parseInt(v.split('$pointer$')[1].split('$/pointer$')[0]);
 	}
 	return null;
@@ -121,7 +121,7 @@ function checkDataForPathReference(path, data = GLOBAL.active_project.data, app_
 
 // completely flatten an object by pulling in all real values from variable paths
 function flattenDataObject(value) {
-	let real_value = getRealValue(value);
+	let real_value = JSON.parse(JSON.stringify(getRealValue(value)));
 	if (isObject(real_value)) {
 		Object.keys(real_value).forEach(key => {
 			real_value[key] = flattenDataObject(real_value[key]);

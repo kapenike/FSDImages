@@ -126,7 +126,7 @@ class dataset {
 				}
 				
 				// remove any dataset key values not present in the posted structure
-				foreach (get_object_vars($dataset->entries->{$uid}) as $existing_key) {
+				foreach (array_keys(get_object_vars($dataset->entries->{$uid})) as $existing_key) {
 					if (array_search($existing_key, $post['structure']) === false) {
 						unset($dataset->entries->{$uid}->{$existing_key});
 					}

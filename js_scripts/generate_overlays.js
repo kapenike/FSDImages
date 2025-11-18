@@ -68,7 +68,7 @@ function generateStreamOverlays(sources = null, callback = () => {}) {
 	// if nothing to change, remove loader
 	if (output_overlays.changed.length == 0) {
 		
-		sendP2P(output_overlays, sources);
+		//sendP2P(output_overlays, sources);
 		callback();
 		ajaxRemoveLoader('body');
 		
@@ -76,7 +76,7 @@ function generateStreamOverlays(sources = null, callback = () => {}) {
 		
 		// pass output_overlays object to PHP for file write
 		ajax('POST', '/requestor.php', output_overlays, () => {
-			sendP2P(output_overlays, sources);
+			//sendP2P(output_overlays, sources);
 			callback();
 		}, 'body');
 		
