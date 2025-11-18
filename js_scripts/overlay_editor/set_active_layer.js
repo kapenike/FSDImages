@@ -1,4 +1,4 @@
-function setActiveLayer(index) {
+function setActiveLayer(index, from_context_menu = false) {
 	
 	// if null, also nullify active layer selection
 	if (index == null) {
@@ -6,7 +6,7 @@ function setActiveLayer(index) {
 	}
 	
 	// set active layer index
-	GLOBAL.overlay_editor.active_layer = index;
+	GLOBAL.overlay_editor.active_layer = index == null ? null : index.toString().split('_').filter(x => x != 'layer').join('_');
 	
 	// print new canvas to use selection region on the new active layer
 	printCurrentCanvas();
@@ -15,6 +15,6 @@ function setActiveLayer(index) {
 	setupLayerInfoEditor();
 	
 	// generate new layers UI with active layer selected
-	setupLayersUI();
+	setupLayersUI(from_context_menu);
 	
 }

@@ -3,7 +3,7 @@ function clickWithinAnyLayer(position) {
 	let found = findWithinLayer(GLOBAL.overlay_editor.current.layers, '', position);
 
 	if (found) {
-		setActiveLayer(found);
+		setActiveLayer(found, true);
 	}
 	
 }
@@ -18,6 +18,11 @@ function findWithinLayer(layers, append_id, position) {
 		
 		let layer = layers[i];
 		let pass_append_id = append_id+''+i;
+		
+		// if layer hidden, pass
+		if (!toggleTrue(layer)) {
+			continue;
+		}
 		
 		let out_dim = getLayerOutputDimensions(layer);
 		let within = false;

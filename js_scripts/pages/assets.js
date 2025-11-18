@@ -171,6 +171,9 @@ function updateAssetData(use_from_quick_upload = false) {
 						setTimeout(() => { generateStreamOverlays(asset_associated_sources) }, 1);
 					}
 					
+					// remove loader
+					ajaxRemoveLoader('body');
+					
 					// if quick upload, call back to finish popup close and print actions
 					if (use_from_quick_upload) {
 						closePopup();
