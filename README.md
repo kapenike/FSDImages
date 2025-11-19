@@ -71,6 +71,7 @@ FEATURES:
 	- allow sorting
 
 - Overlay editor features
+	- add border radius option to individual points on custom path, or all points for either square or custom path
 	- during grid placement UI, display vertical and horizontal red lines to mimic the placement coordinates, also display menu within top editor panel
 	- stash start drag point of clip path individual point as to allow x / y lock drag during move event
 	- when adding a new layer during the active selection of a group layer, add new layer within the group layer rather than adjacent
