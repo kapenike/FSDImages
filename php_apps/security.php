@@ -26,13 +26,13 @@ class security {
 	}
 	
 	function isLocalMachine() {
-		return $this->host_launch_ip == app('ddImages')->local_host && in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '::1']) || $this->host_launch_ip != app('ddImages')->local_host && $this->host_launch_ip == $_SERVER['REMOTE_ADDR'];
+		return $this->host_launch_ip == app('FSDImages')->local_host && in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '::1']) || $this->host_launch_ip != app('FSDImages')->local_host && $this->host_launch_ip == $_SERVER['REMOTE_ADDR'];
 	}
 	
 	function test() {
 		
-		// allow access to scripts under ddImages/p2p/client from any access point
-		if (str_contains(getcwd(), (app('server')->OS == 'Windows' ? 'ddImages\p2p\client' : 'ddImages/p2p/client'))) {
+		// allow access to scripts under FSDImages/p2p/client from any access point
+		if (str_contains(getcwd(), (app('server')->OS == 'Windows' ? 'FSDImages\p2p\client' : 'FSDImages/p2p/client'))) {
 			return true;
 		}
 		

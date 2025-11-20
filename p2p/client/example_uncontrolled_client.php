@@ -68,7 +68,7 @@ socket.addEventListener('message', (event) => {
 			assets can also be requested over HTTP using two methods:
 			- using the filename property found within an asset object within the asset data object
 				- requestAsset(GLOBAL.project_uid, data.data['team_1/team_data'].logo.file, true); <- boolean tells the function to request using the filename
-			- using a direct reference to the asset slug (not found in the return data but offered to the user via the asset manager within the ddImages application
+			- using a direct reference to the asset slug (not found in the return data but offered to the user via the asset manager within the FSDImages application
 				- requestAsset(GLOBAL.project_uid, 'team_green_logo');
 		*/
 		return;

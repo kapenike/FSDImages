@@ -101,29 +101,29 @@ class server {
 		$this->updateServerData('host_launch_ip', $host_launch_ip);
 		
 		// ensure something is not already running on the specified ip:port
-		if (!$this->checkHostPort(app('ddImages')->application_ip, app('ddImages')->application_port)) {
+		if (!$this->checkHostPort(app('FSDImages')->application_ip, app('FSDImages')->application_port)) {
 			
 			// launch application on specified IP (local or external)
 			if ($this->OS == 'Windows') {
 				
 				// run non-returning command to start application on set IP
-				pclose(popen('start /B '.$this->win_php.' -S '.app('ddImages')->application_ip.':'.app('ddImages')->application_port.' -t '.$this->cleanCLIPath(getBasePath().'/').' > NUL 2>&1', 'r'));
+				pclose(popen('start /B '.$this->win_php.' -S '.app('FSDImages')->application_ip.':'.app('FSDImages')->application_port.' -t '.$this->cleanCLIPath(getBasePath().'/').' > NUL 2>&1', 'r'));
 		
 			} else {
 				
 				// run application and stash PID for shutdown
-				$host_pid = trim(shell_exec('php -S '.app('ddImages')->application_ip.':'.app('ddImages')->application_port.' -t '.$this->cleanCLIPath(getBasePath().'/').' > /dev/null 2>&1 & echo $!'));
+				$host_pid = trim(shell_exec('php -S '.app('FSDImages')->application_ip.':'.app('FSDImages')->application_port.' -t '.$this->cleanCLIPath(getBasePath().'/').' > /dev/null 2>&1 & echo $!'));
 				$this->updateServerData('host_pid', $host_pid);
 			
 			}
 			
 			// stash ip:port application is running on
-			$this->updateServerData('host_running_on', app('ddImages')->application_ip.':'.app('ddImages')->application_port);
+			$this->updateServerData('host_running_on', app('FSDImages')->application_ip.':'.app('FSDImages')->application_port);
 			
 		
 		}
 		
-		return app('ddImages')->application_ip.':'.app('ddImages')->application_port;
+		return app('FSDImages')->application_ip.':'.app('FSDImages')->application_port;
 	}
 	
 	function stopApplication() {
@@ -132,10 +132,10 @@ class server {
 		$server_data = $this->getServerData();
 		
 		// ensure application is running
-		if ($this->checkHostPort($server_data->host_launch_ip, app('ddImages')->application_port)) {
+		if ($this->checkHostPort($server_data->host_launch_ip, app('FSDImages')->application_port)) {
 			if ($this->OS == 'Windows') {
 				// search based on initial declaration of application ip and port
-				$host_pid = $this->windowsRequestPID($server_data->host_launch_ip.':'.app('ddImages')->application_port.' -t ');
+				$host_pid = $this->windowsRequestPID($server_data->host_launch_ip.':'.app('FSDImages')->application_port.' -t ');
 				if ($host_pid) {
 					shell_exec('taskkill /F /PID '.$host_pid);
 				} else {

@@ -49,6 +49,11 @@ html, body {
 	color: red !important;
 }
 
+.editable_ui button {
+	background-color: red !important;
+	color: #000000 !important;
+}
+
 #drag_clone {
 	position: absolute;
 	z-index: 888;

@@ -70,7 +70,12 @@ function createUIFromData(container, data, submit_to_application, editor = false
 															type: 'button',
 															className: 'small_button',
 															innerHTML: 'Reset',
-															onclick: () => { resetUISection(section); }
+															onclick: () => { 
+																// if not edit mode
+																if (Select('.editable_ui') === null) {
+																	resetUISection(section); 
+																}
+															}
 														})
 													: Create('div')
 												)
@@ -240,6 +245,42 @@ function createUIFromData(container, data, submit_to_application, editor = false
 													]
 												});
 												
+											} else if (field.type == 'button') {
+												
+												// unique button is set to two elements because buttons are not captured through generic form capture methods
+												// same goes for stashing sub setter data, one used for logging source change with direct element access and one used on form submission, dont @me
+												let unique_button_name = 'action_button_'+(++GLOBAL.unique_id);
+												let button_subsetters = JSON.stringify(field.sub_setters ?? null);
+												
+												return Create('div', {
+													className: 'ui_field',
+													data: JSON.stringify({ section: section_index, column: col_index, field: field_index }),
+													children: [
+														Create('input', {
+															type: 'hidden',
+															name: unique_button_name,
+															sub_setters: button_subsetters
+														}),
+														Create('button', {
+															type: 'button',
+															style: {
+																marginBottom: '16px',
+																display: 'block'
+															},
+															name: unique_button_name,
+															innerHTML: getRealValue(field.title),
+															onclick: function () { 
+																// if not edit mode
+																if (Select('.editable_ui') === null) {
+																	logSourceChange(this); 
+																	updateSourceChanges(); 
+																}
+															},
+															sub_setters: button_subsetters
+														})
+													]
+												});
+												
 											}
 											
 										})
@@ -257,6 +298,10 @@ function createUIFromData(container, data, submit_to_application, editor = false
 
 function resetUISection(section) {
 	section.fields.forEach(field => {
+		// action buttons contain no source
+		if (!field.source) {
+			return;
+		}
 		let elem = Select('[name="'+field.source+'"]');
 		if (field.type == 'display') {
 			return;
@@ -274,6 +319,7 @@ function resetUISection(section) {
 				break;
 			case 'checkbox':
 				elem.checked = false;
+				break;
 			default:
 				elem.value = '';
 				break;
@@ -285,6 +331,7 @@ function resetUISection(section) {
 function logSourceChange(field, is_sub_setter_call = false) {
 	
 	// check if source is logged for overlay regen
+	// only log if field name set, no name for action buttons
 	if (!GLOBAL.source_changes.includes(field.name)) {
 		GLOBAL.source_changes.push(field.name);
 	}
@@ -329,6 +376,9 @@ function updateSourceChanges() {
 		form_details[checkbox.name] = checkbox.checked ? checkbox.data : '';
 	});
 	
+	// discover action button form entries
+	let remove_action_buttons = [];
+	
 	// use filtered form objects to search for potential sub setters
 	Object.keys(form_details).forEach(field_name => {
 		
@@ -356,6 +406,16 @@ function updateSourceChanges() {
 			}
 		}
 		
+		// log action button form names
+		if (field_name.slice(0, 14) == 'action_button_') {
+			remove_action_buttons.push(field_name);
+		}
+		
+	});
+	
+	// remove action buttons from form details
+	remove_action_buttons.forEach(action_button => {
+		delete form_details[action_button];
 	});
 	
 	// append application and uid values to send object
@@ -533,7 +593,7 @@ function uiEditMouseMove(event) {
 }
 
 function resetDrag() {
-	if (GLOBAL.ui.drop_side != null) {
+	if (GLOBAL.ui.drag_elem != null) {
 		uiDragSetBorder(GLOBAL.ui.drag_hover);
 		GLOBAL.ui.drag_elem.style.backgroundColor = '';
 		uiDragSetBorder(GLOBAL.ui.drag_elem);
@@ -857,7 +917,7 @@ function editUIField(elem, is_create = false) {
 							onchange: function () {
 								modifyFieldBuilderOptions(this.value.toLowerCase());
 							},
-							children: ['Text', 'Select', 'Radio', 'Checkbox', 'Dataset', 'Display'].map(input_type => {
+							children: ['Text', 'Select', 'Radio', 'Checkbox', 'Dataset', 'Display', 'Button'].map(input_type => {
 								return Create('option', {
 									innerHTML: input_type,
 									value: input_type.toLowerCase(),
@@ -959,6 +1019,18 @@ function editUIField(elem, is_create = false) {
 					type: 'display',
 					title: form_data.input_label
 				}
+			} else if (form_data.input_type == 'button') {
+				let sub_setter_id = form_data['stash_pair_sub_setter_id_ref'];
+				new_field_data = {
+					type: form_data.input_type,
+					title: form_data.input_label,
+					sub_setters: form_data['sub_pair_value_display_'+sub_setter_id+'[]'].map((source, sub_index) => {
+						return {
+							path: source,
+							source: form_data['sub_pair_value_value_'+sub_setter_id+'[]'][sub_index]
+						};
+					})
+				}
 			}
 			
 			// set new field data or create a new field as the first child of the container section
@@ -994,8 +1066,11 @@ function modifyFieldBuilderOptions(type) {
 		}
 	}
 	
+	// show source path, hidden only for action button
+	Select('#save_to_path_input').style.display = 'block';
+	
 	if (type == 'text') {
-		// do nothing
+		fieldBuilderForText();
 	} else if (type == 'checkbox') {
 		fieldBuilderForCheckbox(data);
 	} else if (type == 'radio') {
@@ -1006,7 +1081,16 @@ function modifyFieldBuilderOptions(type) {
 		fieldBuilderForDataset(data);
 	} else if (type == 'display') {
 		fieldBuilderForDisplay(data);
+	} else if (type == 'button') {
+		Select('#save_to_path_input').style.display = 'none';
+		fieldBuilderForButton(data);
 	}
+}
+
+function fieldBuilderForText() {
+	Select('#input_edit_options', {
+		innerHTML: ''
+	});
 }
 
 function fieldBuilderForCheckbox(data) {
@@ -1133,6 +1217,50 @@ function fieldBuilderForDisplay(data) {
 	Select('#input_edit_options', {
 		innerHTML: ''
 	});
+}
+
+function fieldBuilderForButton(data) {
+	let sub_setter_key_value = data == null ? [{ path: '', source: '' }] : data.sub_setters;
+	
+	GLOBAL.unique_id++
+	let sub_setter_parent_id = GLOBAL.unique_id;
+	
+	Select('#input_edit_options', {
+		innerHTML: '',
+		children: [
+			Create('div', {
+				id: 'key_value_inputs',
+				innerHTML: '<h4>Action Button Setters</h4>'
+			}),
+			Create('input', {
+				type: 'hidden',
+				name: 'stash_pair_sub_setter_id_ref',
+				value: sub_setter_parent_id
+			}),
+			Create('div', {
+				style: {
+					textAlign: 'right'
+				},
+				children: [
+					Create('div', {
+						className: 'create_data_key',
+						innerHTML: '+ create sub setter',
+						data: sub_setter_parent_id,
+						onclick: function () {
+							Select('#sub_setter_pairs_'+this.data).appendChild(createNewSubSetterField({ path: '', source: ''}, this.data));
+						}
+					})
+				]
+			}),	
+			Create('div', {
+				id: 'sub_setter_pairs_'+sub_setter_parent_id,
+				children: (sub_setter_key_value).map(sub_key_value => {
+					return createNewSubSetterField(sub_key_value, sub_setter_parent_id);
+				})
+			})
+		]
+	});
+
 }
 
 function appendNewKeyValuePairInput(key_value) {

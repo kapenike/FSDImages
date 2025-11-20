@@ -1,6 +1,6 @@
 <?php
 
-class ddImages {
+class FSDImages {
 	
 	// location of locally served application
 	public $local_host = 'localhost';

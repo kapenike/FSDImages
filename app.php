@@ -6,12 +6,12 @@ error_reporting(E_ALL);
 // no htaccess or hierarchical structure so create a relative base path method
 function getBasePath() {
 	$cwd = getcwd();
-	if (!str_contains($cwd, 'ddImages')) {
+	if (!str_contains($cwd, 'FSDImages')) {
 		http_response_code(400);
 		exit;
 	}
-	$pos = strrpos($cwd, 'ddImages');
-	return substr($cwd, 0, $pos).'ddImages/';
+	$pos = strrpos($cwd, 'FSDImages');
+	return substr($cwd, 0, $pos).'FSDImages/';
 }
 
 // $APP stores loaded classes as an instance of app({$class})
