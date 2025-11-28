@@ -85,7 +85,7 @@ class server {
 	
 	function windowsRequestPID($command) {
 		// search for php launched process with initial commandLine similar to $command
-		$pids = array_filter(explode("\r\n", shell_exec('wmic PROCESS where "Name=\'php.exe\' and commandLine like \'%'.$command.'%\'" get ProcessID')));
+		$pids = array_filter(explode("\n", shell_exec('powershell.exe -Command "Get-CimInstance Win32_Process -Filter \'Name=\\"php.exe\\"\' | Where-Object {$_.CommandLine -like \'*'.$command.'*\'} | Select-Object ProcessId"')));
 		// pop and trim last for kill
 		$pid = array_pop($pids);
 		// if not null and is numeric, return
