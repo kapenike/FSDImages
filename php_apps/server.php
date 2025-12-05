@@ -12,7 +12,7 @@ class server {
 	
 	function __construct() {
 		$this->OS = (PHP_OS_FAMILY == 'Windows' ? 'Windows' : 'Superior');
-		$this->win_php = $this->cleanCLIPath(getBasePath().'\php\php.exe');
+		$this->win_php = $this->cleanCLIPath(getBasePath().'php\php.exe');
 		// get local machines ipv4, default to 127.0.0.1 if no network connected
 		if ($this->OS == 'Windows') {
 			$lookup = shell_exec('ipconfig');
@@ -33,7 +33,7 @@ class server {
 	
 	function cleanCLIPath($v) {
 		if ($this->OS == 'Windows') {
-			return str_replace(' ','^ ',str_replace('/','\\',$v));
+			return str_replace('/','\\',$v);
 		} else {
 			return str_replace(' ','\ ',$v);
 		}
@@ -50,7 +50,7 @@ class server {
 	
 	function checkHostPort($host, $port) {
 		// check if anything is currently running on host:port
-		if (@fsockopen($host, $port, $errno, $errstr, 5)) {
+		if (@fsockopen($host, $port, $errno, $errstr, 2)) {
 			return true;
 		}
 		return false;
@@ -107,7 +107,7 @@ class server {
 			if ($this->OS == 'Windows') {
 				
 				// run non-returning command to start application on set IP
-				pclose(popen('start /B '.$this->win_php.' -S '.app('FSDImages')->application_ip.':'.app('FSDImages')->application_port.' -t '.$this->cleanCLIPath(getBasePath().'/').' > '.getBasePath().'output.log 2>&1', 'r'));
+				pclose(popen('start /B "" "'.$this->win_php.'" -S '.app('FSDImages')->application_ip.':'.app('FSDImages')->application_port.' -t "'.$this->cleanCLIPath(getBasePath()).'" > "'.$this->cleanCLIPath(getBasePath()).'output.log" 2>&1', 'r'));
 		
 			} else {
 				
@@ -173,10 +173,10 @@ class server {
 			if ($this->OS == 'Windows') {
 				
 				// launch websocket server
-				pclose(popen('start /B '.$this->win_php.' '.$this->cleanCLIPath(getBasePath().'\p2p\web_socket_server.php').' > NUL 2>&1', 'r'));
+				pclose(popen('start /B "" "'.$this->win_php.'" "'.$this->cleanCLIPath(getBasePath().'\p2p\web_socket_server.php').'" > NUL 2>&1', 'r'));
 				
 				// launch client
-				pclose(popen('start /B '.$this->win_php.' -S '.$this->ipv4.':'.$this->client_port.' -t '.$this->cleanCLIPath(getBasePath().'\p2p\client').' > NUL 2>&1', 'r'));
+				pclose(popen('start /B "" "'.$this->win_php.'" -S '.$this->ipv4.':'.$this->client_port.' -t "'.$this->cleanCLIPath(getBasePath().'\p2p\client').'" > NUL 2>&1', 'r'));
 		
 			} else {
 				
