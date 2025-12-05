@@ -13,7 +13,7 @@
 - Download and extract from: [https://firststepdesign.co/file/FSDImages.zip](https://firststepdesign.co/file/FSDImages.zip) (35.7 MB)
 - Launch `FSDImages.hta`
 - Select `Start Application` from the application launcher. Choose `Localhost` then click `APP: localhost:8000` to open the application in a browser!
-	- If the application fails to launch, please check the `output.log` file. The most likely culprit is an outdated C++ windows library for running PHP ["https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170#latest-supported-redistributable-version"](Windows Latest C++ Redistributable).
+	- If the application fails to launch, please check the `output.log` file. The most likely culprit is an outdated C++ windows library for running PHP [Windows Latest C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170#latest-supported-redistributable-version).
 - Websocket server can be initialized from the launcher or within the application itself
 
 *The windows download includes an example project by default. Check it out to learn how the application works!*
