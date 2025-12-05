@@ -107,7 +107,7 @@ class server {
 			if ($this->OS == 'Windows') {
 				
 				// run non-returning command to start application on set IP
-				pclose(popen('start /B '.$this->win_php.' -S '.app('FSDImages')->application_ip.':'.app('FSDImages')->application_port.' -t '.$this->cleanCLIPath(getBasePath().'/').' > NUL 2>&1', 'r'));
+				pclose(popen('start /B '.$this->win_php.' -S '.app('FSDImages')->application_ip.':'.app('FSDImages')->application_port.' -t '.$this->cleanCLIPath(getBasePath().'/').' > '.getBasePath().'output.log 2>&1', 'r'));
 		
 			} else {
 				

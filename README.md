@@ -5,13 +5,16 @@
 
 > [!IMPORTANT]  
 > The primary directory **FSDImages** cannot be renamed. FSDImages does not use Apache and therefore has no hierarchical method to manage data paths. The directory named FSDImages is used for relative pathing.
+
+> [!IMPORTANT]
 > When the application is chosen to run on external IPv4, all incoming requests will be subject to whitelisted IP address checks. This list can be modified from the local machine application `file > Whitelisted IP Addresses`
 
 ## Windows Download
 - Download and extract from: [https://firststepdesign.co/file/FSDImages.zip](https://firststepdesign.co/file/FSDImages.zip) (35.7 MB)
 - Launch `FSDImages.hta`
 - Select `Start Application` from the application launcher. Choose `Localhost` then click `APP: localhost:8000` to open the application in a browser!
-- Websocket server can be initialized from the launcher or within the application itself!
+	- If the application fails to launch, please check the `output.log` file. The most likely culprit is an outdated C++ windows library for running PHP [https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170#latest-supported-redistributable-version](Windows Latest C++ Redistributable).
+- Websocket server can be initialized from the launcher or within the application itself
 
 *The windows download includes an example project by default. Check it out to learn how the application works!*
 
