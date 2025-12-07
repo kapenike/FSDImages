@@ -4,7 +4,8 @@ html, body {
 	width: 100%;
 	height: 100%;
 	font-family: Verdana;
-	background-color: #080b11;
+	font-size: 14px;
+	background-color: #182b38;
 	color: #ffffff;
 	overflow: hidden;
 }
@@ -14,7 +15,7 @@ html, body {
 	width: 80%;
 	padding: 30px;
 	background-color: #162229;
-	border: 1px solid #222222;
+	border: 1px solid #201c10;
 	position: absolute;
 	top: 34%;
 	left: 50%;
@@ -27,7 +28,7 @@ html, body {
 }
 
 .main_button {
-	color: #444444;
+	color: #132937;
 	background-color: #f5c527;
 }
 
@@ -71,7 +72,7 @@ html, body {
 	left: 0;
 	width: 100%;
 	height: 100%;
-	background-color: #44444460;
+	background-color: #13293760;
 	padding: 40px;
 	box-sizing: border-box;
 }
@@ -101,7 +102,7 @@ html, body {
 }
 #popup_form_data {
 	height: calc(100vh - 190px);
-	background-color: #444444;
+	background-color: #132937;
 	padding: 12px 24px;
 	margin: 0;
 	overflow-y: auto;
@@ -139,10 +140,10 @@ html, body {
 	transform: translate(-50%, -50%);
 	padding: 20px;
 	background-color: #162229;
-	border: 1px solid #222222;
-	color: #444444;
+	border: 1px solid #201c10;
+	color: #132937;
 	border-radius: 3px;
-	filter: drop-shadow(0 0 20px #444444);
+	filter: drop-shadow(0 0 20px #132937);
 }
 
 #popup .notification .notification_message {
@@ -158,14 +159,14 @@ html, body {
 	width: 220px;
 	background-color: #000000;
 	color: #ffffff;
-	border-bottom: 2px solid #222222;
+	border-bottom: 2px solid #201c10;
 }
 
 #popup .file_dropdown .dropdown_action {
 	padding: 8px 2px;
 	text-align: center;
-	background-color: #444444;
-	border-bottom: 1px solid #222222;
+	background-color: #132937;
+	border-bottom: 1px solid #201c10;
 	font-size: 14px;
 	cursor: pointer;
 }
@@ -184,7 +185,7 @@ html, body {
 
 .variable_set_input_field {
 	padding: 12px 16px;
-	background-color: #444444;
+	background-color: #132937;
 	border: 1px solid #000000;
 	color: #ffffff !important;
 	box-sizing: border-box;
@@ -222,7 +223,7 @@ html, body {
   padding: 0px 8px 1px 8px;
   font-size: 10px;
   border-radius: 0 2px 2px 0;
-  filter: drop-shadow(0 0 2px #222222);
+  filter: drop-shadow(0 0 2px #201c10);
 	cursor: pointer;
 }
 
@@ -256,7 +257,7 @@ html, body {
 
 .path_insert_button {
 	background-color: #f5c527;
-	color: #444444;
+	color: #132937;
 	padding: 12px 16px;
 	text-align: center;
 	box-sizing: border-box;
@@ -286,7 +287,7 @@ html, body {
 	overflow-y: auto;
 	background-color: #f5c527;
 	border: 1px solid #000000;
-	color: #444444;
+	color: #132937;
 	border-top: none;
 	z-index: 1;
 	box-sizing: border-box;
@@ -312,7 +313,7 @@ html, body {
 }
 
 .key_value_input_pair {
-	background-color: #555555;
+	background-color: #163141;
 	padding: 6px 12px;
 	margin-top: 16px;
 }
@@ -327,6 +328,7 @@ html, body {
 
 .project_title {
 	background-color: #39b3b5;
+	border-bottom: 1px solid #f5c527;
 	color: #080b11;
 	padding: 0 12px;
 	height: 21px;
@@ -366,19 +368,24 @@ html, body {
 	font-size: 12px;
 	padding: 8px 16px;
 	margin: 0 4px;
-	background-color: #121212;
+	background-color: #000000;
 	color: #ffffff;
 	border: 1px solid #080b11;
-	border-bottom: none;
+	border-bottom: 3px solid #000000;
 	cursor: pointer;
 }
 
 .active_navigation {
-	background-color: #222222;
+	background-color: #201c10;
 	color: #ffffff;
 	cursor: default;
 	height: 34px;
-	margin-bottom: -1px;
+	position: relative;
+	z-index: 1;
+	top: 1px;
+	border-left: 1px solid #fee99236;
+	border-right: 1px solid #fee99236;
+	border-bottom: none;
 }
 
 .nav_break {
@@ -396,17 +403,37 @@ html, body {
 .block {
 	box-sizing: border-box;
 	width: 100%;
-	padding: 12px 16px;
-	background-color: #222222;
-	border: 1px solid #111111;
-	border-radius: 3px;
+	padding: 8px 16px !important;
+	background-color: #201c10;
+	border: 1px solid #fee99236;
+	position: relative;
+}
+
+label {
+	color: #ededed;
+}
+
+#image_editor label {
+	color: #132937;
+	font-size: 12px;
+}
+
+#image_editor .path_var_container label {
+	color: #ffffff;
+	font-size: 12px;
+}
+
+.ui_field_above {
+	position: absolute;
+	top: 0;
+	right: 0;
 }
 
 .data_key_block {
 	box-sizing: border-box;
 	width: 100%;
 	padding: 12px 4px 0 28px;
-	background-color: #222222;
+	background-color: #201c10;
 	border: 1px solid #cccccc;
 	border-top: none;
 	border-bottom: none;
@@ -440,10 +467,11 @@ html, body {
 /* form styles */
 input[type="text"], input[type="color"], input[type="number"], input[type="file"], input[type="checkbox"], textarea, select {
 	width: 100%;
-	padding: 12px 20px;
+	padding: 8px 12px;
+	font-size: 11px;
 	display: inline-block;
-	border: 1px solid #111111;
-	background-color: #bbbbbb;
+	border: 1px solid #0e151a;
+	background-color: #dcdcdc;
 	border-radius: 3px;
 	color: #000000;
 	box-sizing: border-box;
@@ -455,22 +483,22 @@ input[type="file"] {
 }
 
 select {
-	background-color: #999999;
+	background-color: #dcdcdc;
 }
 
 input[type="checkbox"] {
-	height: 24px;
-	width: 24px;
+	height: 18px;
+	width: 18px;
 }
 
 input[type="radio"] {
-	background-color: #cccccc;
+	background-color: #dcdcdc;
 }
 
 button, input[type="submit"] {
 	display: inline-block;
   background-color: #05828e;
-	border: 1px solid #111111;
+	border: 1px solid #0e151a;
   padding: 12px 24px;
   border-radius: 3px;
   color: #ffffff;
@@ -499,11 +527,11 @@ button, input[type="submit"] {
 	border: none;
 }
 .ui_edit_menu .ui_edit_menu_cancel {
-	background-color: #444444;
+	background-color: #132937;
 	color: #ffffff;
 }
 .ui_edit_menu .ui_edit_menu_title {
-	background-color: #444444;
+	background-color: #132937;
 	color: #ffffff;
 	cursor: default;
 }
@@ -517,14 +545,16 @@ button, input[type="submit"] {
 }
 
 .radio_group {
-	background-color: #444444;
+	background-color: #132937;
 	padding: 10px 4px 10px 4px;
 	margin-bottom: 16px;
 }
 
 .small_button {
-	padding: 8px 16px;
-	background-color: #000000;
+	padding: 6px 16px;
+	background-color: #f5c527;
+	border-radius: 0 0 0 3px;
+	color: #000000;
 }
 
 .small_button_green {
@@ -537,18 +567,20 @@ button, input[type="submit"] {
 
 #structure_list {
 	padding: 20px;
-	background-color: #444444;
+	background-color: #132937;
+	border: 1px solid #fee99236;
 }
 
 .dataset_entry {
-	background-color: #555555;
+	background-color: #163141;
+	border: 1px solid #fee99236;
 	padding: 10px;
 	margin-bottom: 10px;
 	box-sizing: border-box;
 }
 
 .dataset_entry_title {
-	background-color: #444444;
+	background-color: #132937;
 	cursor: pointer;
 	padding-left: 4px;
 	min-height: 20px;
@@ -557,7 +589,8 @@ button, input[type="submit"] {
 .selection_list_block {
 	padding: 14px;
 	margin-bottom: 4px;
-	border: 1px solid #ffffff;
+	background-color: #0e151a;
+	border: 1px solid #fee99236;
 	box-sizing: border-box;
 	cursor: pointer;
 }
@@ -620,6 +653,7 @@ button, input[type="submit"] {
 	width: 100%;
 	height: 100%;
 	overflow: hidden;
+	z-index: 101;
 	background-color: #ffffff;
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
@@ -664,7 +698,7 @@ button, input[type="submit"] {
 }
 
 #image_editor .editor_tab {
-	background-color: #444444;
+	background-color: #132937;
 	border-right: 1px solid #000000;
 	color: #ffffff;
 	padding: 4px 8px;
@@ -707,7 +741,7 @@ button, input[type="submit"] {
 	position: relative;
 	background-color: #666666;
 	color: #ffffff;
-	border-left: 2px solid #444444;
+	border-left: 2px solid #132937;
 	font-size: 14px;
 }
 
@@ -717,18 +751,17 @@ button, input[type="submit"] {
 	overflow-y: auto;
 	box-sizing: border-box;
 	background-color: #dddddd;
-	border-left: 2px solid #444444;
+	border-left: 2px solid #132937;
 }
 
 #image_editor #upper_editor {
-	border-bottom: 2px solid #000000;
-	color: #444444;
+	color: #132937;
 	padding: 4px;
 }
 
 #image_editor #upper_editor input,
 #image_editor #upper_editor select {
-	background-color: #444444;
+	background-color: #132937;
 	color: #ffffff;
 	margin-bottom: 0;
 }
@@ -744,7 +777,7 @@ button, input[type="submit"] {
 }
 
 #image_editor #lower_editor .editor_layer {
-	background-color: #444444;
+	background-color: #132937;
 	color: #ffffff;
 	text-align: center;
 	padding: 8px 12px;
@@ -765,11 +798,11 @@ button, input[type="submit"] {
 
 #image_editor #lower_editor .active_editor_layer {
 	background-color: #388ff9;
-	color: #444444;
+	color: #132937;
 }
 
 #image_editor #upper_editor .editor_section_block {
-	border: 1px solid #444444;
+	border: 1px solid #132937;
 	position: relative;
 	padding: 3px;
 	margin-bottom: 10px;
@@ -798,8 +831,8 @@ button, input[type="submit"] {
 }	
 
 .color_picker {
-	border: 1px solid #444444;
-	height: 41px;
+	border: 1px solid #132937;
+	height: 31px;
 	box-sizing: border-box;
 	border-radius: 3px;
 	cursor: pointer;

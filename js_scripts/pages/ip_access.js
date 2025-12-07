@@ -17,7 +17,7 @@ function alterWhitelistedIPs() {
 									}),
 									Create('div', {
 										id: 'ipv4_list',
-										children: data.ipv4.map(ip => {
+										children: (data.ipv4 == null ? [] : data.ipv4).map(ip => {
 											return newIpNode(ip);
 										})
 									}),

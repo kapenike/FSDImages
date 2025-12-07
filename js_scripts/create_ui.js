@@ -23,6 +23,7 @@ function createUIFromData(container, data, submit_to_application, editor = false
 							display: 'block',
 							padding: '8px 10px 10px 14px',
 							position: 'fixed',
+							zIndex: '100',
 							right: '0',
 							top: '54px',
 							backgroundColor: editor ? '#f5c527' : '#39b3b5',
