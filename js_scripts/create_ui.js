@@ -331,9 +331,15 @@ function resetUISection(section) {
 
 function logSourceChange(field, is_sub_setter_call = false) {
 	
+	// if sub setter with empty field name, assume 3pa command call
+	if (is_sub_setter_call && !field.name && field.source) {
+		GLOBAL.command_list.push(field.source);
+		return;
+	}
+	
 	// check if source is logged for overlay regen
 	// only log if field name set, no name for action buttons
-	if (!GLOBAL.source_changes.includes(field.name)) {
+	if (field.name && !GLOBAL.source_changes.includes(field.name)) {
 		GLOBAL.source_changes.push(field.name);
 	}
 	
@@ -351,7 +357,7 @@ function logSourceChange(field, is_sub_setter_call = false) {
 			if (sub_setters) {
 				sub_setters.forEach(sub_setter => {
 					// re call log source change on sub setter names, flag as sub setter call
-					logSourceChange({ name: sub_setter.path }, true);
+					logSourceChange({ name: sub_setter.path, source: sub_setter.source }, true);
 				});
 			}
 		}
@@ -434,11 +440,15 @@ function updateSourceChanges() {
 					setRealValue(path, form_details[path]);
 				}
 			});
-			
+
 			// generate new overlays with updated sources, once complete, reset updated sources
 			// strip pointers from source changes before sending to overlay generator
 			generateStreamOverlays(GLOBAL.source_changes.map(v => stripPointer(v)), () => {
 				GLOBAL.source_changes = [];
+				
+				// execute 3pa command list
+				executeCommandList(GLOBAL.command_list);
+				GLOBAL.command_list = [];
 			});
 			
 			// rather than attempting to rebuild portions of UI, just reprint it

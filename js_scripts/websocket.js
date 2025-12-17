@@ -7,6 +7,7 @@ class wsct {
 	state = 'await_control';
 	clients = [];
 	project_overlay_pairs = {};
+	obs_connection = null;
 	
 	constructor() {
 		
@@ -91,6 +92,15 @@ class wsct {
 		});
 		
 		
+	}
+	
+	obsconnect() {
+		if (this.status == true && this.state == 'control' && GLOBAL.active_project.settings.obs_3pa_enabled) {
+			this.connection.send(JSON.stringify({
+				action: 'init_obs_controller',
+				project_uid: GLOBAL.active_project.uid
+			}));
+		}
 	}
 	
 }

@@ -32,11 +32,23 @@ class project {
 		$this->saveRegistry();
 		
 		// get settings file, update, then put back
-		/*
 		$settings = json_decode(file_get_contents(getBasePath().'/data/'.$uid.'/container.json'));
-		$settings->settings->update some setting
+		
+		// legacy fix
+		if (!is_object($settings->settings)) {
+			$settings->settings = (object)[];
+		}
+		
+		// voicemeeter api
+		$settings->settings->voicemeeter_3pa_enabled = isset($post['vb3pa_enable']);
+		$settings->settings->voicemeeter_api_dll = $post['voicemeeter_api_dll'];
+		
+		// obs api
+		$settings->settings->obs_3pa_enabled = isset($post['obs3pa_enable']);
+		$settings->settings->obs_websocket_location = $post['obs_websocket_location'];
+		$settings->settings->obs_websocket_auth = $post['obs_websocket_auth'];
+
 		file_put_contents(getBasePath().'/data/'.$uid.'/container.json', json_encode($settings));
-		*/
 		
 		// all good
 		app('respond')->json(true, 'project settings updated.');
@@ -77,7 +89,13 @@ class project {
 		// create project container json file
 		file_put_contents(getBasePath().'/data/'.$uid.'/container.json', json_encode((object)[
 			'uid' => $uid,
-			'settings' => []
+			'settings' => [
+				'voicemeeter_3pa_enabled' => false,
+				'voicemeeter_api_dll' => 'C:\\Program Files (x86)\\VB\\Voicemeeter\\VoicemeeterRemote64.dll',
+				'obs_3pa_enabled' => false,
+				'obs_websocket_location' => 'localhost:4455',
+				'obs_websocket_auth' => ''
+			]
 		]));
 		
 		// create skeleton data file

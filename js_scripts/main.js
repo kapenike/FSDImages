@@ -7,6 +7,7 @@ function initGlobal() {
 		use_vram: true, // generate Bitmaps for faster overlay creation at the cost of the GPU
 		generate_sources: false, // flag used by generateStreamOverlays(null) when passed null to update overlay sources (defines what UI value updates will proc a stream overlay image export)
 		source_changes: [], // where to store source changes before an update
+		command_list: [], // when 3pa commands are enabled, this stores a list of the current ones to execute in a state change
 		track_sources: { // track text fields and update on source change
 			inc: 0,
 			pairs: []

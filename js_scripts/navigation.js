@@ -1,5 +1,8 @@
 function initNavigation() {
 	
+	// on project initialization, send attempt to connect to obs websocket controller
+	P2P_SERVER.obsconnect();
+	
 	// show naviation
 	Select('.navigation').style.display = 'block';
 	

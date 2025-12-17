@@ -11,6 +11,8 @@ class websocket {
 	private $client_details = [];
 	private $client_uid = 0;
 	
+	private $obs_controller = null;
+	
 	public $server = null;
 	
 	public function __construct() {
@@ -48,6 +50,20 @@ class websocket {
 		$headers .= "Sec-WebSocket-Version: 13\r\n";
 		$headers .= "Sec-WebSocket-Accept: ".base64_encode(pack('H*', sha1($matches[1].'258EAFA5-E914-47DA-95CA-C5AB0DC85B11')))."\r\n\r\n";
 		return $headers;
+		
+	}
+	
+	private function serverHandshake($host, $port) {
+		
+		$key = base64_encode(random_bytes(16));
+		$header = "GET / HTTP/1.1\r\n";
+		$header .= "Host: ".$host.":".$port."\r\n";
+		$header .= "Upgrade: websocket\r\n";
+		$header .= "Connection: Upgrade\r\n";
+		$header .= "Sec-WebSocket-Key: $key\r\n";
+		$header .= "Sec-WebSocket-Protocol: obswebsocket.json\r\n";
+		$header .= "Sec-WebSocket-Version: 13\r\n\r\n";
+		return $header;
 		
 	}
 	
@@ -94,10 +110,40 @@ class websocket {
 		
 	}
 	
+	// for the condition of the websocket server acting as a client to obs websocket api
+	private function packageAsClient($v) {
+		
+		$b1 = 0x81;
+		$length = strlen($v);
+
+		if ($length <= 125) {
+			$header = pack('CC', $b1, $length | 0x80);
+		} elseif ($length <= 65535) {
+			$header = pack('CCn', $b1, 126 | 0x80, $length);
+		} else {
+			$header = pack('CCNN', $b1, 127 | 0x80, 0, $length);
+		}
+
+		// payload must be masked unlike from server to client
+		$mask = random_bytes(4);
+		$masked_data = '';
+		for ($i = 0; $i < $length; $i++) {
+			$masked_data .= $v[$i] ^ $mask[$i % 4];
+		}
+		
+		return $header.$mask.$masked_data;
+		
+	}
+	
 	private function handleNewConnection($client) {
 		
 		// add new connection to clients list
 		$this->clients[] = $new_client = socket_accept($client);
+		
+		if ($this->obs_controller != null && $this->obs_controller->init == true) {
+			$this->obs_controller->init = false;
+			echo 'aye';
+		}
 		
 		// identify client ip
 		socket_getpeername($new_client, $ip);
@@ -148,7 +194,7 @@ class websocket {
 		socket_shutdown($this->clients[$index]);
 		
 		// if client is not server or controller
-		if ($index > 0 && $this->client_details[$index]->type != 'controller') {
+		if ($index > 0 && $this->client_details[$index]->type != 'controller' && $this->client_details[$index]->type != 'obs') {
 			
 			// notify controller of disconnect
 			$this->notifyController([
@@ -203,6 +249,11 @@ class websocket {
 	}
 	
 	private function processInput($index, $json) {
+		
+		// FSDImages currently doesn't handle any responses from OBS, this is where that would be captured
+		if ($this->client_details[$index]->type == 'obs') {
+			return;
+		}
 		
 		// read buffer must be valid json
 		if (json_validate($json)) {
@@ -315,6 +366,19 @@ class websocket {
 							}
 						}
 						
+					} else if ($json->action == 'init_obs_controller') {
+						
+						$this->handleObsWebsocketApiConnection($json);
+
+					} else if ($json->action == 'obs_command') {
+						
+						for ($i=0; $i<count($this->client_details); $i++) {
+							if (isset($this->client_details[$i]) && $this->client_details[$i]->type == 'obs') {
+								socket_write($this->clients[$i], $this->packageAsClient(json_encode($json->command)));
+								break;
+							}
+						}
+						
 					}
 
 				}
@@ -323,6 +387,76 @@ class websocket {
 			
 		}
 		
+	}
+	
+	private function handleObsWebsocketApiConnection($json) {
+		
+		// obtain connection details from project settings
+		$obs_connection_details = json_decode(file_get_contents(getBasePath().'/data/'.$json->project_uid.'/container.json'))->settings;
+		
+		// split host and port
+		$split_host_port = explode(':', $obs_connection_details->obs_websocket_location);
+
+		// disconnect old if different or ignore connection if same
+		// TEMP TODO
+		
+		// create new obs controller details
+		$this->obs_controller = (object)[
+			'init' => true,
+			'host' => $split_host_port[0],
+			'port' => $split_host_port[1],
+			'auth' => $obs_connection_details->obs_websocket_auth
+		];
+		
+		// init socket connection to obs websocket api
+		$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+		socket_connect($socket, $this->obs_controller->host, $this->obs_controller->port);
+		if ($socket == false) {
+			// error connecting to obs, return
+			// socket_strerror(socket_last_error($socket));
+			return;
+		}
+		
+		// save obs connection as a client and inject client details
+		$this->clients[] = $socket;
+		$this->client_details[] = (object)['type'=>'obs'];
+		
+		// handshake declaration as a "client"
+		$header = $this->serverHandshake($this->obs_controller->host, $this->obs_controller->port);
+		socket_write($socket, $header, strlen($header));
+		
+		// get handshake back, can be ignored
+		socket_read($socket, 2048);
+		
+		// retriev auth message
+		$response = socket_read($socket, 2048);
+		
+		// if obs masks initial data
+		if (!json_validate($response)) {
+			$response = substr($response, 4);
+		}
+
+		// get json object
+		$response = json_decode($response);
+		
+		// auth process
+		$salt = $response->d->authentication->salt;
+		$challenge = $response->d->authentication->challenge;
+		$secret = base64_encode(hash('sha256', $this->obs_controller->auth.$salt, true));
+		$auth = base64_encode(hash('sha256', $secret.$challenge, true));
+		
+		// send back auth challenge
+		socket_write($socket, $this->packageAsClient(json_encode((object)[
+			'op' => 1,
+			'd' => [
+				'rpcVersion' => 1,
+				'authentication' => $auth
+			]
+		])));
+		
+		// read success, can be ignored
+		socket_read($socket, 2048);
+
 	}
 
 	private function runServer() {

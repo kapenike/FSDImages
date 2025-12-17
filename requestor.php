@@ -146,6 +146,10 @@ switch($_POST['application']) {
 		// remove an asset
 		app('asset')->removeAsset($_POST['project_uid'], $_POST['asset_slug']);
 		break;
+		
+	case 'voicemeeter_command':
+		app('voicemeeter_controller')->executeCommands($_POST['project_uid'], json_decode($_POST['commands']));
+		break;
 	
 	default:
 		app('respond')->json(false, 'No application request defined.');

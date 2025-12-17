@@ -20,6 +20,82 @@ function setNavigationSettings() {
 								]
 							}),
 							Create('div', {
+								className: 'row',
+								children: [
+									Create('div', {
+										className: 'col',
+										style: {
+											width: '50%',
+										},
+										children: [
+											Create('label', {
+												innerHTML: 'Enable Voicemeeter Commands',
+												children: [
+													Create('input', {
+														type: 'checkbox',
+														name: 'vb3pa_enable',
+														value: 'true',
+														checked: GLOBAL.active_project.settings?.voicemeeter_3pa_enabled
+													})
+												]
+											}),
+											Create('br'),
+											Create('label', {
+												innerHTML: 'Voicemeeter Remote API DLL Location',
+												children: [
+													Create('input', {
+														type: 'text',
+														name: 'voicemeeter_api_dll',
+														value: GLOBAL.active_project.settings.voicemeeter_api_dll || ''
+													})
+												]
+											})
+										]
+									}),
+									Create('div', {
+										className: 'col',
+										style: {
+											width: '50%',
+										},
+										children: [
+											Create('label', {
+												innerHTML: 'Enable OBS Commands',
+												children: [
+													Create('input', {
+														type: 'checkbox',
+														name: 'obs3pa_enable',
+														value: 'true',
+														checked: GLOBAL.active_project.settings?.obs_3pa_enabled
+													})
+												]
+											}),
+											Create('br'),
+											Create('label', {
+												innerHTML: 'OBS Websocket Host:Port',
+												children: [
+													Create('input', {
+														type: 'text',
+														name: 'obs_websocket_location',
+														value: GLOBAL.active_project.settings.obs_websocket_location || ''
+													})
+												]
+											}),
+											Create('br'),
+											Create('label', {
+												innerHTML: 'OBS Websocket Password',
+												children: [
+													Create('input', {
+														type: 'text',
+														name: 'obs_websocket_auth',
+														value: GLOBAL.active_project.settings.obs_websocket_auth || ''
+													})
+												]
+											})
+										]
+									})
+								]
+							}),
+							Create('div', {
 								style: {
 									textAlign: 'right'
 								},
@@ -199,6 +275,14 @@ function updateProjectSettings() {
 			// update local data and UI
 			GLOBAL.active_project.title = form_details.project_title;
 			Select('#project_title').innerHTML = form_details.project_title;
+			
+			// update 3pa
+			GLOBAL.active_project.settings.voicemeeter_3pa_enabled = form_details.vb3pa_enable || false;
+			GLOBAL.active_project.settings.voicemeeter_api_dll = form_details.voicemeeter_api_dll;
+			
+			GLOBAL.active_project.settings.obs_3pa_enabled = form_details.obs3pa_enable || false;
+			GLOBAL.active_project.settings.obs_websocket_location = form_details.obs_websocket_location;
+			GLOBAL.active_project.settings.obs_websocket_auth = form_details.obs_websocket_auth;
 			
 		}
 		
