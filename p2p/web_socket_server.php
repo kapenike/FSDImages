@@ -11,8 +11,6 @@ class websocket {
 	private $client_details = [];
 	private $client_uid = 0;
 	
-	private $obs_controller = null;
-	
 	public $server = null;
 	
 	public function __construct() {
@@ -140,11 +138,6 @@ class websocket {
 		// add new connection to clients list
 		$this->clients[] = $new_client = socket_accept($client);
 		
-		if ($this->obs_controller != null && $this->obs_controller->init == true) {
-			$this->obs_controller->init = false;
-			echo 'aye';
-		}
-		
 		// identify client ip
 		socket_getpeername($new_client, $ip);
 		
@@ -250,11 +243,6 @@ class websocket {
 	
 	private function processInput($index, $json) {
 		
-		// FSDImages currently doesn't handle any responses from OBS, this is where that would be captured
-		if ($this->client_details[$index]->type == 'obs') {
-			return;
-		}
-		
 		// read buffer must be valid json
 		if (json_validate($json)) {
 			
@@ -265,7 +253,17 @@ class websocket {
 
 				// if controller, log and confirm
 				if (isset($json->controller_key)) {
-					if ($json->controller_key == $this->controller_key) {
+					
+					// check if a controller already exists, only one is allowed
+					$controller_exists = false;
+					for ($i=1; $i<count($this->client_details); $i++) {
+						if ($this->client_details[$i]->type == 'controller') {
+							$controller_exists = true;
+							break;
+						}
+					}
+					
+					if (!$controller_exists && $json->controller_key == $this->controller_key) {
 						
 						// controller confirmed
 						$this->client_details[$index]->type = 'controller';
@@ -281,6 +279,7 @@ class websocket {
 						
 						// controller denied, disconnect
 						$this->closeClientConnection($index);
+						return;
 						
 					}
 					
@@ -330,7 +329,7 @@ class websocket {
 					if ($json->action == 'overlay_data_updates') {
 						
 						foreach ($this->clients as $sub_index => $client) {
-							if ($sub_index > 0 && $sub_index != $index) {
+							if ($sub_index > 0 && $sub_index != $index && $this->client_details[$sub_index]->type != 'obs') {
 								
 								// intersecting overlay changes
 								$overlay_changes = array_intersect($json->overlays, $this->client_details[$sub_index]->listeners->overlays);
@@ -372,9 +371,61 @@ class websocket {
 
 					} else if ($json->action == 'obs_command') {
 						
-						for ($i=0; $i<count($this->client_details); $i++) {
+						// find obs client and send command
+						for ($i=1; $i<count($this->client_details); $i++) {
 							if (isset($this->client_details[$i]) && $this->client_details[$i]->type == 'obs') {
+								
+								// setting source visibility requires a request to obs for the sceneItemId
+								$request_item_ids = [];
+								
+								// if op 6, single command, if op 8, look through batch command list for all source toggles
+								if ($json->command->op == 6 && $json->command->d->requestType == 'SetSceneItemEnabled') {
+									$request_item_ids[] = (object)['source' => $json->command->d->requestData->sourceName, 'scene' => $json->command->d->requestData->sceneName, 'index' => null];
+								} else if ($json->command->op == 8) {
+									for ($i2=0; $i2<count($json->command->d->requests); $i2++) {
+										if ($json->command->d->requests[$i2]->requestType == 'SetSceneItemEnabled') {
+											$request_item_ids[] = (object)['source' => $json->command->d->requests[$i2]->requestData->sourceName, 'scene' => $json->command->d->requests[$i2]->requestData->sceneName, 'index' => $i2];
+										}
+									}
+								}
+								
+								// for each source toggle, convert source name to sceneItemId, why? because why make things easy
+								foreach ($request_item_ids as $index => $item) {
+									
+									// request sceneItemId
+									socket_write($this->clients[$i], $this->packageAsClient(json_encode((object)[
+										'op' => 6,
+										'd' => [
+											'requestId' => $index+1,
+											'requestType' => 'GetSceneItemId',
+											'requestData' => [
+												'sceneName' => $item->scene,
+												'sourceName' => $item->source
+											]
+										]
+									])));
+									
+									// get sceneItemId
+									$response = json_decode(substr(socket_read($this->clients[$i], 2048), 4));
+									$item_id = $response->d->responseData->sceneItemId;
+									
+									// inject sceneItemId
+									if ($item->index === null) {
+										$json->command->d->requestData->sceneItemId = $item_id;
+										unset($json->command->d->requestData->sourceName);
+									} else {
+										$json->command->d->requests[$item->index]->requestData->sceneItemId = $item_id;
+										unset($json->command->d->requests[$item->index]->requestData->sourceName);
+									}
+									
+								}
+								
+								// write final command
 								socket_write($this->clients[$i], $this->packageAsClient(json_encode($json->command)));
+								
+								// read response so read buffer is clear for normal operations
+								socket_read($this->clients[$i], 2048);
+								
 								break;
 							}
 						}
@@ -397,20 +448,26 @@ class websocket {
 		// split host and port
 		$split_host_port = explode(':', $obs_connection_details->obs_websocket_location);
 
-		// disconnect old if different or ignore connection if same
-		// TEMP TODO
-		
-		// create new obs controller details
-		$this->obs_controller = (object)[
-			'init' => true,
-			'host' => $split_host_port[0],
-			'port' => $split_host_port[1],
-			'auth' => $obs_connection_details->obs_websocket_auth
-		];
+		// check if obs connection exists
+		$found_obs_client = false;
+		for ($i=1; $i<count($this->client_details); $i++) {
+			if ($this->client_details[$i]->type == 'obs') {
+				// if obs found and new connection is the same, will return
+				if ($this->client_details[$i]->host == $split_host_port[0] && $this->client_details[$i]->host == $split_host_port[1]) {
+					$found_obs_client = true;
+				} else {
+					// if not the same, close old in preparation of new connection
+					$this->closeClientConnection($i);
+				}
+			}
+		}
+		if ($found_obs_client) {
+			return;
+		}
 		
 		// init socket connection to obs websocket api
 		$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-		socket_connect($socket, $this->obs_controller->host, $this->obs_controller->port);
+		socket_connect($socket, $split_host_port[0], $split_host_port[1]);
 		if ($socket == false) {
 			// error connecting to obs, return
 			// socket_strerror(socket_last_error($socket));
@@ -419,10 +476,15 @@ class websocket {
 		
 		// save obs connection as a client and inject client details
 		$this->clients[] = $socket;
-		$this->client_details[] = (object)['type'=>'obs'];
+		$this->client_details[] = (object)[
+			'uid' => str_pad(++$this->client_uid, 4, '0', STR_PAD_LEFT),
+			'type' => 'obs',
+			'host' => $split_host_port[0],
+			'port' => $split_host_port[1]
+		];
 		
 		// handshake declaration as a "client"
-		$header = $this->serverHandshake($this->obs_controller->host, $this->obs_controller->port);
+		$header = $this->serverHandshake($split_host_port[0], $split_host_port[1]);
 		socket_write($socket, $header, strlen($header));
 		
 		// get handshake back, can be ignored
@@ -442,7 +504,7 @@ class websocket {
 		// auth process
 		$salt = $response->d->authentication->salt;
 		$challenge = $response->d->authentication->challenge;
-		$secret = base64_encode(hash('sha256', $this->obs_controller->auth.$salt, true));
+		$secret = base64_encode(hash('sha256', $obs_connection_details->obs_websocket_auth.$salt, true));
 		$auth = base64_encode(hash('sha256', $secret.$challenge, true));
 		
 		// send back auth challenge
@@ -454,8 +516,8 @@ class websocket {
 			]
 		])));
 		
-		// read success, can be ignored
-		socket_read($socket, 2048);
+		// notify controller of obs client
+		$this->notifyController($this->client_details[count($this->client_details)-1]);
 
 	}
 
@@ -487,7 +549,7 @@ class websocket {
 				}
 				
 				// handle client sent data in blocks to prevent blocking
-				$data = socket_read($client, 1000000000);
+				$data = socket_read($client, 16384);
 				
 				// if socket_select passed empty read data, close connection identified
 				if ($data === false || strlen($data) == 0) {
@@ -496,6 +558,11 @@ class websocket {
 					$index--;
 					
 				} else {
+					
+					// if obs, ignore
+					if ($this->client_details[$index]->type == 'obs') {
+						continue;
+					}
 
 					// process data
 					$this->processInput($index, $this->removeMask($data));

@@ -7,7 +7,6 @@ class wsct {
 	state = 'await_control';
 	clients = [];
 	project_overlay_pairs = {};
-	obs_connection = null;
 	
 	constructor() {
 		
@@ -30,6 +29,7 @@ class wsct {
 				this.status = true;
 				updateServerStatus();
 				setTimeout(() => this.connect(), 500);
+				setTimeout(() => this.obsconnect(), 2500);
 			}
 		});
 	}
@@ -75,12 +75,12 @@ class wsct {
 			} else if (this.state == 'control') {
 
 				if (data.type && data.type == 'disconnect') {
-					
+
 					// remove disconnected client from clients list
 					this.clients.splice(this.clients.findIndex(x => x.uid == data.uid), 1);
 					generateConnectionList();
 					
-				} else if (data.ip) {
+				} else if (data.uid) {
 					
 					// new connection
 					this.clients.push(data);

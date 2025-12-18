@@ -446,9 +446,12 @@ function updateSourceChanges() {
 			generateStreamOverlays(GLOBAL.source_changes.map(v => stripPointer(v)), () => {
 				GLOBAL.source_changes = [];
 				
-				// execute 3pa command list
-				executeCommandList(GLOBAL.command_list);
-				GLOBAL.command_list = [];
+				// execute 3pa command list, 10ms delay to allow for read buffer to complete from previous p2p data and overlay send
+				setTimeout(function () { 
+					executeCommandList(GLOBAL.command_list);
+					GLOBAL.command_list = [];
+				}, 10);
+				
 			});
 			
 			// rather than attempting to rebuild portions of UI, just reprint it

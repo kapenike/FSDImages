@@ -14,7 +14,12 @@
 			mute - vb::mute(2, true) sets bus 2 mute to true, set to false to unmute
 			fade - vb::fade(2, 12, 2000, 2) fades bus 2 gain to 12 over a 2000ms delay with priority 2
 			
-		- OBS: obs::ACTION()
+		- OBS: obs::ACTION(scene, ...params)
+				*priority defines which scene is set and the toggle condition of a source
+			scene - obs::scene(Scene 1, 3); sets obs scene to "Scene 1" with priority 3
+			source - obs::source(Scene 1, Name Banners, true); sets the display of source "Name Banners" within "Scene 1" to visible, false would remove visibility
+			volume - obs::volume(Main Audio Channel, 16, 1); sets db level of "Main Audio Channel" to 16 with priority of 1
+			mute - obs::mute(Main Audio Channel, true, 1); mutes "Main Audio Channel" priority of 1, set to false to unmute
 */
 
 function executeCommandList(cl) {
@@ -35,6 +40,14 @@ function executeCommandList(cl) {
 	};
 	
 	cl.forEach(command => {
+		
+		// allow command to parse variables
+		command = getRealValue(command);
+		
+		// if command returns an object from getRealValue, continue, user has messed up variable path
+		if (isObject(command)) {
+			return;
+		}
 		
 		// check for delay
 		let delay = command.indexOf('delay(');
@@ -72,7 +85,39 @@ function executeCommandList(cl) {
 			
 		} else if (command.indexOf('obs::') > -1) {
 			
-			
+			// determine values for app command call
+			let parsed_command = {
+				delay: delay,
+				action: null,
+				scene: null,
+				source: null,
+				audio_channel: null,
+				mute: null,
+				value: null,
+				priority: 0
+			};
+			parsed_command.action = command.split('obs::')[1].split('(')[0];
+			let values = command.split('(')[1].split(')')[0].split(',');
+			if (parsed_command.action == 'scene') {
+				parsed_command.scene = values[0].trim();
+				if (values[1]) {
+					parsed_command.priority = values[1].trim();
+				}
+			} else if (parsed_command.action == 'source') {
+				parsed_command.scene = values[0].trim();
+				parsed_command.source = values[1].trim();
+				parsed_command.value = values[2].trim();
+				if (values[3]) {
+					parsed_command.priority = values[3].trim();
+				}
+			} else if (parsed_command.action == 'mute' || parsed_command.action == 'volume') {
+				parsed_command.source = values[0].trim();
+				parsed_command.value = values[1].trim();
+				if (values[2]) {
+					parsed_command.priority = values[2].trim();
+				}
+			}
+			app_output.obs.push(parsed_command);
 			
 		}
 		
@@ -113,22 +158,80 @@ function executeCommandList(cl) {
 	
 	}
 	
-	// TEMP, WORK HERE
+
 	// if running obs commands are enabled
 	if (use_obs) {
-		P2P_SERVER.connection.send(JSON.stringify({
-			action: 'obs_command',
-			command: {
-				"op": 6,
-				"d": {
-					"requestType": "SetCurrentProgramScene",
-					"requestId": "123",
-					"requestData": {
-						"sceneName": "Scene 2"
+		
+		// remove conflicting actions on scene or source tweaks
+		for (let i=0; i<app_output.obs.length; i++) {
+			let obs_o = app_output.obs[i];
+			for (let i2=i+1; i2<app_output.obs.length; i2++) {
+				let obs_n = app_output.obs[i2];
+				if ((obs_o.action == obs_n.action || obs_o.action == 'mute' && obs_n.action == 'volume' || obs_o.action == 'volume' && obs_n.action == 'mute') && obs_o.delay == obs_n.delay && obs_o.source == obs_n.source) {
+					if (obs_o.priority < obs_n.priority) {
+						app_output.obs.splice(i, 1);
+						i--;
+						break;
+					} else {
+						app_output.obs.splice(i2, 1);
+						i2--;
 					}
 				}
 			}
-		}));
+		}
+		
+		let commands = [];
+		
+		app_output.obs.forEach((command, index) => {
+			if (command.action == 'scene') {
+				commands.push({
+					requestType: 'SetCurrentProgramScene',
+					requestId: index+1,
+					requestData: {
+						sceneName: command.scene
+					}
+				});
+			} else if (command.action == 'source') {
+				commands.push({
+					requestType: 'SetSceneItemEnabled',
+					requestId: index+1,
+					requestData: {
+						sceneName: command.scene,
+						sourceName: command.source,
+						sceneItemEnabled: command.value == 'true'
+					}
+				});
+			} else if (command.action == 'mute') {
+				commands.push({
+					requestType: 'SetInputMute',
+					requestId: index+1,
+					requestData: {
+						inputName: command.source,
+						inputMuted: command.value == 'true'
+					}
+				});
+			} else if (command.action == 'volume') {
+				commands.push({
+					requestType: 'SetInputVolume',
+					requestId: index+1,
+					requestData: {
+						inputName: command.source,
+						inputVolumeDb: parseFloat(command.value)
+					}
+				});
+			}
+		});
+		
+		if (app_output.obs.length > 0) {
+			P2P_SERVER.connection.send(JSON.stringify({
+				action: 'obs_command',
+				command: {
+					'op': commands.length > 1 ? 8 : 6,
+					'd': commands.length == 1 ? commands[0] : { requestId: '777', requests: commands }
+				}
+			}));
+		}
+		
 	}
 	
 }

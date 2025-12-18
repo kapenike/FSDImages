@@ -31,7 +31,7 @@ class voicemeeter_controller {
 					
 				} else if ($command->action == 'mute') {
 					
-					$ffi->VBVMR_SetParameterFloat('Strip['.$command->bus.'].Mute', $command->value == true ? '1' : '0');
+					$ffi->VBVMR_SetParameterFloat('Strip['.$command->bus.'].Mute', $command->value == 'true' ? '1' : '0');
 					
 				}
 				
