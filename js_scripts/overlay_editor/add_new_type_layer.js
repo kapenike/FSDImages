@@ -34,7 +34,8 @@ function requestNewLayer(type = 'text', pass_starting_location = false) {
 				color: '#000000',
 				align: 'left',
 				caps: false,
-				rotation: 0
+				rotation: 0,
+				letter_spacing: 0
 			},
 			offset: {
 				x: x,

@@ -26,7 +26,7 @@ function generateStreamOverlays(sources = null, callback = () => {}) {
 		let overlay = GLOBAL.active_project.overlays[slug];
 
 		// if overlay contains an updated source, or sources is null, or is set to generate specific overlay
-		if (sources == null || (isObject(sources) && sources.slug == slug) || (overlay.sources.length > 0 && sources.length > 0 && overlay.sources.some(x => sources.includes(x)))) {
+		if (sources == null || (isObject(sources) && sources.slug == slug) || (overlay.sources && overlay.sources.length > 0 && sources.length > 0 && overlay.sources.some(x => sources.includes(x)))) {
 			
 			// define output canvas
 			let canvas = Create('canvas', {
@@ -348,6 +348,9 @@ function printText(ctx, layer) {
 
 	// if value not falsey (exluding 0), draw text
 	if (toggleTrue(layer) && (value || value === 0 || value === '0')) {
+		
+		// set letter spacing
+		ctx.letterSpacing = layer.style.letter_spacing+'px';
 		
 		// text rotation
 		if (layer.style.rotation && layer.style.rotation != 0) {

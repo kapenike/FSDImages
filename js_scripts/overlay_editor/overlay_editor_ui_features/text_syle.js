@@ -208,6 +208,30 @@ function featureTextStyle(layer) {
 						},
 						children: [
 							Create('label', {
+								innerHTML: 'Spacing',
+								children: [
+									Create('input', {
+										type: 'number',
+										value: layer.style.letter_spacing,
+										step: 0.1,
+										onchange: function () {
+											this.value = preciseAndTrim(this.value);
+											getLayerById(GLOBAL.overlay_editor.active_layer).style.letter_spacing = this.value;
+											printCurrentCanvas();
+											setupLayerInfoEditor();
+										}
+									})
+								]
+							})
+						]
+					}),
+					Create('div', {
+						className: 'col',
+						style: {
+							width: '20%'
+						},
+						children: [
+							Create('label', {
 								innerHTML: 'CAPS<br />',
 								children: [
 									Create('input', {
