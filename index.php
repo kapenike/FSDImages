@@ -4,6 +4,7 @@ require 'app.php';
 
 <html>
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <?php
 // import all scripts from "ui_scripts"
 forEach(app('directoryFileList')->get([], './js_scripts') as $file) {

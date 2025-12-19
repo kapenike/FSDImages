@@ -353,6 +353,12 @@ html, body {
 	clip-path: polygon(32px 0%, 100% 0%, 100% 100%, 0% 100%);
 }
 
+@media screen and (max-width: 868px) {
+	.navigation_logo {
+		height: 22px !important;
+	}
+}
+
 .navigation_logo img {
 	width: 110%;
 	margin: -12% 0;
@@ -394,6 +400,18 @@ html, body {
 	height: 33px;
 }
 
+@media screen and (max-width: 659px) {
+	.nav_break {
+		display: none !important;
+	}
+	.active_navigation {
+		height: auto !important;
+		position: static !important;
+		border: 1px solid #080b11 !important;
+		border-bottom: 3px solid #000000 !important;
+	}
+}
+
 #main {
 	width: 100%;
 	height: calc(100% - 54px);
@@ -407,6 +425,23 @@ html, body {
 	background-color: #000000;
 	border: 1px solid #fefefe22;
 	position: relative;
+}
+
+.edit_mode_floating_block {
+	display: block;
+	padding: 8px 10px 10px 14px;
+	position: fixed;
+	z-index: 100;
+	right: 0;
+	top: 54px;
+	color: #080b11;
+	font-size: 14px;
+	cursor: pointer;
+}
+@media screen and (max-width: 659px) {
+	.edit_mode_floating_block {
+		top: 88px !important;
+	}
 }
 
 label {
@@ -625,6 +660,12 @@ button, input[type="submit"] {
 	padding-bottom: 8px;
 	box-sizing: border-box;
 	overflow-wrap: anywhere;
+}
+
+@media screen and (max-width: 650px) {
+	.col {
+		width: 100% !important;
+	}
 }
 
 /* ajax auto loader styles */

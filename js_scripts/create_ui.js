@@ -19,17 +19,9 @@ function createUIFromData(container, data, submit_to_application, editor = false
 				children: [
 					Create('label', {
 						innerHTML: 'edit mode ',
+						className: 'edit_mode_floating_block',
 						style: {
-							display: 'block',
-							padding: '8px 10px 10px 14px',
-							position: 'fixed',
-							zIndex: '100',
-							right: '0',
-							top: '54px',
-							backgroundColor: editor ? '#f5c527' : '#39b3b5',
-							color: '#080b11',
-							fontSize: '14px',
-							cursor: 'pointer'
+							backgroundColor: editor ? '#f5c527' : '#39b3b5'
 						},
 						children: [
 							Create('input', {
