@@ -40,7 +40,7 @@ class voicemeeter_controller {
 			}
 			
 			// sleep 10ms to ensure dll has enough time to process requests
-			usleep(20000);
+			usleep(50000);
 			
 			// logout
 			$ffi->VBVMR_Logout();
