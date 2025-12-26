@@ -66,7 +66,7 @@ switch($_POST['application']) {
 		break;
 
 	case 'import_project':
-		app('project')->import($_POST['uid'], $_FILES['file_0']);
+		app('project')->import($_POST['uid'], $_FILES['file_0'], isset($_POST['use_import_uid']));
 		break;
 
 	case 'export_project':

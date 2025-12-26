@@ -130,6 +130,21 @@ function setNavigationSettings() {
 											textAlign: 'right'
 										},
 										children: [
+											Create('label', {
+												style: {
+													textAlign: 'left',
+													display: 'block'
+												},
+												children: [
+													Create('input', {
+														type: 'checkbox',
+														id: 'overwrite_project_uid'
+													}),
+													Create('span', {
+														innerHTML: '&nbsp; Overwrite UID with import project UID'
+													})
+												]
+											}),
 											Create('button', {
 												type: 'button',
 												innerHTML: 'Import',
@@ -143,18 +158,34 @@ function setNavigationSettings() {
 															let send_data = {
 																application: 'import_project',
 																uid: GLOBAL.active_project.uid,
-																file: Select('#import_file').files
+																file: Select('#import_file').files,
 															};
+															// overwrite project uid
+															if (Select('#overwrite_project_uid').checked) {
+																send_data.use_import_uid = true;
+															}
 															// import
 															ajax('POST', '/requestor.php', send_data, (status, data) => {
 																if (status && data.status) {
-																	// update prooject name in local registry
+																	// update project name in local registry
 																	GLOBAL.project_registry[GLOBAL.active_project.uid] = data.project_name;
 																	// load new project
 																	ajax('POST', '/requestor.php', {
 																		application: 'load_project_data',
 																		uid: GLOBAL.active_project.uid
 																	}, streamDataLoaded, 'body');
+																} else {
+																	notify({
+																		text: data.text,
+																		confirm: 'Load local project UID: "'+data.import_uid+'"',
+																		cancel: 'Cancel'
+																	}, () => {
+																		// on confirm, load local project
+																		ajax('POST', '/requestor.php', {
+																			application: 'load_project_data',
+																			uid: data.import_uid
+																		}, streamDataLoaded, 'body');
+																	});
 																}
 															}, 'body');
 														}

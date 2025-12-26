@@ -228,7 +228,7 @@ class project {
 		app('respond')->json(true, 'Project UI successfully updated.');
 	}
 	
-	function import($uid, $file) {
+	function import($uid, $file, $use_import_uid) {
 		
 		// upload archive
 		$zip = app('files')->upload($file, getBasePath().'/data/', ['fname' => true]);
@@ -238,17 +238,63 @@ class project {
 			// uploaded file name
 			$file_name = $zip['msg'];
 			
-			// remove current project data files and directories
-			app('directoryFileList')->delete(getBasePath().'/data/'.$uid);
-			
 			
 			// extract project archive to the current project directory
 			$zip = new ZipArchive;
 			if ($zip->open(getBasePath().'/data/'.$file_name) === true) {
 				
+				// rename data directory, preserved incase of error fallback
+				rename(getBasePath().'/data/'.$uid, getBasePath().'/data/fallback');
+				
+				// create new directory for zip extraction
+				mkdir(getBasePath().'/data/'.$uid);
+				
 				// extract to
 				$zip->extractTo(getBasePath().'/data/'.$uid);
 				$zip->close();
+				
+				// if overriding uid with import uid
+				if ($use_import_uid) {
+					
+					// get uid from import
+					$import_uid = json_decode(file_get_contents(getBasePath().'/data/'.$uid.'/container.json'))->uid;
+					
+					// skip logic if uid is same as current project uid
+					if ($uid != $import_uid) {
+
+						// ensure import uid is not in use in another project, imports without uid change are already guaranteed to be unique so this check is only done here
+						if (isset($this->registry->{$import_uid})) {
+							
+							// remove imported project data files and directories, false flag to remove directory master too
+							app('directoryFileList')->delete(getBasePath().'/data/'.$uid, false);
+							
+							// remove uploaded archive
+							unlink(getBasePath().'/data/'.$file_name);
+							
+							// rename fallback directory
+							rename(getBasePath().'/data/fallback', getBasePath().'/data/'.$uid);
+							
+							app('respond')->json(false, '', (object)[
+								'text' => 'The imported project UID: '.$import_uid.' is already in use in a different project. Did you mean to overwrite the existing project "'.$this->registry->{$import_uid}.'" ? If not, try unchecking the "Overwrite UID with import project UID" checkbox and import this new project with the current local uid.',
+								'import_uid' => $import_uid
+							]);
+						}
+						
+						// otherwise, rename project data directory
+						rename(getBasePath().'/data/'.$uid, getBasePath().'/data/'.$import_uid);
+						
+						// rename project overlay output directory
+						rename(getBasePath().'/overlay_output/'.$uid, getBasePath().'/overlay_output/'.$import_uid);
+						
+						// remove old uid from registry
+						unset($this->registry->{$uid});
+						
+						// then override uid with import uid for remaining import logic
+						$uid = $import_uid;
+						
+					}
+					
+				}
 				
 				// register new project name
 				$this->registry->{$uid} = file_get_contents(getBasePath().'/data/'.$uid.'/project_name.txt');
@@ -267,9 +313,12 @@ class project {
 				// clear old overlay output directory
 				app('directoryFileList')->delete(getBasePath().'/overlay_output/'.$uid);
 				
+				// remove fallback directory
+				app('directoryFileList')->delete(getBasePath().'/data/fallback', false);
+				
 			} else {
 				
-				app('respond')->json(false, 'Project archive unable to be opened.');
+				app('respond')->json(false, 'Project archive unable to be opened. Does your PHP.ini have "extension=zip" enabled?');
 				
 			}
 			
