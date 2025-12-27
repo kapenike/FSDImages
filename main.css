@@ -696,12 +696,6 @@ button, input[type="submit"] {
 	overflow: hidden;
 	z-index: 101;
 	background-color: #ffffff;
-	-webkit-touch-callout: none;
-	-webkit-user-select: none;
-	-khtml-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
-	user-select: none;
 }
 
 #image_editor .editor_info_bar {
@@ -877,4 +871,21 @@ button, input[type="submit"] {
 	box-sizing: border-box;
 	border-radius: 3px;
 	cursor: pointer;
+}
+
+/* prevent text selection on */
+#image_editor,
+.create_data_key,
+.remove_data_key,
+.path_insert_button,
+button,
+.dropdown_action,
+.navigation_element,
+.edit_mode_floating_block {
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
 }
