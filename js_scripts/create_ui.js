@@ -725,7 +725,92 @@ function createUIEditMenu(x, y, elem) {
 	
 	// if menu already exists, close it
 	removeUIEditMenu();
+	
+	let menu_items = null;
+	
+	// if creating from select on window rather than section or field, override with minimal menu
+	if (elem.className == 'only_create') {
 		
+		menu_items = [
+			Create('div', {
+				innerHTML: 'Create New Section',
+				onclick: () => { editUISection(elem, true); }
+			}),
+			Create('div', {
+				innerHTML: 'cancel',
+				className: 'ui_edit_menu_cancel',
+				onclick: () => { removeUIEditMenu(); }
+			})
+		];
+		
+	} else {
+	
+		// top menu element must be parent if field selected
+		let top_element = elem.className == 'ui_field' ? elem.parentNode : elem;
+	
+		// top menu items
+		menu_items = [
+			Create('div', {
+				innerHTML: 'Create New Field',
+				onclick: () => { editUIField(top_element, true); }
+			}),
+			Create('div', {
+				innerHTML: 'Create New Section',
+				onclick: () => { editUISection(top_element, true); }
+			}),
+			Create('div', {
+				innerHTML: 'Edit Section',
+				onclick: () => { editUISection(top_element); }
+			}),
+			Create('div', {
+				innerHTML: 'Remove Section',
+				className: 'ui_edit_menu_remove',
+				onclick: () => { removeUISection(top_element); }
+			}),
+			Create('div', {
+				innerHTML: 'cancel',
+				className: 'ui_edit_menu_cancel',
+				onclick: () => { removeUIEditMenu(); }
+			})
+		];
+		
+		// if menu element was a field, also allow field edit
+		if (elem.className == 'ui_field') {
+			
+			// get label title
+			let label_title = elem.children[0];
+			if (label_title.tagName == 'LABEL') {
+				label_title = label_title.childNodes[0].textContent;
+			} else {
+				label_title = elem.children[1].textContent;
+			}
+			// limit label title length
+			label_title = label_title.length > 20 ? label_title.slice(0,17)+'...' : label_title;
+			
+			menu_items.unshift(...[
+				Create('div', {
+					className: 'ui_edit_menu_title',
+					innerHTML: label_title
+				}),
+				Create('div', {
+					innerHTML: 'Edit Field',
+					onclick: () => { editUIField(elem); }
+				}),
+				Create('div', {
+					innerHTML: 'Remove Field',
+					onclick: () => { removeUIField(elem); },
+					className: 'ui_edit_menu_remove'
+				}),
+				Create('div', {
+					className: 'ui_edit_menu_title',
+					innerHTML: ''
+				})
+			]);
+		}
+
+	}
+
+	// create edit menu
 	Select('#body', {
 		children: [
 			Create('div', {
@@ -736,59 +821,7 @@ function createUIEditMenu(x, y, elem) {
 					top: y,
 					transform: 'translate('+(x < (screen.width/2) ? '0' : '-100%')+', '+(y > (screen.height/2) ? '-100%' : '0')+')'
 				},
-				children: elem.className == 'ui_field'
-					? [
-						Create('div', {
-							innerHTML: 'Edit Field',
-							onclick: () => { editUIField(elem); }
-						}),
-						Create('div', {
-							innerHTML: 'Remove Field',
-							onclick: () => { removeUIField(elem); },
-							className: 'ui_edit_menu_remove'
-						}),
-						Create('div', {
-							innerHTML: 'cancel',
-							className: 'ui_edit_menu_cancel',
-							onclick: () => { removeUIEditMenu(); }
-						})
-					]
-					: elem.className == 'only_create'
-						? [
-								Create('div', {
-									innerHTML: 'Create New Section',
-									onclick: () => { editUISection(elem, true); }
-								}),
-								Create('div', {
-									innerHTML: 'cancel',
-									className: 'ui_edit_menu_cancel',
-									onclick: () => { removeUIEditMenu(); }
-								})
-							]
-						: [
-								Create('div', {
-									innerHTML: 'Create New Field',
-									onclick: () => { editUIField(elem, true); }
-								}),
-								Create('div', {
-									innerHTML: 'Create New Section',
-									onclick: () => { editUISection(elem, true); }
-								}),
-								Create('div', {
-									innerHTML: 'Edit Section',
-									onclick: () => { editUISection(elem); }
-								}),
-								Create('div', {
-									innerHTML: 'Remove Section',
-									className: 'ui_edit_menu_remove',
-									onclick: () => { removeUISection(elem); }
-								}),
-								Create('div', {
-									innerHTML: 'cancel',
-									className: 'ui_edit_menu_cancel',
-									onclick: () => { removeUIEditMenu(); }
-								})
-							]
+				children: menu_items
 			})
 		]
 	});
