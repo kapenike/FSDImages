@@ -99,11 +99,20 @@ function createPathVariableField(settings = {}) {
 						uid: GLOBAL.unique_id,
 						className: 'variable_set_input_field has_path_insert',
 						contentEditable: is_content_editable,
+						caretManagement: function () {
+							manageVariableInputCaretPosition(this.uid, this)
+						},
 						onclick: function () {
 							// if not content editable, this is a force path only or path only field, open path editor onclick
 							if (this.contentEditable == 'false') {
 								openPathEditor(this.uid);
 							}
+							// manage caret position
+							this.caretManagement();
+						},
+						onkeyup: function () {
+							// manage caret position
+							this.caretManagement();
 						},
 						oninput: function () {
 							// on input, update main input value with text formatted equivalent and call the onedit() attached function

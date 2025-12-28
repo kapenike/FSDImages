@@ -9,11 +9,6 @@ function openPathEditor(uid) {
 	let open_path = getOpenPath(uid);
 	let base_path = Select('#variable_input_'+uid).data.base_path;
 	
-	/*if (use_anchor) {
-		use anchor to determine which variable has been selected and use it to modify
-		window.getSelection()
-	}*/
-	
 	if (open_path == '') {
 		open_path = null;
 	}

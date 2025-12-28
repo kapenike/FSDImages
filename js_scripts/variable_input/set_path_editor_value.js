@@ -35,8 +35,14 @@ function setPathEditorValue(path) {
 		}
 	}
 	
-	// create new path variable entry and append it to the current variable field
-	input_field.appendChild(createPathVariableEntry(path));
+	// create new path variable entry
+	if (GLOBAL.ui.variable_input_caret.uid == uid && GLOBAL.ui.variable_input_caret.position > -1) {
+		// if valid caret position for entry, insert there
+		variableInputCaretInsert(input_field, createPathVariableEntry(path));
+	} else {
+		// otherwise just append
+		input_field.appendChild(createPathVariableEntry(path));
+	}
 	
 	// store text representation of the current variable entry as the form value
 	Select('#variable_input_'+uid).value = getFormValueOfPathSelection(uid, input_field.innerHTML);

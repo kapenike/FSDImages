@@ -71,7 +71,8 @@ FEATURES:
 	- offer search option for select list dropdowns
 		
 - Dataset
-	- allow sorting
+	- allow sorting and manual movement
+	- allow key structure movement (key up or down in list)
 
 - Overlay editor features
 	- add border radius option to individual points on custom path, or all points for either square or custom path
@@ -82,10 +83,6 @@ FEATURES:
 	- allow image rotation
 	- allow text to overflow when prompted and provide a new height dimension, with that allow vertical positioning, default top but allow center and bottom, update flipLayer function with new positioning possibilities
 	- ctrl + t for a new UI to control rotation and dimensions of layer object
-
-- variable input
-	- needs to allow window anchor selection to change specific concatted variables rather than just appending the new variable selection
-	- needs complete rewrite with new variable storage on HTMLElements using JSUI
 
 - P2P
 	- allow viewing of uncontrolled clients as well as allowing force disconnect of any client
