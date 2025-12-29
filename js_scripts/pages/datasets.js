@@ -358,7 +358,7 @@ function newStructureKey(key = null, index = 1) {
 						name: 'structure[]',
 						value: key == null ? '' : key,
 						readOnly: key == 'display',
-						onchange: function () {
+						updateListFields: function () {
 							
 							// get position of key in structure, then itterate all content and replace key data within that content sub data index
 							let position = Array.from(MSelect('.dataset_structure_keys')).reduce((a,c,i) => {
@@ -372,15 +372,15 @@ function newStructureKey(key = null, index = 1) {
 									Array.from(block.children).forEach(input => {
 										if (input.className == 'spanlabel') {
 											if (pos == position) {
-												let pointer_to_data = input.children[0].children[0].children;
+												let pointer_to_data = input.children[0].children[0].children[0];
 												Create(input, {
 													innerHTML: this.value,
 													children: [
 														createPathVariableField({
 															name: 'dataset_value_'+this.value+'[]',
 															value: {
-																path_only: pointer_to_data[1].value == 'true',
-																value: pointer_to_data[0].value
+																path_only: pointer_to_data.data.path_only,
+																value: pointer_to_data.value
 															},
 															allow_path_only: true
 														})
@@ -391,6 +391,14 @@ function newStructureKey(key = null, index = 1) {
 										}
 									});
 								});
+							}
+						},
+						onblur: function () {
+							this.updateListFields();
+						},
+						onkeydown: function (event) {
+							if (event.key == 'Enter') {
+								this.updateListFields();
 							}
 						},
 						onkeyup: function () {
