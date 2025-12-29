@@ -187,7 +187,7 @@ class websocket {
 		socket_shutdown($this->clients[$index]);
 		
 		// if client is not server or controller
-		if ($index > 0 && $this->client_details[$index]->type != 'controller' && $this->client_details[$index]->type != 'obs') {
+		if ($index > 0 && $this->client_details[$index]->type != 'controller') {
 			
 			// notify controller of disconnect
 			$this->notifyController([
@@ -479,6 +479,7 @@ class websocket {
 		$this->client_details[] = (object)[
 			'uid' => str_pad(++$this->client_uid, 4, '0', STR_PAD_LEFT),
 			'type' => 'obs',
+			'ip' => $obs_connection_details->obs_websocket_location,
 			'host' => $split_host_port[0],
 			'port' => $split_host_port[1]
 		];
@@ -515,6 +516,9 @@ class websocket {
 				'authentication' => $auth
 			]
 		])));
+		
+		// retrieve response to prevent blocking, can be ignored
+		socket_read($socket, 2048);
 		
 		// notify controller of obs client
 		$this->notifyController($this->client_details[count($this->client_details)-1]);
@@ -559,8 +563,12 @@ class websocket {
 					
 				} else {
 					
-					// if obs, ignore
+					// if obs, only check for server stop, all other data transfer is handled within processInput
 					if ($this->client_details[$index]->type == 'obs') {
+						if (str_contains(substr($data, 4), 'Server stopping.')) {
+							$this->closeClientConnection($index);
+							$index--;
+						}
 						continue;
 					}
 
