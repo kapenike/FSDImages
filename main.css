@@ -208,11 +208,17 @@ html, body {
 	max-width: 800px;
 	box-sizing: border-box;
 	text-align: right;
-	font-size: 14px;
+	font-size: 12px !important;
 	background-color: #000000;
 	color: #ffffff;
 	padding: 4px 10px 4px 10px;
 	border-radius: 0 0 3px 3px;
+}
+
+.path_var_container::after {
+	content: "";
+  display: table;
+  clear: both
 }
 
 .variable_input_clear {
@@ -276,6 +282,18 @@ html, body {
 
 .close_path_selection_editor {
 	background-color: red;
+}
+
+.variable_input_action_item {
+	float: left;
+	width: 14px;
+	font-size: 10px;
+	height: 12px;
+	padding: 2px;
+	border-radius: 2px;
+	background-color: #777;
+	text-align: center;
+	cursor: pointer;
 }
 
 #path_selection_dialog {

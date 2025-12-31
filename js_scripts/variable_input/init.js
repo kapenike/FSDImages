@@ -133,12 +133,36 @@ function createPathVariableField(settings = {}) {
 				]
 			}),
 			Create('br', { style: { clear: 'both' }}),
-			(settings.allow_path_only == true
-				?	Create('div', { // Reference Path toggle checkbox
-						className: 'path_var_container',
-						children: [
-							Create('label', {
-								innerHTML: 'Reference Path ',
+			Create('div', { // Reference Path toggle checkbox
+				className: 'path_var_container'+(settings.force_path_only == true ? ' forcing_path_indicator' : ''),
+				children: [
+					(settings.force_path_only || settings.allow_path_only
+						?	Create('div', {
+								className: 'variable_input_action_item',
+								id: 'quick_upload_image_action_item_'+GLOBAL.unique_id,
+								style: {
+									display: settings.force_path_only || (settings.allow_path_only && settings.value.path_only) ? 'block' : 'none'
+								},
+								innerHTML: '&#128247;',
+								var_input_uid: GLOBAL.unique_id,
+								onclick: function () {
+									createPopUp(
+										'Quick Upload New Asset',
+										Create('div', { id: 'popup_create_asset', var_input_uid: this.var_input_uid }),
+										() => {
+											// submit form to upload asset
+											updateAssetData(true);
+										}
+									);
+									// setup asset editor within popup window
+									setupAssetEditor(null, '#popup_create_asset');
+								}
+							})
+						: Create('span')
+					),
+					(settings.allow_path_only == true
+						? Create('label', {
+								innerHTML: 'Ref. Path ',
 								children: [
 									Create('input', {
 										type: 'checkbox',
@@ -149,6 +173,9 @@ function createPathVariableField(settings = {}) {
 											let input_field = Select('#var_set_input_'+this.uid);
 											let is_now_content_editable = !this.checked;
 											input_field.contentEditable = is_now_content_editable;
+											
+											// show quick image upload when NOT content editable (becomes reference path variable)
+											Select('#quick_upload_image_action_item_'+this.uid).style.display = !is_now_content_editable ? 'block' : 'none';
 											
 											// if depth value editing was allowed, switch because of reference path change
 											if (Select('#depth_value_'+this.uid)) {
@@ -204,12 +231,10 @@ function createPathVariableField(settings = {}) {
 									)
 								]
 							})
-						]
-					})
-				: Create('div', { // forcing path only has a different style to indicate a save-to-path field
-						className: 'path_var_container'+(settings.force_path_only == true ? ' forcing_path_indicator' : '')
-					})
-			)
+						: Create('span')
+					)
+				]
+			})
 		]
 	});
 }

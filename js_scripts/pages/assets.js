@@ -134,13 +134,13 @@ function updateAssetData(use_from_quick_upload = false) {
 			}
 
 			if (use_from_quick_upload == false) {
+				
 				// load asset data into form
 				setupAssetEditor(form_details.asset_slug);
-			}
-			
-			if (use_from_quick_upload == false) {
+				
 				// re-create asset selection list
 				generateAssetSelectionList();
+				
 			}
 			
 			// if file was included in the form submission, load file into source and update affected overlays
@@ -176,8 +176,34 @@ function updateAssetData(use_from_quick_upload = false) {
 					
 					// if quick upload, call back to finish popup close and print actions
 					if (use_from_quick_upload) {
+						
+						// get variable input id
+						let id = Select('#popup_create_asset').var_input_uid;
+						
+						// get variable input primary form field (hidden)
+						let form_field = Select('#variable_input_'+id)
+						
+						// set form value
+						form_field.value = '$var$$pointer$1$/pointer$assets/'+form_details.asset_slug+'$/var$';
+						
+						// update UI field value
+						Select('#var_set_input_'+id, { innerHTML: '', children: getPathSelectionValueFromFormValue(form_field.value) });
+						
+						// call variable input attached onedit function
+						form_field.onedit();
+						
+						// close popup
 						closePopup();
-						printCurrentCanvas();
+						
+						// if overlay editor is active, re-print canvas on refresh of DOM
+						if (Select('#image_editor')) {
+							
+							setTimeout(function () {
+								printCurrentCanvas();
+							}, 1);
+							
+						}
+						
 					}
 				}
 			}
