@@ -136,7 +136,7 @@ function createPathVariableField(settings = {}) {
 			Create('div', { // Reference Path toggle checkbox
 				className: 'path_var_container'+(settings.force_path_only == true ? ' forcing_path_indicator' : ''),
 				children: [
-					(settings.force_path_only || settings.allow_path_only
+					(settings.allow_path_only
 						?	Create('div', {
 								className: 'variable_input_action_item',
 								id: 'quick_upload_image_action_item_'+GLOBAL.unique_id,

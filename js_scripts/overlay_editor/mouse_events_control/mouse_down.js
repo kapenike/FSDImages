@@ -1,5 +1,10 @@
 function imageEditorMouseDown(event) {
 	
+	// ensure only left mouse down continues
+	if (event.button != 0) {
+		return;
+	}
+	
 	// translate window cursor position to canvas position
 	let translate_cursor = translateWindowToCanvas(event.clientX, event.clientY);
 	
