@@ -57,9 +57,6 @@ function generateUI(navigation = null) {
 	// if file, prevent all and just run init
 	if (navigation == 'File') {
 		openFileDropdown();
-		if (Select('.active_navigation')) {
-			Select('.active_navigation').className = 'navigation_element';
-		}
 		return;
 	}
 	
@@ -191,6 +188,14 @@ function onSaveAction() {
 }
 
 function openFileDropdown() {
+	
+	let fileStateManager = function () {
+		// file dropdowns global navigation change state caller, since File circumvents it at first
+		let active_navigation = Select('.active_navigation');
+		closeApp(true, active_navigation.innerHTML);
+		active_navigation.className = 'navigation_element';
+	}
+	
 	Select('#body', {
 		children: [
 			Create('div', {
@@ -205,12 +210,15 @@ function openFileDropdown() {
 							Create('div', {
 								className: 'dropdown_action dropdown_save',
 								innerHTML: 'Save',
-								onclick: onSaveAction
+								onclick: function () {
+									onSaveAction();
+								}
 							}),
 							Create('div', {
 								className: 'dropdown_action',
 								innerHTML: 'Settings',
 								onclick: function () {
+									fileStateManager();
 									GLOBAL.navigation.on_save = updateProjectSettings,
 									setNavigationSettings();
 								}
@@ -219,6 +227,7 @@ function openFileDropdown() {
 								className: 'dropdown_action',
 								innerHTML: 'Font Manager',
 								onclick: function () {
+									fileStateManager();
 									GLOBAL.navigation.on_save = updateFonts,
 									setNavigationFontManager();
 								}
@@ -227,6 +236,7 @@ function openFileDropdown() {
 								className: 'dropdown_action',
 								innerHTML: 'P2P Server',
 								onclick: function () {
+									fileStateManager();
 									GLOBAL.navigation.on_save = ()=>{},
 									setNavigationP2PServer();
 								}
@@ -235,6 +245,7 @@ function openFileDropdown() {
 								className: 'dropdown_action',
 								innerHTML: 'Whitelisted IP Addresses',
 								onclick: function () {
+									fileStateManager();
 									GLOBAL.navigation.on_save = updateWhitelistedIPs,
 									alterWhitelistedIPs();
 								}
