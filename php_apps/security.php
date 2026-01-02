@@ -31,8 +31,8 @@ class security {
 	
 	function test() {
 		
-		// allow access to scripts under FSDImages/p2p/client from any access point
-		if (str_contains(getcwd(), (app('server')->OS == 'Windows' ? 'FSDImages\p2p\client' : 'FSDImages/p2p/client'))) {
+		// allow access to api_connection_library.js.php and fonts.php library
+		if (in_array(basename($_SERVER['PHP_SELF']), ['api_connection_library.js.php', 'font.php']) && str_contains(getcwd(), (app('server')->OS == 'Windows' ? 'FSDImages\api' : 'FSDImages/api'))) {
 			return true;
 		}
 		

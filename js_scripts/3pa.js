@@ -223,7 +223,7 @@ function executeCommandList(cl) {
 		});
 		
 		if (app_output.obs.length > 0) {
-			P2P_SERVER.connection.send(JSON.stringify({
+			API_SERVER.connection.send(JSON.stringify({
 				action: 'obs_command',
 				command: {
 					'op': commands.length > 1 ? 8 : 6,

@@ -1,7 +1,7 @@
 function initNavigation() {
 	
 	// on project initialization, send attempt to connect to obs websocket controller
-	P2P_SERVER.obsconnect();
+	API_SERVER.obsconnect();
 	
 	// show naviation
 	Select('.navigation').style.display = 'block';
@@ -192,8 +192,10 @@ function openFileDropdown() {
 	let fileStateManager = function () {
 		// file dropdowns global navigation change state caller, since File circumvents it at first
 		let active_navigation = Select('.active_navigation');
-		closeApp(true, active_navigation.innerHTML);
-		active_navigation.className = 'navigation_element';
+		if (active_navigation) {
+			closeApp(true, active_navigation.innerHTML);
+			active_navigation.className = 'navigation_element';
+		}
 	}
 	
 	Select('#body', {
@@ -234,11 +236,11 @@ function openFileDropdown() {
 							}),
 							Create('div', {
 								className: 'dropdown_action',
-								innerHTML: 'P2P Server',
+								innerHTML: 'API Server',
 								onclick: function () {
 									fileStateManager();
 									GLOBAL.navigation.on_save = ()=>{},
-									setNavigationP2PServer();
+									setNavigationApiServer();
 								}
 							}),
 							Create('div', {

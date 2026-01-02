@@ -28,22 +28,22 @@ switch($_POST['application']) {
 		app('respond')->json(false, 'Unauthorized.');
 		break;
 	
-	case 'P2P_is_running':
-		if (app('server')->isWebsocketServerRunning()) {
+	case 'api_is_running':
+		if (app('server')->isApiServerRunning()) {
 			app('respond')->json(true, '', app('server')->requestConnectionDetails());
 		}
 		break;
 		
-	case 'P2P_start':
-		if (app('server')->launchWebsocketServer()) {
+	case 'api_start':
+		if (app('server')->launchApiServer()) {
 			app('respond')->json(true, '', app('server')->requestConnectionDetails());
 		} else {
 			app('respond')->json(false, 'Unable to start web socket server :/');
 		}
 		break;
 		
-	case 'P2P_kill':
-		app('server')->stopWebsocketServer();
+	case 'api_kill':
+		app('server')->stopApiServer();
 		break;
 	
 	case 'request_project_overlay_pairs':
@@ -148,7 +148,7 @@ switch($_POST['application']) {
 		break;
 		
 	case 'voicemeeter_command':
-		app('voicemeeter_controller')->executeCommands($_POST['project_uid'], json_decode($_POST['commands']));
+		app('voicemeeterController')->executeCommands($_POST['project_uid'], json_decode($_POST['commands']));
 		break;
 	
 	default:

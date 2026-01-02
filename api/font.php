@@ -1,8 +1,15 @@
-<?php 
-// point font lookup towards localhost primary server font storage location
+<?php
 
 $font_filename = basename($_SERVER['PHP_SELF']);
-$font_file = '../../../fonts/'.$font_filename;
+
+// if filename is empty, export font css instead
+if (empty($font_filename)) {
+	require('../app.php');
+	app('fonts')->generateFontCSS(true);
+}
+
+// point font lookup towards localhost primary server font storage location
+$font_file = '../fonts/'.$font_filename;
 
 if (file_exists($font_file)) {
 	header('Content-Type: application/octet-stream');

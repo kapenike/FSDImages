@@ -157,14 +157,14 @@ class server {
 		return true;
 	}
 	
-	function isWebsocketServerRunning() {
+	function isApiServerRunning() {
 		return $this->checkHostPort($this->ipv4, $this->client_port);
 	}
 	
-	function launchWebsocketServer() {
+	function launchApiServer() {
 		
 		// ensure something is not already running on the client ip:port
-		if (!$this->isWebsocketServerRunning()) {
+		if (!$this->isApiServerRunning()) {
 			
 			// generate new controller key for new instance of a websocket server
 			$this->updateServerData('controller_key', bin2hex(random_bytes(16)));
@@ -172,19 +172,19 @@ class server {
 			// launch websocket server and client on ipv4:port
 			if ($this->OS == 'Windows') {
 				
-				// launch websocket server
-				pclose(popen('start /B "" "'.$this->win_php.'" "'.$this->cleanCLIPath(getBasePath().'\p2p\web_socket_server.php').'" > NUL 2>&1', 'r'));
+				// launch api server
+				pclose(popen('start /B "" "'.$this->win_php.'" "'.$this->cleanCLIPath(getBasePath().'\api\api_server.php').'" > NUL 2>&1', 'r'));
 				
-				// launch client
-				pclose(popen('start /B "" "'.$this->win_php.'" -S '.$this->ipv4.':'.$this->client_port.' -t "'.$this->cleanCLIPath(getBasePath().'\p2p\client').'" > NUL 2>&1', 'r'));
+				// launch api external script host
+				pclose(popen('start /B "" "'.$this->win_php.'" -S '.$this->ipv4.':'.$this->client_port.' -t "'.$this->cleanCLIPath(getBasePath().'\api').'" > NUL 2>&1', 'r'));
 		
 			} else {
 				
 				// launch websocket server and save PID
-				$this->updateServerData('ws_pid', trim(shell_exec('php '.$this->cleanCLIPath(getBasePath().'/p2p/web_socket_server.php').' > /dev/null 2>&1 & echo $!')));
+				$this->updateServerData('ws_pid', trim(shell_exec('php '.$this->cleanCLIPath(getBasePath().'/api/api_server.php').' > /dev/null 2>&1 & echo $!')));
 				
 				// launch client and save PID
-				$this->updateServerData('client_pid', trim(shell_exec('php -S '.$this->ipv4.':'.$this->client_port.' -t '.$this->cleanCLIPath(getBasePath().'/p2p/client').' > /dev/null 2>&1 & echo $!')));
+				$this->updateServerData('client_pid', trim(shell_exec('php -S '.$this->ipv4.':'.$this->client_port.' -t '.$this->cleanCLIPath(getBasePath().'/api').' > /dev/null 2>&1 & echo $!')));
 			
 			}
 			
@@ -197,7 +197,7 @@ class server {
 		
 	}
 	
-	function stopWebsocketServer() {
+	function stopApiServer() {
 		
 		// ensure websocket server is running
 		if ($this->checkHostPort($this->ipv4, $this->client_port)) {
@@ -210,7 +210,7 @@ class server {
 				}
 				
 				// query for websocket server process and kill
-				$ws_pid = $this->windowsRequestPID('web_socket_server.php');
+				$ws_pid = $this->windowsRequestPID('api_server.php');
 				if ($ws_pid) {
 					shell_exec('taskkill /F /PID '.$ws_pid);
 				}

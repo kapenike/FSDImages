@@ -1,6 +1,6 @@
 <?php
 
-class voicemeeter_controller {
+class voicemeeterController {
 	
 	function executeCommands($puid, $json) {
 		

@@ -15,7 +15,7 @@ class FSDImages {
 		// if websocket only start
 		if (in_array('websocket', $args)) {
 			
-			$cli_notif->client = app('server')->launchWebsocketServer();
+			$cli_notif->client = app('server')->launchApiServer();
 			
 		} else {
 		
@@ -27,7 +27,7 @@ class FSDImages {
 			
 			// if CLI includes 'all', start websocket server and client server as well
 			if (in_array('all', $args)) {
-				$cli_notif->client = app('server')->launchWebsocketServer();
+				$cli_notif->client = app('server')->launchApiServer();
 			}
 		
 		}
@@ -41,7 +41,7 @@ class FSDImages {
 		// if websocket only stop
 		if (in_array('websocket', $args)) {
 			
-			app('server')->stopWebsocketServer();
+			app('server')->stopApiServer();
 			
 		} else {
 		
@@ -51,7 +51,7 @@ class FSDImages {
 			// if CLI includes reference to 'all', kill websocket server and client too
 			if (in_array('all', $args)) {
 				
-				app('server')->stopWebsocketServer();
+				app('server')->stopApiServer();
 				
 			}
 		

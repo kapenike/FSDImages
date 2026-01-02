@@ -8,22 +8,22 @@ if (isset($_GET['uid'])) {
 	if (isset($_GET['overlay_slug'])) {
 		
 		// request overlay by slug
-		$path = '../../overlay_output/'.sanitize($_GET['uid']).'/'.sanitize($_GET['overlay_slug']).'.png';
+		$path = '../overlay_output/'.sanitize($_GET['uid']).'/'.sanitize($_GET['overlay_slug']).'.png';
 		
 	} else if (isset($_GET['asset_slug'])) {
 		
 		// request asset by slug
-		if (file_exists('../../data/'.sanitize($_GET['uid']).'/asset_registry.json')) {
-			$asset_registry = json_decode(file_get_contents('../../data/'.sanitize($_GET['uid']).'/asset_registry.json'));
+		if (file_exists('../data/'.sanitize($_GET['uid']).'/asset_registry.json')) {
+			$asset_registry = json_decode(file_get_contents('../data/'.sanitize($_GET['uid']).'/asset_registry.json'));
 			if (isset($asset_registry->{sanitize($_GET['asset_slug'])})) {
-				$path = '../../data/'.sanitize($_GET['uid']).'/sources/'.$asset_registry->{sanitize($_GET['asset_slug'])}->file;
+				$path = '../data/'.sanitize($_GET['uid']).'/sources/'.$asset_registry->{sanitize($_GET['asset_slug'])}->file;
 			}
 		}
 		
 	} else if (isset($_GET['asset_filename'])) {
 		
 		// request asset by direct filename
-		$path = '../../data/'.sanitize($_GET['uid']).'/sources/'.sanitize($_GET['asset_filename']);
+		$path = '../data/'.sanitize($_GET['uid']).'/sources/'.sanitize($_GET['asset_filename']);
 		
 	} else {
 		http_response_code(404);

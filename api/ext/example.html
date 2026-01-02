@@ -1,0 +1,87 @@
+<html>
+<!-- import class to interact with API -->
+<script src="api_connection_library.js.php"></script>
+<!-- import custom fonts -->
+<style href="font.php"></style>
+<script>
+
+document.addEventListener('DOMContentLoaded', function () {
+
+	// params: project uid | listeners object | event function calls
+	const apiserver = new api_server(
+		'uid_40657b63', // project uid
+		{ // listeners
+			overlays: [ // listen for changes to the Face off Screen overlay
+				'face_off_screen' 
+			],
+			data: [ // listen to specific data points
+				'series_type',
+				'team_1/team_data',
+				'team_1/series_score',
+				'team_2/team_data',
+				'team_2/series_score'
+			]
+		},
+		{ // event function calls
+			open: function (event) {
+				console.log('Open event, this script runs before init of API flow.');
+				console.log(event);
+			},
+			message: function (event) {
+				
+				let data = JSON.parse(event.data);
+				
+				// initial connection will return requested data as a direct child of event.data
+				// the best way to check for initialization data is if the "identifier" property is included
+				if (data.identifier) {
+					console.log('Initialization...');
+					console.log('Data:');
+					console.log(data.data);
+					console.log('Overlays:');
+					console.log(data.overlays);
+					/*
+						overlays can be requested over HTTP using...
+						apiserver.requestOverlay(uid_40657b63, data.overlays[some_index]);
+						
+						assets can also be requested over HTTP using two methods:
+						- using the filename property found within an asset object
+							- apiserver.requestAsset(uid_40657b63, data.data['team_1/team_data'].logo.file, true); <- boolean tells the function to request using the filename
+						- using a direct reference to the asset slug (not found in the return data but offered to the user via the asset manager within the FSDImages application
+							- apiserver.requestAsset(uid_40657b63, 'team_green_logo');
+					*/
+					return;
+				}
+				
+				// updates to a specific data path or overlay are captured under data.update
+				if (data.update) {
+					console.log('Data path updates as [key=>value] pairs:');
+					console.log(data.update.data);
+					console.log('Overlays updated as list of overlay slugs:');
+					console.log(data.update.overlays);
+				}
+			},
+			error: function (event) {
+				console.log('Error occurred with connection to server.');
+				console.log(event);
+			},
+			close: function (event) {
+				console.log('Server shutdown.');
+				console.log(event);
+			}
+		}
+	);
+
+});
+</script>
+<style>
+html, body {
+	width: 100%;
+	height: 100%;
+	padding: 0;
+	margin: 0;
+	font-family: Verdana;
+}
+</style>
+<body>
+</body>
+</html>
