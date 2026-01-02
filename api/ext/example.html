@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	// params: project uid | listeners object | event function calls
 	const apiserver = new api_server(
-		'uid_40657b63', // project uid
+		'uid_example', // project uid
 		{ // listeners
 			overlays: [ // listen for changes to the Face off Screen overlay
 				'face_off_screen' 
@@ -41,13 +41,13 @@ document.addEventListener('DOMContentLoaded', function () {
 					console.log(data.overlays);
 					/*
 						overlays can be requested over HTTP using...
-						apiserver.requestOverlay(uid_40657b63, data.overlays[some_index]);
+						apiserver.requestOverlay(uid_example, data.overlays[some_index]);
 						
 						assets can also be requested over HTTP using two methods:
 						- using the filename property found within an asset object
-							- apiserver.requestAsset(uid_40657b63, data.data['team_1/team_data'].logo.file, true); <- boolean tells the function to request using the filename
+							- apiserver.requestAsset(uid_example, data.data['team_1/team_data'].logo.file, true); <- boolean tells the function to request using the filename
 						- using a direct reference to the asset slug (not found in the return data but offered to the user via the asset manager within the FSDImages application
-							- apiserver.requestAsset(uid_40657b63, 'team_green_logo');
+							- apiserver.requestAsset(uid_example, 'team_green_logo');
 					*/
 					return;
 				}
