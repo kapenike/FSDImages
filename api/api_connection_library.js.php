@@ -75,7 +75,7 @@ class api_server {
 	// request asset image from server using project uid and asset_slug OR filename with "is_file" flag set to true
 	requestAsset(uid, asset_slug, is_file) {
 		let asset_reference = is_file ? 'asset_filename='+asset_slug : 'asset_slug='+asset_slug;
-		return 'http://<?php echo $config->host.':'.$config->host_port; ?>/request_image/uid='+uid+'&'+asset_reference+'&time='+Date.now();
+		return 'http://<?php echo $config->host.':'.$config->host_port; ?>/request_image/?uid='+uid+'&'+asset_reference+'&time='+Date.now();
 	}
 	
 }

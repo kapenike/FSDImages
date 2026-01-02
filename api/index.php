@@ -3,7 +3,7 @@
 $route = trim(parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH),'/');
 if (substr($route,0,5) == 'fonts') {
 	require('font.php');
-} else if ($route == 'request_image') {
+} else if (substr($route,0,13) == 'request_image') {
 	require('request_image.php');
 } else {
 	if ($route != '' && file_exists('./ext/'.$route)) {
