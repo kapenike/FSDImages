@@ -87,7 +87,9 @@ function ajaxInitLoader(id) {
 // remove loader from id
 function ajaxRemoveLoader(id) {
 	document.getElementById(id).className = document.getElementById(id).className.replace(' contains_loader', '');
-	document.getElementById('ajax_loader').remove();
+	if (Select('#ajax_loader')) {
+		Select('#ajax_loader').remove();
+	}
 }
 
 // grab form input elements and convert their name->data pair to an object
