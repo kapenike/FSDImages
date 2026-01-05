@@ -148,7 +148,7 @@ switch($_POST['application']) {
 		break;
 		
 	case 'voicemeeter_command':
-		app('voicemeeterController')->executeCommands($_POST['project_uid'], json_decode($_POST['commands']));
+		app('integrations/voicemeeterController')->executeCommands($_POST['project_uid'], json_decode($_POST['commands']));
 		break;
 	
 	default:

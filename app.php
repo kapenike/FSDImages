@@ -21,8 +21,14 @@ $APP = (object)[];
 function app($app, ...$params) {
 	global $APP;
 	if (!isset($APP->$app)) {
+		// strip directory from app declarations
+		$class_name = $app;
+		if (str_contains($class_name, '/')) {
+			$split = explode('/', $class_name);
+			$class_name = array_pop($split);
+		}
 		require(getBasePath().'/php_apps/'.$app.'.php');
-		$APP->$app = new $app(...$params);
+		$APP->$app = new $class_name(...$params);
 	}
 	return $APP->$app;
 }

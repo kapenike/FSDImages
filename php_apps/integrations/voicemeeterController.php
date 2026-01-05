@@ -39,7 +39,7 @@ class voicemeeterController {
 				
 			}
 			
-			// sleep 10ms to ensure dll has enough time to process requests
+			// sleep 50ms to ensure dll has enough time to process requests
 			usleep(50000);
 			
 			// logout

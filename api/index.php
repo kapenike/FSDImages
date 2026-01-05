@@ -5,11 +5,6 @@ if (substr($route,0,5) == 'fonts') {
 	require('font.php');
 } else if (substr($route,0,13) == 'request_image') {
 	require('request_image.php');
-} else {
-	if ($route != '' && file_exists('./ext/'.$route)) {
-		echo file_get_contents('./ext/'.$route);
-		exit;
-	}
 }
 
 // default api application for allowing easy connection to live display of output overlays
