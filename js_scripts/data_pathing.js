@@ -109,11 +109,11 @@ function checkDataForPathReference(path, data = GLOBAL.active_project.data, app_
 		let current = data[keys[i]];
 		let temp_app_path = (app_path == '' ? keys[i] : app_path+'/'+keys[i]);
 		if (isObject(current)) {
-			source_list.push(...checkDataForPathReference(path, current, temp_app_path));
+			source_list.push(...checkDataForPathReference(path, current, temp_app_path, source_list));
 		} else if (typeof current === 'string' && current.indexOf(path) > -1) {
 			source_list.push(temp_app_path);
 		} else if (typeof current === 'string' && isPathOnlyVariable(current)) {
-			source_list.push(...checkDataForPathReference(path, getRealValue(current), temp_app_path));
+			source_list.push(...checkDataForPathReference(path, getRealValue(current), temp_app_path, source_list));
 		}
 	}
 	return source_list;
