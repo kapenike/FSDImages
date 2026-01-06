@@ -20,7 +20,8 @@ document.addEventListener('DOMContentLoaded', function () {
 				'team_1/series_score',
 				'team_2/team_data',
 				'team_2/series_score'
-			]
+			],
+			pipe: 'example_pipe' // listen for write from pipe worker on pipe "example_pipe"
 		},
 		{ // event function calls
 			open: function (event) {
@@ -53,12 +54,24 @@ document.addEventListener('DOMContentLoaded', function () {
 				}
 				
 				// updates to a specific data path or overlay are captured under data.update
-				if (data.update) {
+				if (data.update.data || data.update.overlays) {
 					console.log('Data path updates as [key=>value] pairs:');
 					console.log(data.update.data);
 					console.log('Overlays updated as list of overlay slugs:');
 					console.log(data.update.overlays);
 				}
+				
+				// listen for pipe data
+				if (data.update.pipe) {
+					console.log('Worker Pipe Wrote:');
+					console.log(data.update.pipe);
+					
+					// write back to worker
+					apiserver.writePipe({
+						response: 'Pipe client here o/'
+					});
+				}
+				
 			},
 			error: function (event) {
 				console.log('Error occurred with connection to server.');

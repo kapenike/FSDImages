@@ -67,6 +67,10 @@ class api_server {
 		}
 	}
 	
+	writePipe(data) {
+		this.connection.send(JSON.stringify({ write_pipe: data }));
+	}
+	
 	// request overlay from server with project uid and overlay slug
 	requestOverlay(uid, overlay_slug) {
 		return 'http://<?php echo $config->host.':'.$config->host_port; ?>/request_image/?uid='+uid+'&overlay_slug='+overlay_slug+'&'+Date.now();

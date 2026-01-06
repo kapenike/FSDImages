@@ -241,6 +241,40 @@ class websocket {
 		socket_write($this->clients[$index], $this->package(json_encode($init_data)));
 	}
 	
+	private function workerWriteToClients($pipe, $json, $ignore_uid) {
+		
+		// create write object
+		$data = ['update' => ['pipe' => $json]];
+		
+		for ($i=1; $i<count($this->client_details); $i++) {
+			if (
+				$this->client_details[$i]->uid != $ignore_uid &&
+				isset($this->client_details[$i]->pipe) &&
+				$this->client_details[$i]->pipe == $pipe
+			) {
+				socket_write($this->clients[$i], $this->package(json_encode($data)));
+			}
+		}
+		
+	}
+	
+	private function clientWriteToWorker($pipe, $json) {
+		
+		// create write object
+		$data = ['update' => ['pipe' => $json]];
+		
+		for ($i=1; $i<count($this->client_details); $i++) {
+			if (
+				isset($this->client_details[$i]->pipe_write_auth) &&
+				$this->client_details[$i]->pipe == $pipe
+			) {
+				socket_write($this->clients[$i], $this->package(json_encode($data)));
+				break;
+			}
+		}
+		
+	}
+	
 	private function processInput($index, $json) {
 		
 		// read buffer must be valid json
@@ -298,7 +332,7 @@ class websocket {
 					if (isset($json->project_uid)) {
 						$this->client_details[$index]->project_uid = $json->project_uid;
 					
-						// check for initial data and overlay listener declaration
+						// check for initial pipe, data and overlay listener declaration
 						if (isset($json->listeners)) {
 							
 							if (isset($json->listeners->data)) {
@@ -307,6 +341,25 @@ class websocket {
 							
 							if (isset($json->listeners->overlays)) {
 								$this->client_details[$index]->listeners->overlays = $json->listeners->overlays;
+							}
+							
+							if (isset($json->listeners->pipe)) {
+								
+								// check if worker or client, init worker with auth check
+								if (is_string($json->listeners->pipe)) {
+									// string type identifies a clients pipe listener id
+									$this->client_details[$index]->pipe = $json->listeners->pipe;
+								} else {
+									// check for auth on worker pipe
+									if (isset($json->listeners->pipe->key) && isset($json->listeners->pipe->token)) {
+										if (hash('sha1', $this->controller_key.$json->listeners->pipe->key) == $json->listeners->pipe->token) {
+											// worker authd
+											$this->client_details[$index]->pipe = $json->listeners->pipe->key;
+											$this->client_details[$index]->pipe_write_auth = true;
+										}
+									}
+								}
+								
 							}
 							
 						}
@@ -375,6 +428,19 @@ class websocket {
 						
 					}
 
+				} else if ($this->client_details[$index]->type == 'uncontrolled_client') {
+					
+					// pipe write
+					if (isset($json->write_pipe)) {
+						if (isset($this->client_details[$index]->pipe_write_auth)) {
+							// worker write to all clients
+							$this->workerWriteToClients($this->client_details[$index]->pipe, $json->write_pipe, $this->client_details[$index]->uid);
+						} else {
+							// client write to only worker
+							$this->clientWriteToWorker($this->client_details[$index]->pipe, $json->write_pipe);
+						}
+					}
+					
 				}
 			
 			}

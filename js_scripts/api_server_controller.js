@@ -86,6 +86,11 @@ class api_controller {
 					this.clients.push(data);
 					generateConnectionList();
 					
+				} else if (data.worker_push) {
+					
+					// worker pushing data to the controller
+					
+					
 				}
 			}
 			

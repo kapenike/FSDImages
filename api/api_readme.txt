@@ -2,7 +2,8 @@ NOTICE: files created under /api/ext or /api/auth/ext and sent over the API http
 	- non system files (like project data files) do not fall under the AGPLv3 license of FSDImages and can be shared freely without commiting to the repository.
 	
 ### Standard API ###
-See "example.html" for a working reference to the Example project
+
+*Example: /ext/example.html
 
 To listen to specific system variables and overlay changes, include the "/api_connection_library.js.php" in your html page
 (e.g.)
@@ -39,3 +40,43 @@ Overlays and data paths will send initial data under the "message" functions "ev
 	-> data.overlays['face_off_screen']
 	
 On update, any updated values will be contained within the "data.update.data" and "data.update.overlays" object
+
+
+
+### API Pipe Worker and Clients ###
+
+External scripts can choose to communicate over the API server connection by using pipes
+
+RESTRICTIONS:
+	- Only a pipe worker can send messages to all clients
+	- Pipe workers must be authenticated when connecting to a pipe by including the "worker_auth_connection_key.js.php" script
+		- This auth script is restricted to only the local machine or whitelisted IP addresses despite being under the API directory and accessible by the public
+			- This prevents action within the API server without direct authorization
+			
+*Example: /ext/example_worker.html
+
+To declare a worker, include the worker_auth_connection_key.js.php?pipe=example_pipe JS script, where the pipe name under $_GET['pipe'] is required
+
+In your API listener declaration, include the pipe object with the pipe name and declared auth token
+{
+	overlays: [],
+	data: [],
+	pipe: { // 
+		key: 'example_pipe',
+		token: API_WORKER_AUTH_TOKEN
+	}
+}
+
+
+For any public scripts, you can listen to this pipe by adding the pipe name directly as the listener
+{
+	overlays: [],
+	data: [],
+	pipe: 'example_pipe'
+}
+
+
+Workers can communicate with all clients, and clients can message the worker by calling the writePipe() method within the API connection class
+api_server.writePipe({
+	test: 'Send this data to clients if a worker, or send to worker if a client'
+});

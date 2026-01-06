@@ -36,6 +36,17 @@ class security {
 			return true;
 		}
 		
+		// allow local machine / authorized ips to access worker_auth_connection_key.js.php even when mistmatched localhost to ipv4 application launch
+		if (
+			str_contains(basename($_SERVER['PHP_SELF']), 'worker_auth_connection_key.js.php') && (// access from file only
+				$this->isLocalMachine() || in_array($_SERVER['REMOTE_ADDR'], $this->ip_accept_list) || // local machine / whitelisted ip or...
+				app('server')->getServerData()->host_launch_ip == app('FSDImages')->local_host && // launched on localhost but accessed from local ipv4 (API host server)
+				$_SERVER['REMOTE_ADDR'] == app('server')->ipv4
+			)
+		) {
+			return true;
+		}
+		
 		// if local cli or if local machine or whitelisted ip
 		if (php_sapi_name() === 'cli' || $this->isLocalMachine() || in_array($_SERVER['REMOTE_ADDR'], $this->ip_accept_list)) {
 			return true;
