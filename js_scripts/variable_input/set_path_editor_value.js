@@ -36,7 +36,7 @@ function setPathEditorValue(path) {
 	}
 	
 	// create new path variable entry
-	if (GLOBAL.ui.variable_input_caret && GLOBAL.ui.variable_input_caret.uid == uid && GLOBAL.ui.variable_input_caret.position > -1) {
+	if (!data.path_only && GLOBAL.ui.variable_input_caret && GLOBAL.ui.variable_input_caret.uid == uid && GLOBAL.ui.variable_input_caret.position > -1) {
 		// if valid caret position for entry, insert there
 		variableInputCaretInsert(input_field, createPathVariableEntry(path));
 	} else {

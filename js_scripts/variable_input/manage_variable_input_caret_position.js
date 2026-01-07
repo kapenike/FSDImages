@@ -36,6 +36,11 @@ function variableInputCaretInsert(parent, child) {
 	let offset = 0;
 	let children = parent.childNodes;
 	
+	if (children.length == 0) {
+		parent.appendChild(child);
+		return;
+	}
+	
 	for (let i=0; i<children.length; i++) {
 		let text_node = children[i].childNodes[0];
 		offset += text_node.length;
