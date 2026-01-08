@@ -8,8 +8,7 @@ function workerWriteToSwitchboard(value_pairs) {
 	let form_details = {
 		application: 'update_project_details',
 		uid: GLOBAL.active_project.uid,
-		pinpoint_dataset_updates: [],
-		commands: []
+		pinpoint_dataset_updates: []
 	}
 	
 	// loop values pairs and:
@@ -17,15 +16,15 @@ function workerWriteToSwitchboard(value_pairs) {
 	//	- move to dataset sub setter array if dataset pinpoint setter
 	//	- append to command list if command
 	value_pairs.forEach(key_value => {
-		if (key_value.source.slice(0,10) == '$var$sets/') {
+		if ((typeof key_value.source === 'undefined' || key_value.source == '$var$$/var$') && key_value.value.indexOf('::') > -1) {
+			// is command
+			GLOBAL.command_list.push(key_value.value);
+		} else if (key_value.source.slice(0,10) == '$var$sets/') {
 			// ensure this dataset setter extends to the proper depth (5th "/" included in $/var$)
 			if (key_value.source.split('/').length >= 5) {
 				// is dataset, must be json encoded for post
 				form_details.pinpoint_dataset_updates.push(JSON.stringify(key_value));
 			}
-		} else if ((typeof key_value.source === 'undefined' || key_value.source == '$var$$/var$') && value.indexOf('::') > -1) {
-			// is command
-			form_details.commands.push(key_value.value);
 		} else if (typeof key_value.source !== 'undefined' && isPathVariable(key_value.source)) {
 			// is data structure value
 			form_details[key_value.source] = key_value.value;
