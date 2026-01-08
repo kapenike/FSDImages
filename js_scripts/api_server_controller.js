@@ -86,10 +86,14 @@ class api_controller {
 					this.clients.push(data);
 					generateConnectionList();
 					
-				} else if (data.worker_push) {
+				} else if (data.worker_push && data.project_uid && GLOBAL.active_project && data.project_uid == GLOBAL.active_project.uid) {
+					// if worker pushing to current project
 					
-					// worker pushing data to the controller
+					// init loader before any configuration
+					ajaxInitLoader('body');
 					
+					// push data to setters
+					workerWriteToSwitchboard(data.worker_push);
 					
 				}
 			}

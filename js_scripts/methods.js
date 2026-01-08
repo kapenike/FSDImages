@@ -20,7 +20,7 @@ function rotate(x, y, cx, cy, angle) {
 }
 
 function spaceTrim(v) {
-	return v.trim().replaceAll('&nbsp;', '');
+	return v.toString().trim().replaceAll('&nbsp;', '');
 }
 
 function searchPageItemList(value) {

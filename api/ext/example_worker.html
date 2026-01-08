@@ -7,14 +7,23 @@
 <link rel="stylesheet" type="text/css" href="/fonts">
 <script>
 
+var apiserver = null;
+
 document.addEventListener('DOMContentLoaded', function () {
 
 	// params: project uid | listeners object | event function calls
-	const apiserver = new api_server(
+	apiserver = new api_server(
 		'uid_example', // project uid
 		{
 			overlays: [],
-			data: [],
+			data: [
+				'sets/Teams/entries/uid_0000026/display',
+				'sets/Teams/entries/uid_0000026/player_1',
+				'sets/Teams/entries/uid_0000026/player_2',
+				'team_1/team_data',
+				'team_2/team_data',
+				'sets/Teams'
+			],
 			pipe: { // 
 				key: 'example_pipe',
 				token: API_WORKER_AUTH_TOKEN
@@ -41,6 +50,12 @@ document.addEventListener('DOMContentLoaded', function () {
 					console.log(data.update.pipe);
 				}
 				
+				// listen for update from worker write examples below
+				if (data.update && data.update.data) {
+					console.log('Dataset updates return because they are listened to at various depths.');
+					console.log(data.update.data);
+				}
+				
 			},
 			error: function (event) {
 				console.log('Error occurred with connection to server.');
@@ -54,6 +69,49 @@ document.addEventListener('DOMContentLoaded', function () {
 	);
 
 });
+
+function resetTeamScores() {
+	apiserver.writeController([
+		{
+			source: 'team_1/series_score',
+			value: 0
+		},
+		{
+			source: 'team_2/series_score',
+			value: 0
+		}
+	]);
+}
+
+function setBothTeamsToTeamGreen() {
+	apiserver.writeController([
+		{
+			source: 'team_1/team_data',
+			value: '$var$$pointer$1$/pointer$sets/Teams/entries/uid_0000026$/var$'
+		},
+		{
+			source: 'team_2/team_data',
+			value: '$var$$pointer$1$/pointer$sets/Teams/entries/uid_0000026$/var$'
+		}
+	]);
+}
+
+function changeTeamGreen() {
+	apiserver.writeController([
+		{
+			source: 'sets/Teams/entries/uid_0000026/display',
+			value: 'Team Green Altered'
+		},
+		{
+			source: 'sets/Teams/entries/uid_0000026/player_1',
+			value: 'MewCoin'
+		},
+		{
+			source: 'sets/Teams/entries/uid_0000026/player_2',
+			value: 'Yelk'
+		}
+	]);
+}
 </script>
 <style>
 html, body {
@@ -65,5 +123,9 @@ html, body {
 }
 </style>
 <body>
+<strong>Example Worker Write to Controller</strong><br />
+<button onclick="resetTeamScores();">Reset Team Scores</button><br />
+<button onclick="changeTeamGreen();">Change Team Green Data</button><br />
+<button onclick="setBothTeamsToTeamGreen();">Set Both Teams to Team Green</button>
 </body>
 </html>

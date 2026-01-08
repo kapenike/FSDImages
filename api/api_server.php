@@ -439,6 +439,16 @@ class websocket {
 							// client write to only worker
 							$this->clientWriteToWorker($this->client_details[$index]->pipe, $json->write_pipe);
 						}
+					} else if (isset($this->client_details[$index]->pipe_write_auth) && isset($json->worker_push) && $this->client_details[$index]->project_uid != null) {
+
+						// if worker pushing to controller, a project uid must be enabled
+						// nothing will happen if a controller is not connected on the current project
+						
+						$this->notifyController((object)[
+							'project_uid' => $this->client_details[$index]->project_uid,
+							'worker_push' => $json->worker_push
+						]);
+						
 					}
 					
 				}

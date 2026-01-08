@@ -68,7 +68,7 @@ function generateStreamOverlays(sources = null, callback = () => {}) {
 	// if nothing to change, remove loader
 	if (output_overlays.changed.length == 0) {
 		
-		sendP2P(output_overlays, sources);
+		sendAPI(output_overlays, sources);
 		callback();
 		ajaxRemoveLoader('body');
 		
@@ -76,7 +76,7 @@ function generateStreamOverlays(sources = null, callback = () => {}) {
 		
 		// pass output_overlays object to PHP for file write
 		ajax('POST', '/requestor.php', output_overlays, () => {
-			sendP2P(output_overlays, sources);
+			sendAPI(output_overlays, sources);
 			callback();
 		}, 'body');
 		
@@ -84,7 +84,7 @@ function generateStreamOverlays(sources = null, callback = () => {}) {
 	
 }
 
-function sendP2P(output_overlays, sources) {
+function sendAPI(output_overlays, sources) {
 	// if any data point or overlay changes, notify P2P server
 	if (API_SERVER.status && (output_overlays.changed.length > 0 || (Array.isArray(sources) && sources.length > 0))) {
 		let send_overlays = output_overlays.changed.length > 0 ? output_overlays.changed : [];

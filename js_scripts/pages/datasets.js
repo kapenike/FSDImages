@@ -122,15 +122,8 @@ function updateDataset() {
 			// re-create dataset selection list
 			generateDatasetSelectionList();
 			
-			// request sources associated with the current dataset list
-			let dataset_associated_sources = checkDataForPathReference('sets/'+form_details.dataset_title+'/');
-			
-			// if any associated sources, proc overlay generation update
-			if (dataset_associated_sources.length > 0) {
-				// convert sources to variable path
-				dataset_associated_sources = dataset_associated_sources.map(x => { return '$var$'+x+'$/var$'; });
-				generateStreamOverlays(dataset_associated_sources);
-			}
+			// detect dependent source changes and push to generateStreamOverlays for API and overlay updates
+			generateStreamOverlays(dependentDatasetSourceChanges('sets/'+form_details.dataset_title));
 			
 		}
 		
@@ -477,6 +470,20 @@ function newDatasetEntry(uid = null, entry = null, structure_override = null) {
 					})
 				]
 			}),
+			(uid != null
+				? Create('div', {
+						children: [
+							Create('label', {
+								innerHTML: '<strong>UID: </strong>'+uid,
+								style: {
+									display: 'block',
+									paddingTop: '10px'
+								}
+							})
+						]
+					})
+				: Create('div')
+			),
 			Create('div', {
 				className: 'dataset_entry_content',
 				children: structure.map(key => {

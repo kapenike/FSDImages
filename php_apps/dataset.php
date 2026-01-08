@@ -164,6 +164,60 @@ class dataset {
 		app('respond')->json(true, $dataset);
 	}
 	
+	// update specific values within a dataset
+	function pinpointUpdate($project_uid, $points) {
+		
+		if (!empty($points)) {
+			
+			$loaded_datasets = (object)[];
+		
+			// get registry as inverted list (set name becomes key, uid becomes value)
+			$registry = array_flip((array)$this->getRegistry($project_uid));
+			
+			foreach ($points as $json) {
+
+				// json decode
+				$json = json_decode($json);
+				$source = $json->source;
+				$value = $json->value;
+				
+				// strip source $var$ $/var$ container
+				$source = explode('$var$',explode('$/var$', $source)[0])[1];
+				
+				// split path
+				$source_path = explode('/', $source);
+				
+				// find uid for dataset name, do not continue on this source if not found
+				if (isset($registry[$source_path[1]])) {
+					
+					// dataset uid
+					$dataset_uid = $registry[$source_path[1]];
+					
+					// optim: load in dataset and stash or request from loaded if exists
+					$dataset = null;
+					if (isset($loaded_datasets->{$dataset_uid})) {
+						$dataset = $loaded_datasets->{$dataset_uid};
+					} else {
+						$dataset = $loaded_datasets->{$dataset_uid} = $this->load($project_uid, $dataset_uid);
+					}
+					
+					// update pinpoint
+					$dataset->entries->{$source_path[3]}->{$source_path[4]} = $value;
+
+				}
+				
+			}
+			
+			// save loaded datasets
+			foreach (array_keys(get_object_vars($loaded_datasets)) as $loaded_dataset_uid) {
+				$this->save($project_uid, $loaded_dataset_uid, $loaded_datasets->{$loaded_dataset_uid});
+			}
+			
+		}
+		
+		// no exiting return allowed
+	}
+	
 	function remove($project_uid, $uid) {
 		$data_path = getBasePath().'/data/'.$project_uid.'/datasets/'.$uid.'/';
 		if (is_dir($data_path)) {

@@ -71,6 +71,16 @@ class api_server {
 		this.connection.send(JSON.stringify({ write_pipe: data }));
 	}
 	
+	// expects array of key (source) value (value) pairs
+	writeController(data) {
+		this.connection.send(JSON.stringify({ worker_push: data.map(v => {
+			if (typeof v.source !== 'undefined') {
+				v.source = '$var$'+v.source+'$/var$';
+			}
+			return v;
+		}) }));
+	}
+	
 	// request overlay from server with project uid and overlay slug
 	requestOverlay(uid, overlay_slug) {
 		return 'http://<?php echo $config->host.':'.$config->host_port; ?>/request_image/?uid='+uid+'&overlay_slug='+overlay_slug+'&'+Date.now();

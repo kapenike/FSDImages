@@ -113,6 +113,10 @@ switch($_POST['application']) {
 		break;
 		
 	case 'update_project_details':
+		// under the case of pinpointed dataset value updates, also allow update of dataset values directly rather than as a whole
+		if (isset($_POST['pinpoint_dataset_updates'])) {
+			app('dataset')->pinpointUpdate($_POST['uid'], $_POST['pinpoint_dataset_updates']);
+		}
 		app('project')->updateprojectDetails($_POST['uid'], $_POST);
 		break;
 		
