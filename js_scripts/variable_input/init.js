@@ -136,12 +136,12 @@ function createPathVariableField(settings = {}) {
 			Create('div', { // Reference Path toggle checkbox
 				className: 'path_var_container'+(settings.force_path_only == true ? ' forcing_path_indicator' : ''),
 				children: [
-					(settings.allow_path_only
+					(settings.allow_path_only || settings.value.image_search
 						?	Create('div', {
 								className: 'variable_input_action_item',
 								id: 'quick_upload_image_action_item_'+GLOBAL.unique_id,
 								style: {
-									display: settings.force_path_only || (settings.allow_path_only && settings.value.path_only) ? 'block' : 'none'
+									display: settings.value.image_search || (settings.allow_path_only && settings.value.path_only) ? 'block' : 'none'
 								},
 								innerHTML: '&#128247;',
 								var_input_uid: GLOBAL.unique_id,

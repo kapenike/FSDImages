@@ -103,17 +103,21 @@ function getRealValueHeadList(value, base_path = GLOBAL.active_project.data, hea
 }
 
 // recurse data structure looking for any save path reference that contains the current path lookup and return the matching setter paths as an array
-function checkDataForPathReference(path, data = GLOBAL.active_project.data, app_path = '', source_list = []) {
+function checkDataForPathReference(path, data = GLOBAL.active_project.data, app_path = '', source_list = [], visited = []) {
+	if (visited.includes(path)) {
+		return source_list;
+	}
+	visited.push(path);
 	let keys = Object.keys(data);
 	for (let i=0; i<keys.length; i++) {
 		let current = data[keys[i]];
 		let temp_app_path = (app_path == '' ? keys[i] : app_path+'/'+keys[i]);
 		if (isObject(current)) {
-			source_list.push(...checkDataForPathReference(path, current, temp_app_path, source_list));
+			source_list.push(...checkDataForPathReference(path, current, temp_app_path, source_list, visited));
 		} else if (typeof current === 'string' && current.indexOf(path) > -1) {
 			source_list.push(temp_app_path);
 		} else if (typeof current === 'string' && isPathOnlyVariable(current)) {
-			source_list.push(...checkDataForPathReference(path, getRealValue(current), temp_app_path, source_list));
+			source_list.push(...checkDataForPathReference(path, getRealValue(current), temp_app_path, source_list, visited));
 		}
 	}
 	return source_list;
