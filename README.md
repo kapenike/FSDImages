@@ -73,10 +73,15 @@ FEATURES:
 - Dataset
 	- allow sorting and manual movement
 	- allow key structure movement (key up or down in list)
+	- allow api creation and deletion of dataset entries
+	- allow variable input to write directly to specific dataset entry
+	
+- Assets
+	- allow api to create assets and return their system reference slug, also allow deletion
 
 - Overlay editor features
+	- global copy and paste layer between overlays
 	- add border radius option to individual points on custom path, or all points for either square or custom path
-	- during grid placement UI, display vertical and horizontal red lines to mimic the placement coordinates, also display menu within top editor panel
 	- stash start drag point of clip path individual point as to allow x / y lock drag during move event
 	- when adding a new layer during the active selection of a group layer, add new layer within the group layer rather than adjacent
 	- ctrl + z, ctrl + y: undo and redo
@@ -84,5 +89,8 @@ FEATURES:
 	- allow text to overflow when prompted and provide a new height dimension, with that allow vertical positioning, default top but allow center and bottom, update flipLayer function with new positioning possibilities
 	- ctrl + t for a new UI to control rotation and dimensions of layer object
 
-- P2P
-	- allow viewing of uncontrolled clients as well as allowing force disconnect of any client
+- API Server (plz halp)
+	- just can't seem to find a good way to read all data on a socket connection without adding specific EOM indicator. Tried a loop with non blocking and it just bricks ... i've tried many things but I'm not deep diving further right now
+	
+Tutorial
+- Video Tutorial

@@ -246,6 +246,15 @@ html, body {
 	background-color: #005b96 !important;
 }
 
+.therefore_cutoff {
+	display: inline-block;
+	background-color: #444444;
+	color: fefefe;
+	border-radius: 3px;
+	margin-right: 6px;
+	padding: 0px 6px;
+}
+
 .path_variable_entry {
 	background-color: #005b96;
 	color: #b3cde0;

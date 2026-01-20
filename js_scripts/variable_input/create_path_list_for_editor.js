@@ -129,7 +129,23 @@ function createPathListForEditor(path = null, base_path = null) {
 
 			return Create('div', {
 				className: 'path_selection_element_search path_selection_element_'+(is_value ? 'set' : 'extend'),
-				innerHTML: (is_value ? '&nbsp;&nbsp;&#9900;' : '&#8594; ')+print_key,
+				children: [
+					( // if not a value, is dataset and at dataset entry level depth, is reference path and not a source setter, allow therefore cutoff at current dataset entry
+						!is_value && is_data_set && path.slice(-8) == '/entries' && data.path_only && !data.source_setter
+							? Create('span', { 
+									className: 'therefore_cutoff',
+									innerHTML: '&there4;',
+									onclick: () => {
+										event.stopPropagation();
+										setPathEditorValue(path+'/'+key)
+									}
+								})
+							: Create('span')
+					),
+					Create('span', {
+						innerHTML: (is_value ? '&nbsp;&nbsp;&#9900;' : '&#8594; ')+print_key
+					})
+				],
 				onclick: (
 					is_value
 						? () => {
