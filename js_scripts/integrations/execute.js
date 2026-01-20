@@ -144,17 +144,20 @@ function executeCommandList(cl) {
 			}
 		}
 		
-		// send immediate requests to voicemeeter controller
-		ajax('POST', '/requestor.php', {
-			project_uid: GLOBAL.active_project.uid,
-			application: 'voicemeeter_command',
-			commands: JSON.stringify(app_output.vb.filter(x => x.delay == -1))
-		}, (status, data) => {
-			// if error
-			if (!data.status) {
-				console.log(data.msg);
-			}
-		});
+		let exec_list = app_output.vb.filter(x => x.delay == -1);
+		if (exec_list.length > 0) {
+			// send immediate requests to voicemeeter controller
+			ajax('POST', '/requestor.php', {
+				project_uid: GLOBAL.active_project.uid,
+				application: 'voicemeeter_command',
+				commands: JSON.stringify(exec_list)
+			}, (status, data) => {
+				// if error
+				if (!data.status) {
+					console.log(data.msg);
+				}
+			});
+		}
 	
 	}
 	
