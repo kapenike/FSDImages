@@ -66,9 +66,13 @@
 
 FEATURES:
 
+- Ajax
+	- ajax should take all incoming requests and place them in a queue. This prevents any disconnect between API and Controller under intense use moments during a broadcast
+
 - Switchboard
 	- allow multiple pages
 	- offer search option for select list dropdowns
+	- allow duplicating fields and sections
 		
 - Dataset
 	- allow sorting and manual movement
