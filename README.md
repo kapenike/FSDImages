@@ -74,7 +74,6 @@ FEATURES:
 	- allow sorting and manual movement
 	- allow key structure movement (key up or down in list)
 	- allow api creation and deletion of dataset entries
-	- allow variable input to write directly to specific dataset entry
 	
 - Assets
 	- allow api to create assets and return their system reference slug, also allow deletion

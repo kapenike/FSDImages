@@ -127,7 +127,7 @@ function updateDataset() {
 			
 		}
 		
-	}, 'dataset_management_form_block');
+	}, 'body');
 }
 
 function removeDataset(uid) {

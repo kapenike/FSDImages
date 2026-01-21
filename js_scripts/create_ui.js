@@ -145,8 +145,8 @@ function createUIFromData(container, data, submit_to_application, editor = false
 																	onchange: function () { logSourceChange(this); },
 																	children: (dataset_values == null ? field.values : dataset_values).map(option => {
 																		
-																		// check save source value based on 1 extra depth value than its compared option value (because source itself is a reference to the stored value)
-																		let depth_value = getDepthComparisonValue(field.source, 1);
+																		// source save to path comparisons can be complex
+																		let depth_value = getSetterComparisonValue(field.source);
 																		
 																		// get value of option based on depth value
 																		let option_value = getDepthComparisonValue(option.value);
@@ -174,8 +174,8 @@ function createUIFromData(container, data, submit_to_application, editor = false
 															className: 'radio_group',
 															children: field.values.map(radio => {
 																
-																// check save source value based on 1 extra depth value than its compared radio value (because source itself is a reference to the stored value)
-																let depth_value = getDepthComparisonValue(field.source, 1);
+																// source save to path comparisons can be complex
+																let depth_value = getSetterComparisonValue(field.source);
 																
 																// get value of radio based on depth value
 																let radio_value = getDepthComparisonValue(radio.value);
@@ -420,11 +420,28 @@ function updateSourceChanges() {
 	// append application and uid values to send object
 	form_details.application = Select('#form_capture').data;
 	form_details.uid = GLOBAL.active_project.uid;
+	form_details.pinpoint_dataset_updates = [];
+	
+	// form fields attempting to write to dataset entries are separated into pinpoint_dataset_updates list
+	splitDatasettersFromList(form_details);
 	
 	// update server-side project details, then call back to same scope function to save changes locally and generate affected overlays
 	ajax('POST', '/requestor.php', form_details, (status, data) => {
 		
 		if (status) {
+			
+			// insert separate dataset paths into standard local side data injection
+			if (form_details.pinpoint_dataset_updates.length > 0) {
+				form_details.pinpoint_dataset_updates.forEach(key_pair => {
+					
+					key_pair = JSON.parse(key_pair);
+					form_details[key_pair.source] = key_pair.value;
+					
+					// detect and push dependent source changes, self source was pushed through normal capture
+					GLOBAL.source_changes.push(...dependentDatasetSourceChanges(key_pair.source));
+
+				});
+			}
 			
 			// using instanced 'form_details', update local project data
 			Object.keys(form_details).forEach(path => {
@@ -782,7 +799,11 @@ function createUIEditMenu(x, y, elem) {
 			if (label_title.tagName == 'LABEL') {
 				label_title = label_title.childNodes[0].textContent;
 			} else {
-				label_title = elem.children[1].textContent;
+				if (elem.children[0].className == 'radio_group') {
+					label_title = elem.children[0].textContent;
+				} else {
+					label_title = elem.children[1].textContent;
+				}
 			}
 			// limit label title length
 			label_title = label_title.length > 20 ? label_title.slice(0,17)+'...' : label_title;

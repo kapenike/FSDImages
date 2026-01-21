@@ -30,8 +30,12 @@ function createPathListForEditor(path = null, base_path = null) {
 					is_asset = true;
 				}
 			}
-			// if path result points to new path, continue path lookup
-			if ((!data.path_only || data.image_search) && typeof curr_path[nest[i]] === 'string') {
+			// if path result points to new path, continue path lookup for image search (edge case value determined within list), normal traversal
+			// or the edge case of source setter on dataset entry
+			if (typeof curr_path[nest[i]] === 'string' && (data.image_search || (
+				!data.path_only ||
+				data.source_setter && isPathNestedDataset('$var$'+path+'$/var$')
+			))) {
 				curr_path = getRealValue(curr_path[nest[i]]);
 				continue;
 			}
@@ -56,7 +60,9 @@ function createPathListForEditor(path = null, base_path = null) {
 	
 	// if at root and input is a source setter rather than a value, filter ignored paths
 	if (path == null && data.source_setter) {
-		list = list.filter(x => !GLOBAL.data_structure.ignored.includes(x));
+		// source setting now allows direct save to dataset sub values
+		let actual_ignored = GLOBAL.data_structure.ignored.filter(v => v != 'sets');
+		list = list.filter(x => !actual_ignored.includes(x));
 	}
 	
 	// filter out any direct image elements
@@ -100,6 +106,8 @@ function createPathListForEditor(path = null, base_path = null) {
 				: Create('div')
 		),
 		...list.map(key => {
+			// therefore is an edge case that allows setting of value as a whole and traversing within to set all values. Mostly just for dataset handling
+			let therefore = false;
 			let is_value = typeof curr_path[key] === 'string';
 			let print_key = key;
 			if ((is_data_set || is_asset) && curr_path[key] && typeof curr_path[key].display !== 'undefined') {
@@ -125,19 +133,29 @@ function createPathListForEditor(path = null, base_path = null) {
 						is_value = true;
 					}
 				}
+			} else if (data.source_setter && is_value) {
+				// source setter can set entire value with therefore or can traverse into dataset reference and save specific values
+				// if sub path is specific dataset entry, allow therefore
+				if (isPathNestedDataset('$var$'+(path == null ? key : path+'/'+key)+'$/var$')) {
+					therefore = true;
+					is_value = false;
+				}
+			} else if (!is_value && is_data_set && path.slice(-8) == '/entries' && data.path_only && !data.source_setter) {
+				// if not a value, is dataset and at dataset entry level depth, is reference path and not a source setter, force value
+				is_value = true;
 			}
 
 			return Create('div', {
 				className: 'path_selection_element_search path_selection_element_'+(is_value ? 'set' : 'extend'),
 				children: [
-					( // if not a value, is dataset and at dataset entry level depth, is reference path and not a source setter, allow therefore cutoff at current dataset entry
-						!is_value && is_data_set && path.slice(-8) == '/entries' && data.path_only && !data.source_setter
+					( 
+						therefore
 							? Create('span', { 
 									className: 'therefore_cutoff',
 									innerHTML: '&there4;',
 									onclick: () => {
 										event.stopPropagation();
-										setPathEditorValue(path+'/'+key)
+										setPathEditorValue(path == null ? key : path+'/'+key)
 									}
 								})
 							: Create('span')

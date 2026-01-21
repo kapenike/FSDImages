@@ -12,24 +12,21 @@ function workerWriteToSwitchboard(value_pairs) {
 	}
 	
 	// loop values pairs and:
-	//	- insert as direct child of form_details
-	//	- move to dataset sub setter array if dataset pinpoint setter
 	//	- append to command list if command
+	//	- insert as direct child of form_details
+	
 	value_pairs.forEach(key_value => {
 		if ((typeof key_value.source === 'undefined' || key_value.source == '$var$$/var$') && key_value.value.indexOf('::') > -1) {
 			// is command
 			GLOBAL.command_list.push(key_value.value);
-		} else if (key_value.source.slice(0,10) == '$var$sets/') {
-			// ensure this dataset setter extends to the proper depth (5th "/" included in $/var$)
-			if (key_value.source.split('/').length >= 5) {
-				// is dataset, must be json encoded for post
-				form_details.pinpoint_dataset_updates.push(JSON.stringify(key_value));
-			}
 		} else if (typeof key_value.source !== 'undefined' && isPathVariable(key_value.source)) {
 			// is data structure value
 			form_details[key_value.source] = key_value.value;
 		}
 	});
+	
+	// form fields attempting to write to dataset entries are separated into pinpoint_dataset_updates list
+	splitDatasettersFromList(form_details);
 	
 	// submit changes
 	ajax('POST', '/requestor.php', form_details, (status, data) => {
@@ -53,6 +50,7 @@ function workerWriteToSwitchboard(value_pairs) {
 			Object.keys(form_details).forEach(path => {
 				if (isPathVariable(path)) {
 					setRealValue(path, form_details[path]);
+					// source changes are not pushed by a form system like in create_ui, manually do it here
 					GLOBAL.source_changes.push(path);
 				}
 			});
@@ -70,8 +68,8 @@ function workerWriteToSwitchboard(value_pairs) {
 				
 			});
 			
-			// determine if UI should refresh or dataset based on current navigation
-			let current_nav = Select('.active_navigation').innerHTML;
+			// determine if UI should refresh or dataset based on current navigation, no active navigation when under file menu page .. so ?. check on inner html
+			let current_nav = Select('.active_navigation')?.innerHTML;
 			if (current_nav == 'Switchboard') {
 				refreshUIBuild(false);
 			} else if (current_nav == 'Data Sets') {

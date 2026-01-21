@@ -49,6 +49,104 @@ function toggleOnComparison(value) {
 	return false;
 }
 
+// determines if path is a direct dataset entry
+function pathIsDirectDatasetEntry(path) {
+	let ref_test = getRealVariableParts(path)[0].variable.split('/');
+	if (ref_test.length == 4 && ref_test[0] == 'sets' && ref_test[2] == 'entries') {
+		return true;
+	}
+	return false;
+}
+
+// determines if path is a direct dataset entry field (for source setter)
+function pathIsDirectDatasetEntryField(path) {
+	let ref_test = getRealVariableParts(path)[0].variable.split('/');
+	if (ref_test.length == 5 && ref_test[0] == 'sets' && ref_test[2] == 'entries') {
+		return true;
+	}
+	return false;
+}
+
+// determines if path contains any reference to a direct dataset entry
+function isPathNestedDataset(path, start_with_master = false) {
+	let dataset_ref = start_with_master ? path : getRealValue(path, 2);
+	if (isPathOnlyVariable(dataset_ref)) {
+		if (pathIsDirectDatasetEntry(dataset_ref)) {
+			return dataset_ref;
+		} else {
+			return isPathNestedDataset(dataset_ref);
+		}
+	}
+	return false;
+}
+
+// determines if path contains any reference to a direct dataset entry field (for source setter)
+function isPathNestedDatasetEntryField(path) {
+	let traverse_path = GLOBAL.active_project.data;
+	let pathing = getRealVariableParts(path)[0].variable.split('/');
+	for (let i=0; i<pathing.length; i++) {
+		traverse_path = traverse_path[pathing[i]];
+		if (typeof traverse_path === 'string') {
+			let is_dataset_reference = isPathNestedDataset(traverse_path, true);
+			if (is_dataset_reference) {
+				// if string reference within data pathing contains a direct dataset entry reference, append remaining pathing and test if is a direct dataset entry field reference
+				let combine_path = is_dataset_reference.slice(0, -6)+'/'+pathing.filter((v, i2) => i2 > i).join('/')+'$/var$';
+				if (pathIsDirectDatasetEntryField(combine_path)) {
+					return combine_path;
+				}
+				return false; 
+			} else {
+				return false;
+			}
+		} else if (isObject(traverse_path)) {
+			// standard traversal
+			continue;
+		} else {
+			// probably never accessible
+			return false;
+		}
+	}
+	return false;
+}
+
+function splitDatasettersFromList(form) {
+	Object.keys(form).forEach((key, index) => {
+		if (isPathOnlyVariable(key)) {
+			if (pathIsDirectDatasetEntryField(key)) {
+				// move direct value setting to dataset push list
+				form.pinpoint_dataset_updates.push(JSON.stringify({
+					source: stripPointer(key),
+					value: form[key]
+				}));
+				delete form[key];
+			} else {
+				// attempt to find nested reference to specific dataset entry field
+				let sub_reference = isPathNestedDatasetEntryField(key);
+				if (sub_reference) {
+					form.pinpoint_dataset_updates.push(JSON.stringify({
+						source: stripPointer(sub_reference),
+						value: form[key]
+					}));
+					delete form[key];
+				}
+			}
+		}
+	});
+}
+
+function getSetterComparisonValue(source) {
+	
+	// if setter is reference to nested dataset entry, that dataset entry must be used as the comparison reference
+	let is_dataset_entry_ref = isPathNestedDatasetEntryField(source);
+	if (is_dataset_entry_ref) {
+		source = is_dataset_entry_ref;
+	}
+	
+	// check save source value based on 1 extra depth value than its compared option value (because source itself is a reference to the stored value to be compared)
+	return getDepthComparisonValue(source, 1);
+	
+}
+
 // not all comparisons are similar, allow ui setup to determine value depth to compare
 // edge case to add to depth if available
 function getDepthComparisonValue(value, inc = null) {
