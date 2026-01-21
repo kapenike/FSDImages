@@ -84,7 +84,8 @@ function isPathNestedDataset(path, start_with_master = false) {
 function isPathNestedDatasetEntryField(path) {
 	let traverse_path = GLOBAL.active_project.data;
 	let pathing = getRealVariableParts(path)[0].variable.split('/');
-	for (let i=0; i<pathing.length; i++) {
+	// must have a remaining path, so pathing check can only be done on path before end (.length-1)
+	for (let i=0; i<pathing.length-1; i++) {
 		traverse_path = traverse_path[pathing[i]];
 		if (typeof traverse_path === 'string') {
 			let is_dataset_reference = isPathNestedDataset(traverse_path, true);
