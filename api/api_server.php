@@ -27,6 +27,9 @@ class websocket {
 		socket_bind($this->server, $config->ipv4, $config->ws_port);
 		socket_listen($this->server);
 		
+		// server will run in non blocking mode
+		socket_set_nonblock($this->server);
+		
 		// add server to client process list
 		$this->clients[] = $this->server;
 		$this->client_details[] = null;
@@ -135,8 +138,14 @@ class websocket {
 	
 	private function handleNewConnection($client) {
 		
-		// add new connection to clients list
-		$this->clients[] = $new_client = socket_accept($client);
+		// accept connection
+		$new_client = socket_accept($client);
+		
+		// new client must be in block mode until after handshake
+		socket_set_block($new_client);
+		
+		// add client to clients list
+		$this->clients[] = $new_client;
 		
 		// identify client ip
 		socket_getpeername($new_client, $ip);
@@ -156,6 +165,9 @@ class websocket {
 		
 		// handshake to new client
 		socket_write($new_client, $this->clientHandshake(socket_read($new_client, 1024)));
+		
+		// set client to non block mode after handshake
+		socket_set_nonblock($new_client);
 		
 	}
 	
@@ -458,6 +470,21 @@ class websocket {
 		}
 		
 	}
+	
+	private function readAll($client, $index) {
+		
+		// attempt to read all incoming data from socket connection
+		$data = '';
+		while (true) {
+			$buffer = @socket_read($client, 2048);
+			if ($buffer === false || $buffer == '') {
+				break;
+			}
+			$data .= $buffer;
+		}
+		return $data;
+		
+	}
 
 	private function runServer() {
 		
@@ -486,29 +513,29 @@ class websocket {
 					continue;
 				}
 				
-				// handle client sent data in blocks to prevent blocking
-				$data = socket_read($client, 16384);
+				// read socket stream data
+				$data = $this->readAll($client, $index);
 				
-				// if socket_select passed empty read data, close connection identified
+				// edge case: if OBS, check for stray reponse. expected connection close, otherwise ensure unexpected response will not interact with system
+				if ($this->client_details[$index]->type == 'obs') {
+					if (str_contains(substr($data, 4), 'Server stopping.')) {
+						return false;
+					} else {
+						// prevent hanging or disconnect on unexpected message from OBS. processInput will discard this message
+						$data = json_encode(['obs' => false]);
+					}
+				}
+				
+				// if passed empty read data, close connection identified
 				if ($data === false || strlen($data) == 0) {
 					
 					$this->closeClientConnection($index);
 					$index--;
 					
 				} else {
-					
-					// if obs, only check for server stop, all other data transfer is handled within processInput
-					if ($this->client_details[$index]->type == 'obs') {
-						if (str_contains(substr($data, 4), 'Server stopping.')) {
-							$this->closeClientConnection($index);
-							$index--;
-						}
-						continue;
-					}
 
 					// process data
 					$this->processInput($index, $this->removeMask($data));
-					
 					
 				}
 				

@@ -36,6 +36,11 @@ class obsController {
 			return;
 		}
 		
+		// during initialization, obs socket connection must be in blocking mode so that the server hangs waiting on the handshake and authentication to complete
+		// not ideal ... but nothing crazy for a locally ran application like this
+		socket_set_block($socket);
+		
+		
 		// save obs connection as a client and inject client details
 		$API_SERVER->clients[] = $socket;
 		$API_SERVER->client_details[] = (object)[
@@ -81,6 +86,9 @@ class obsController {
 		
 		// retrieve response to prevent blocking, can be ignored
 		socket_read($socket, 2048);
+		
+		// obs socket connection can now be set as non blocking for standard operation
+		socket_set_nonblock($socket);
 		
 		// notify controller of obs client
 		$API_SERVER->notifyController($API_SERVER->client_details[count($API_SERVER->client_details)-1]);

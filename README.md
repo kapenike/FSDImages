@@ -60,7 +60,7 @@
 	
 - Visit `localhost:8000` (or external IPv4:8000) in your web browser to start using the application!
 
-- Websockets works for Linux and Windows ... no test case for Mac available so either donate one to me or commit a change for all files under  `/p2p/`
+- Websockets works for Linux and Windows ... no test case for Mac available so either donate one to me or commit a change for all files under  `/api/`
 
 ## To-DO
 
@@ -91,9 +91,6 @@ FEATURES:
 	- allow image rotation
 	- allow text to overflow when prompted and provide a new height dimension, with that allow vertical positioning, default top but allow center and bottom, update flipLayer function with new positioning possibilities
 	- ctrl + t for a new UI to control rotation and dimensions of layer object
-
-- API Server (plz halp)
-	- just can't seem to find a good way to read all data on a socket connection without adding specific EOM indicator. Tried a loop with non blocking and it just bricks ... i've tried many things but I'm not deep diving further right now
 	
 Tutorial
 - Video Tutorial
