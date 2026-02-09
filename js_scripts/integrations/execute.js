@@ -16,7 +16,9 @@
 			
 		- OBS: obs::ACTION(scene, ...params)
 				*priority defines which scene is set and the toggle condition of a source
-			scene - obs::scene(Scene 1, 3); sets obs scene to "Scene 1" with priority 3
+			scene - obs::scene(Scene 1, 3); sets obs program scene to "Scene 1" with priority 3
+			preview - obs::scene(Scene 2); sets obs preview scene to "Scene 2"
+			transition - obs::transition(); sends current preview scene to live program
 			source - obs::source(Scene 1, Name Banners, true); sets the display of source "Name Banners" within "Scene 1" to visible, false would remove visibility
 			volume - obs::volume(Main Audio Channel, 16, 1); sets db level of "Main Audio Channel" to 16 with priority of 1
 			mute - obs::mute(Main Audio Channel, true, 1); mutes "Main Audio Channel" priority of 1, set to false to unmute
@@ -96,9 +98,15 @@ function executeCommandList(cl) {
 				value: null,
 				priority: 0
 			};
+			
 			parsed_command.action = command.split('obs::')[1].split('(')[0];
-			let values = command.split('(')[1].split(')')[0].split(',');
-			if (parsed_command.action == 'scene') {
+			
+			// if empty function, values is empty
+			let values = command.indexOf('()') > -1
+				? command.split('(')[1].split(')')[0].split(',')
+				: [];
+			
+			if (parsed_command.action == 'scene' || parsed_command.action == 'preview') {
 				parsed_command.scene = values[0].trim();
 				if (values[1]) {
 					parsed_command.priority = values[1].trim();
@@ -194,7 +202,20 @@ function executeCommandList(cl) {
 						sceneName: command.scene
 					}
 				});
-			} else if (command.action == 'source') {
+			} else if (command.action == 'preview') {
+				commands.push({
+					requestType: 'SetCurrentPreviewScene',
+					requestId: index+1,
+					requestData: {
+						sceneName: command.scene
+					}
+				});
+			} else if (command.action == 'transition') {
+				commands.push({
+					requestType: 'TriggerStudioModeTransition',
+					requestId: index+1
+				})
+			}	else if (command.action == 'source') {
 				commands.push({
 					requestType: 'SetSceneItemEnabled',
 					requestId: index+1,

@@ -37,14 +37,19 @@ class api_controller {
 	// stop public api and http server
 	stop() {
 		ajax('POST', '/requestor.php', { application: 'api_kill' }, (v, data) => {
-			this.connection = null;
-			this.status = false;
-			this.details = null;
-			this.state = 'await_control';
-			this.clients = [];
-			generateConnectionList();
-			updateServerStatus();
+			this.resetState();
 		}, 'body');
+	}
+	
+	// reset state
+	resetState() {
+		this.connection = null;
+		this.status = false;
+		this.details = null;
+		this.state = 'await_control';
+		this.clients = [];
+		generateConnectionList();
+		updateServerStatus();
 	}
 	
 	connect() {
@@ -100,6 +105,13 @@ class api_controller {
 			
 		});
 		
+		this.connection.addEventListener('error', (event) => {
+			this.resetState();
+		});
+		
+		this.connection.addEventListener('close', (event) => {
+			this.resetState();
+		});
 		
 	}
 	
