@@ -234,6 +234,9 @@ function flattenDataObject(value) {
 }
 
 function getRealValue(value, depth = null, base_path = GLOBAL.active_project.data, head = null) {
+
+	// let function know if this itteration is the root node
+	let is_head = head == null;
 	
 	// create head that tracks sources and prevents infinite loop
 	if (head == null) {
@@ -308,7 +311,7 @@ function getRealValue(value, depth = null, base_path = GLOBAL.active_project.dat
 					
 					// path forwarding allowed only when depth value search is not enabled
 					if (depth == null && typeof reference_path[path_part] === 'string') {
-						reference_path = getRealValue(reference_path[path_part]);
+						reference_path = getRealValue(reference_path[path_part], null, base_path, head);
 					} else {
 						// shift from use path into reference path
 						reference_path = reference_path[path_part];
@@ -329,6 +332,13 @@ function getRealValue(value, depth = null, base_path = GLOBAL.active_project.dat
 			} else {
 				// append real part
 				return_value += split_part.real;
+			}
+		}
+		
+		// if string, depth is null (not a depth comparison) and if is_head (root path node for final return) check for eval condition
+		if (typeof return_value === 'string' && (depth == null && is_head)) {
+			if (return_value.slice(0,6) == 'eval::') {
+				return_value = eval(return_value.slice(6)).toString();
 			}
 		}
 		
