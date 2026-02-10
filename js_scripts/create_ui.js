@@ -780,6 +780,10 @@ function createUIEditMenu(x, y, elem) {
 				onclick: () => { editUISection(top_element); }
 			}),
 			Create('div', {
+				innerHTML: 'Duplicate Section',
+				onclick: () => { duplicateSection(top_element); }
+			}),
+			Create('div', {
 				innerHTML: 'Remove Section',
 				className: 'ui_edit_menu_remove',
 				onclick: () => { removeUISection(top_element); }
@@ -818,6 +822,10 @@ function createUIEditMenu(x, y, elem) {
 					onclick: () => { editUIField(elem); }
 				}),
 				Create('div', {
+					innerHTML: 'Duplicate Field',
+					onclick: () => { duplicateField(elem); }
+				}),
+				Create('div', {
 					innerHTML: 'Remove Field',
 					onclick: () => { removeUIField(elem); },
 					className: 'ui_edit_menu_remove'
@@ -847,6 +855,24 @@ function createUIEditMenu(x, y, elem) {
 		]
 	});
 	
+}
+
+function duplicateSection(elem) {
+	let current_location = JSON.parse(elem.data);
+	let current_data = JSON.parse(JSON.stringify(GLOBAL.ui.active_data[current_location.section].cols[current_location.column]));
+	current_data.section += ' (duplicate)';
+	GLOBAL.ui.active_data[current_location.section].cols.splice(current_location.column, 0, current_data);
+	removeUIEditMenu();
+	refreshUIBuild();
+}
+
+function duplicateField(elem) {
+	let current_location = JSON.parse(elem.data);
+	let current_data = JSON.parse(JSON.stringify(GLOBAL.ui.active_data[current_location.section].cols[current_location.column].fields[current_location.field]));
+	current_data.title += ' (duplicate)';
+	GLOBAL.ui.active_data[current_location.section].cols[current_location.column].fields.splice(current_location.field, 0, current_data);
+	removeUIEditMenu();
+	refreshUIBuild();
 }
 
 function removeUIField(elem) {

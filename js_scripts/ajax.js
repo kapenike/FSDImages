@@ -6,7 +6,23 @@
 	loader_id: overlay a loader on this id, removed on response
 	 ! - this should probably be removed after a settimeout to ensure logic completes first ... as well as allowing multiple loaders per page so actions can be done asyn ... as long as data changes to files are processed in a queue ... come back to this maybe
 */
+
+AJAX_QUEUE = [];
+
 function ajax(method, url, obj, callback, loader_id = null) {
+	AJAX_QUEUE.push([method, url, obj, callback, loader_id]);
+	if (AJAX_QUEUE.length == 1) {
+		runAjaxQueue();
+	}
+}
+
+function runAjaxQueue() {
+	if (AJAX_QUEUE.length > 0) {
+		runAjax(...AJAX_QUEUE.shift());
+	}
+}
+
+function runAjax(method, url, obj, callback, loader_id) {
 	
 	// form object to send
 	let form_data = new FormData();
@@ -48,6 +64,9 @@ function ajax(method, url, obj, callback, loader_id = null) {
 
 		// callback with: status(bool), response(object)
 		callback((this.readyState == 4 && this.status == 200), (this.responseText != '' ? JSON.parse(this.responseText) : null));
+		
+		// run next ajax command in queue
+		runAjaxQueue();
 	}
 	
 	// if loader id identified, add class and insert loader

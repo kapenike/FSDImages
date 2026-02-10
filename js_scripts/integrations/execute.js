@@ -18,7 +18,8 @@
 				*priority defines which scene is set and the toggle condition of a source
 			scene - obs::scene(Scene 1, 3); sets obs program scene to "Scene 1" with priority 3
 			preview - obs::scene(Scene 2); sets obs preview scene to "Scene 2"
-			transition - obs::transition(); sends current preview scene to live program
+			studioMode - obs::studioMode(true); sets obs to studio mode
+			transition - obs::transition(); sends current preview scene to live program (also accepts a priority)
 			source - obs::source(Scene 1, Name Banners, true); sets the display of source "Name Banners" within "Scene 1" to visible, false would remove visibility
 			volume - obs::volume(Main Audio Channel, 16, 1); sets db level of "Main Audio Channel" to 16 with priority of 1
 			mute - obs::mute(Main Audio Channel, true, 1); mutes "Main Audio Channel" priority of 1, set to false to unmute
@@ -28,7 +29,7 @@ function executeCommandList(cl) {
 	
 	// determine which 3pa apps are turned on
 	let use_vb = GLOBAL.active_project.settings.voicemeeter_3pa_enabled;
-	let use_obs = GLOBAL.active_project.settings.obs_3pa_enabled;
+	let use_obs = GLOBAL.active_project.settings.obs_3pa_enabled && API_SERVER.status == true;
 	
 	// if none are active, return
 	if (!use_vb && !use_obs) {
@@ -55,7 +56,8 @@ function executeCommandList(cl) {
 		let delay = command.indexOf('delay(');
 		if (delay > -1) {
 			let end = command.indexOf(')');
-			delay = command.slice(delay, end);
+			delay = command.slice(6, end);
+			console.log(delay);
 			command = command.slice(end).trim();
 		}
 		
@@ -102,7 +104,7 @@ function executeCommandList(cl) {
 			parsed_command.action = command.split('obs::')[1].split('(')[0];
 			
 			// if empty function, values is empty
-			let values = command.indexOf('()') > -1
+			let values = command.indexOf('()') == -1
 				? command.split('(')[1].split(')')[0].split(',')
 				: [];
 			
@@ -123,6 +125,11 @@ function executeCommandList(cl) {
 				parsed_command.value = values[1].trim();
 				if (values[2]) {
 					parsed_command.priority = values[2].trim();
+				}
+			} else if (parsed_command.action == 'studioMode') {
+				parsed_command.value = values[0].trim();
+				if (values[1]) {
+					parsed_command.priority = values[1].trim();
 				}
 			}
 			app_output.obs.push(parsed_command);
@@ -166,6 +173,36 @@ function executeCommandList(cl) {
 				}
 			});
 		}
+		
+		// created delayed container
+		exec_list = {};
+		
+		app_output.vb.filter(x => x.delay != -1).forEach(v => {
+			if (exec_list[v.delay]) {
+				exec_list[v.delay].push(v);
+			} else {
+				exec_list[v.delay] = [v];
+			}
+		});
+		
+		Object.keys(exec_list).forEach(delay => {
+			(function () {
+				let project_uid = GLOBAL.active_project.uid;
+				let delay_commands = exec_list[delay];
+				setTimeout(function () {
+					ajax('POST', '/requestor.php', {
+						project_uid: project_uid,
+						application: 'voicemeeter_command',
+						commands: JSON.stringify(delay_commands)
+					}, (status, data) => {
+						// if error
+						if (!data.status) {
+							console.log(data.msg);
+						}
+					});
+				}, delay);
+			})();
+		});
 	
 	}
 	
@@ -191,11 +228,16 @@ function executeCommandList(cl) {
 			}
 		}
 		
-		let commands = [];
+		let commands = {};
 		
 		app_output.obs.forEach((command, index) => {
+			
+			if (typeof commands[command.delay] === 'undefined') {
+				commands[command.delay] = [];
+			}
+			
 			if (command.action == 'scene') {
-				commands.push({
+				commands[command.delay].push({
 					requestType: 'SetCurrentProgramScene',
 					requestId: index+1,
 					requestData: {
@@ -203,20 +245,28 @@ function executeCommandList(cl) {
 					}
 				});
 			} else if (command.action == 'preview') {
-				commands.push({
+				commands[command.delay].push({
 					requestType: 'SetCurrentPreviewScene',
 					requestId: index+1,
 					requestData: {
 						sceneName: command.scene
 					}
 				});
+			} else if (command.action == 'studioMode') {
+				commands[command.delay].push({
+					requestType: 'SetStudioModeEnabled',
+					requestId: index+1,
+					requestData: {
+						studioModeEnabled: command.value == 'true'
+					}
+				});
 			} else if (command.action == 'transition') {
-				commands.push({
+				commands[command.delay].push({
 					requestType: 'TriggerStudioModeTransition',
 					requestId: index+1
 				})
 			}	else if (command.action == 'source') {
-				commands.push({
+				commands[command.delay].push({
 					requestType: 'SetSceneItemEnabled',
 					requestId: index+1,
 					requestData: {
@@ -226,7 +276,7 @@ function executeCommandList(cl) {
 					}
 				});
 			} else if (command.action == 'mute') {
-				commands.push({
+				commands[command.delay].push({
 					requestType: 'SetInputMute',
 					requestId: index+1,
 					requestData: {
@@ -235,7 +285,7 @@ function executeCommandList(cl) {
 					}
 				});
 			} else if (command.action == 'volume') {
-				commands.push({
+				commands[command.delay].push({
 					requestType: 'SetInputVolume',
 					requestId: index+1,
 					requestData: {
@@ -246,15 +296,34 @@ function executeCommandList(cl) {
 			}
 		});
 		
-		if (app_output.obs.length > 0) {
+		// immediate command list
+		if (commands['-1'] && commands['-1'].length > 0) {
+			let immediate_commands = commands['-1'];
 			API_SERVER.connection.send(JSON.stringify({
 				action: 'obs_command',
 				command: {
-					'op': commands.length > 1 ? 8 : 6,
-					'd': commands.length == 1 ? commands[0] : { requestId: '777', requests: commands }
+					'op': immediate_commands.length > 1 ? 8 : 6,
+					'd': immediate_commands.length == 1 ? immediate_commands[0] : { requestId: '777', requests: immediate_commands }
 				}
 			}));
 		}
+		
+		// delayed commands
+		Object.keys(commands).filter(v => v != '-1').forEach(delay => {
+			(function () {
+				let project_uid = GLOBAL.active_project.uid;
+				let delayed_commands = commands[delay];
+				setTimeout(function () {
+					API_SERVER.connection.send(JSON.stringify({
+						action: 'obs_command',
+						command: {
+							'op': delayed_commands.length > 1 ? 8 : 6,
+							'd': delayed_commands.length == 1 ? delayed_commands[0] : { requestId: '777', requests: delayed_commands }
+						}
+					}));
+				}, delay);
+			})();
+		});
 		
 	}
 	

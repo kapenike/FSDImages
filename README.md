@@ -66,13 +66,14 @@
 
 FEATURES:
 
-- Ajax
-	- ajax should take all incoming requests and place them in a queue. This prevents any disconnect between API and Controller under intense use moments during a broadcast
+- Integrations
+	- create POST and GET integrations for inline command
+	- cleanup, classify, create readme
 
 - Switchboard
 	- allow multiple pages
 	- offer search option for select list dropdowns
-	- allow duplicating fields and sections
+	- display input field, onedit change from onChange listener to a mutation observer
 		
 - Dataset
 	- allow sorting and manual movement
@@ -87,6 +88,7 @@ FEATURES:
 	- add border radius option to individual points on custom path, or all points for either square or custom path
 	- stash start drag point of clip path individual point as to allow x / y lock drag during move event
 	- when adding a new layer during the active selection of a group layer, add new layer within the group layer rather than adjacent
+	- allow drag and drop "below" another layer
 	- ctrl + z, ctrl + y: undo and redo
 	- allow image rotation
 	- allow text to overflow when prompted and provide a new height dimension, with that allow vertical positioning, default top but allow center and bottom, update flipLayer function with new positioning possibilities

@@ -132,8 +132,11 @@ class obsController {
 					])));
 					
 					// get sceneItemId
+					// socket must be (temporarily) put back into blocking mode to await response from OBS
+					socket_set_block($API_SERVER->clients[$i]);
 					$response = json_decode(substr(socket_read($API_SERVER->clients[$i], 2048), 4));
 					$item_id = $response->d->responseData->sceneItemId;
+					socket_set_nonblock($API_SERVER->clients[$i]);
 					
 					// inject sceneItemId
 					if ($item->index === null) {
@@ -148,9 +151,6 @@ class obsController {
 				
 				// write final command
 				socket_write($API_SERVER->clients[$i], $API_SERVER->packageAsClient(json_encode($json->command)));
-				
-				// read response so read buffer is clear for normal operations
-				socket_read($API_SERVER->clients[$i], 2048);
 				
 				break;
 			}

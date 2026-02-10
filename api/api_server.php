@@ -471,7 +471,7 @@ class websocket {
 		
 	}
 	
-	private function readAll($client, $index) {
+	public function readAll($client) {
 		
 		// attempt to read all incoming data from socket connection
 		$data = '';
