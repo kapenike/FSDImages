@@ -33,6 +33,12 @@ function manageVariableInputCaretPosition(uid, elem) {
 
 function variableInputCaretInsert(parent, child) {
 	
+	// variable caret insert always ensure proper formatting before an insert
+	Create(parent, {
+		innerHTML: '',
+		children: getPathSelectionValueFromFormValue(Select('#variable_input_'+parent.uid).value)
+	}, true);
+	
 	let offset = 0;
 	let children = parent.childNodes;
 	

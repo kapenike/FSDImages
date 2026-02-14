@@ -18,8 +18,8 @@
 				*priority defines which scene is set and the toggle condition of a source
 			scene - obs::scene(Scene 1, 3); sets obs program scene to "Scene 1" with priority 3
 			preview - obs::scene(Scene 2); sets obs preview scene to "Scene 2"
-			studioMode - obs::studioMode(true); sets obs to studio mode
-			transition - obs::transition(); sends current preview scene to live program (also accepts a priority)
+			studioMode - obs::studioMode(true); sets obs to studio mode (also accepts a priority)
+			transition - obs::transition(); sends current preview scene to live program
 			source - obs::source(Scene 1, Name Banners, true); sets the display of source "Name Banners" within "Scene 1" to visible, false would remove visibility
 			volume - obs::volume(Main Audio Channel, 16, 1); sets db level of "Main Audio Channel" to 16 with priority of 1
 			mute - obs::mute(Main Audio Channel, true, 1); mutes "Main Audio Channel" priority of 1, set to false to unmute
@@ -57,7 +57,6 @@ function executeCommandList(cl) {
 		if (delay > -1) {
 			let end = command.indexOf(')');
 			delay = command.slice(6, end);
-			console.log(delay);
 			command = command.slice(end).trim();
 		}
 		
