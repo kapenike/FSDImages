@@ -67,6 +67,26 @@ function createPathVariableField(settings = {}) {
 	// default value is content editable
 	let is_content_editable = !settings.force_path_only && !settings.value.path_only;
 	
+	// if HTML input allowed, on next DOM itteration, add mutation observer to listen for inspect element changes to input field
+	if (settings.allow_html_input) {
+		(function () {
+			let id = GLOBAL.unique_id;
+			setTimeout(function () {
+				let elem = Select('#var_set_input_'+id);
+				let observer = new MutationObserver(function () {
+					Select('#variable_input_'+id, { value: getFormValueOfPathSelection(id, elem.innerHTML) });
+					Select('#variable_input_'+id).onedit();
+				});
+				observer.observe(elem, {
+					childList: true,
+					subtree: true,
+					characterData: true,
+					characterDataOldValue: true
+				});
+			}, 1);
+		})();
+	}
+	
 	return Create('div', {
 		className: 'variable_set_input',
 		children: [
@@ -114,10 +134,16 @@ function createPathVariableField(settings = {}) {
 							// manage caret position
 							this.caretManagement();
 						},
-						oninput: function () {
+						inputFieldUpdate: function () {
 							// on input, update main input value with text formatted equivalent and call the onedit() attached function
 							Select('#variable_input_'+this.uid, { value: getFormValueOfPathSelection(this.uid, this.innerHTML) });
 							Select('#variable_input_'+this.uid).onedit();
+						},
+						oninput: function () {
+							// if not being observed via mutation
+							if (!Select('#variable_input_'+this.uid).data.html_input) {
+								this.inputFieldUpdate();
+							}
 						},
 						children: getPathSelectionValueFromFormValue(settings.value.value) // convert saved text value to HTML interpretation
 					}),
