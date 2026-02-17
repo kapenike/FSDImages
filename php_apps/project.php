@@ -47,6 +47,10 @@ class project {
 		$settings->settings->obs_3pa_enabled = isset($post['obs3pa_enable']);
 		$settings->settings->obs_websocket_location = $post['obs_websocket_location'];
 		$settings->settings->obs_websocket_auth = $post['obs_websocket_auth'];
+		
+		// atem api
+		$settings->settings->atem_enabled = isset($post['atem_enable']);
+		$settings->settings->atem_location = $post['atem_location'];
 
 		file_put_contents(getBasePath().'/data/'.$uid.'/container.json', json_encode($settings));
 		

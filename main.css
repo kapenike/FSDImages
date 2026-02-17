@@ -900,6 +900,26 @@ button, input[type="submit"] {
 	cursor: pointer;
 }
 
+#integrations_accordian {
+	overflow: hidden;
+	height: 0;
+	transition: height: 0.5s ease-out;
+	background-color: #132937;
+}
+
+#integrations_accordian .col {
+	background-color: #163141;
+	padding: 10px;
+}
+
+.integrations_accordian_title {
+	background-color: #132937;
+	cursor: pointer;
+	font-size: 22px;
+	padding: 10px 20px;
+	border-bottom: 1px solid #fee99236;
+}
+
 /* prevent text selection on */
 #image_editor,
 .create_data_key,

@@ -154,6 +154,10 @@ switch($_POST['application']) {
 	case 'voicemeeter_command':
 		app('integrations/voicemeeterController')->executeCommands($_POST['project_uid'], json_decode($_POST['commands']));
 		break;
+		
+	case 'atem_command':
+		app('integrations/atemController')->executeCommands($_POST['project_uid'], json_decode($_POST['commands']));
+		break;
 	
 	default:
 		app('respond')->json(false, 'No application request defined.');

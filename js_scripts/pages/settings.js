@@ -20,12 +20,31 @@ function setNavigationSettings() {
 								]
 							}),
 							Create('div', {
+								className: 'integrations_accordian_title',
+								innerHTML: 'Modify Integration Settings',
+								onclick: function () {
+									let ia = Select('#integrations_accordian');
+									if (ia.style.overflow == 'hidden') {
+										ia.style.overflow = 'auto';
+										ia.style.height = 'auto';
+									} else {
+										ia.style.overflow = 'hidden';
+										ia.style.height = '0';
+									}
+								}
+							}),
+							Create('div', {
 								className: 'row',
+								id: 'integrations_accordian',
+								style: {
+									height: '0',
+									overflow: 'hidden'
+								},
 								children: [
 									Create('div', {
 										className: 'col',
 										style: {
-											width: '50%',
+											width: '33.3%',
 										},
 										children: [
 											Create('label', {
@@ -55,7 +74,7 @@ function setNavigationSettings() {
 									Create('div', {
 										className: 'col',
 										style: {
-											width: '50%',
+											width: '33.3%',
 										},
 										children: [
 											Create('label', {
@@ -88,6 +107,36 @@ function setNavigationSettings() {
 														type: 'text',
 														name: 'obs_websocket_auth',
 														value: GLOBAL.active_project.settings.obs_websocket_auth || ''
+													})
+												]
+											})
+										]
+									}),
+									Create('div', {
+										className: 'col',
+										style: {
+											width: '33.3%',
+										},
+										children: [
+											Create('label', {
+												innerHTML: 'Enable ATEM Mini Switcher',
+												children: [
+													Create('input', {
+														type: 'checkbox',
+														name: 'atem_enable',
+														value: 'true',
+														checked: GLOBAL.active_project.settings?.atem_enabled
+													})
+												]
+											}),
+											Create('br'),
+											Create('label', {
+												innerHTML: 'ATEM Mini Host:Port',
+												children: [
+													Create('input', {
+														type: 'text',
+														name: 'atem_location',
+														value: GLOBAL.active_project.settings.atem_location || ''
 													})
 												]
 											})
@@ -314,6 +363,9 @@ function updateProjectSettings() {
 			GLOBAL.active_project.settings.obs_3pa_enabled = form_details.obs3pa_enable || false;
 			GLOBAL.active_project.settings.obs_websocket_location = form_details.obs_websocket_location;
 			GLOBAL.active_project.settings.obs_websocket_auth = form_details.obs_websocket_auth;
+			
+			GLOBAL.active_project.settings.atem_enabled = form_details.atem_enable || false;
+			GLOBAL.active_project.settings.atem_location = form_details.atem_location;
 			
 		}
 		

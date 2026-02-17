@@ -1,5 +1,7 @@
 <?php
 
+// this integration has direct references tied into the API_SERVER
+
 class obsController {
 	
 	public function handleObsWebsocketApiConnection($API_SERVER, $json) {
