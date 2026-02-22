@@ -111,36 +111,6 @@ function setNavigationSettings() {
 												]
 											})
 										]
-									}),
-									Create('div', {
-										className: 'col',
-										style: {
-											width: '33.3%',
-										},
-										children: [
-											Create('label', {
-												innerHTML: 'Enable ATEM Mini Switcher',
-												children: [
-													Create('input', {
-														type: 'checkbox',
-														name: 'atem_enable',
-														value: 'true',
-														checked: GLOBAL.active_project.settings?.atem_enabled
-													})
-												]
-											}),
-											Create('br'),
-											Create('label', {
-												innerHTML: 'ATEM Mini Host:Port',
-												children: [
-													Create('input', {
-														type: 'text',
-														name: 'atem_location',
-														value: GLOBAL.active_project.settings.atem_location || ''
-													})
-												]
-											})
-										]
 									})
 								]
 							}),

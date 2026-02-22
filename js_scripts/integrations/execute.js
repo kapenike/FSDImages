@@ -30,18 +30,16 @@ function executeCommandList(cl) {
 	// determine which 3pa apps are turned on
 	let use_vb = GLOBAL.active_project.settings.voicemeeter_3pa_enabled;
 	let use_obs = GLOBAL.active_project.settings.obs_3pa_enabled && API_SERVER.status == true;
-	let use_atem = GLOBAL.active_project.settings.atem_enabled;
 	
 	// if none are active, return
-	if (!use_vb && !use_obs && !use_atem) {
+	if (!use_vb && !use_obs) {
 		return;
 	}
 	
 	// app output
 	let app_output = {
 		vb: [],
-		obs: [],
-		atem: []
+		obs: []
 	};
 	
 	cl.forEach(command => {
@@ -135,50 +133,9 @@ function executeCommandList(cl) {
 			}
 			app_output.obs.push(parsed_command);
 			
-		} else if (command.indexOf('atem::') > -1) {
-			
-			// determine values for app command call
-			let parsed_command = {
-				delay: delay,
-				output: null,
-				input: null,
-				priority: 0
-			};
-			
-			parsed_command.action = command.split('atem::')[1].split('(')[0];
-			
-			// if empty function, values is empty
-			let values = command.indexOf('()') == -1
-				? command.split('(')[1].split(')')[0].split(',')
-				: [];
-			
-			if (parsed_command.action == 'switch') {
-				parsed_command.output = values[0].trim();
-				parsed_command.input = values[1].trim();
-				if (values[2]) {
-					parsed_command.priority = values[2].trim();
-				}
-			}
-			
-			app_output.atem.push(parsed_command);
-			
 		}
 		
 	});
-	
-	// quick n dirty
-	if (use_atem) {
-		
-		ajax('POST', '/requestor.php', {
-			project_uid: GLOBAL.active_project.uid,
-			application: 'atem_command',
-			commands: JSON.stringify(app_output.atem)
-		}, (status, data) => {
-			// if error
-			console.log(data);
-		});
-		
-	}
 	
 	// if running voicemeeter commands are enabled
 	if (use_vb) {
