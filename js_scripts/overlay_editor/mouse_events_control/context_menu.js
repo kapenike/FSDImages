@@ -30,7 +30,7 @@ function imageEditorMouseCTX(event) {
 		GLOBAL.overlay_editor.context_menu_location = translate_cursor;
 	
 		// context menu output changes if within an active selection
-		if (eventWithinActiveSelection(translate_cursor)) {
+		if (GLOBAL.overlay_editor.active_layer && eventWithinActiveSelection(translate_cursor)) {
 			output_menu.items.select = false;
 			// if sub layer, it has a parent
 			if (GLOBAL.overlay_editor.active_layer.toString().indexOf('_') > -1) {
