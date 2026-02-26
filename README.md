@@ -68,17 +68,16 @@ FEATURES:
 
 - Integrations
 	- create POST and GET integrations for inline command
-	- cleanup, classify, create readme
 
 - Switchboard
 	- allow multiple pages
 	- offer search option for select list dropdowns
-	- display input field, onedit change from onChange listener to a mutation observer
 		
 - Dataset
 	- allow sorting and manual movement
 	- allow key structure movement (key up or down in list)
 	- allow api creation and deletion of dataset entries
+	- fix collpase feature for dataset entries as well as add feature to collapse / uncollapse all
 	
 - Assets
 	- allow api to create assets and return their system reference slug, also allow deletion

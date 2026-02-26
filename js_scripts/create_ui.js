@@ -51,7 +51,7 @@ function createUIFromData(container, data, submit_to_application, editor = false
 									data: JSON.stringify({ section: section_index, column: col_index }),
 									className: 'col block',
 									style: {
-										width: (Math.trunc((100/upper_section.cols.length) * 100) / 100)+'%'
+										width: calculateSectionWidth(upper_section.cols, col_index)
 									},
 									children: [
 										Create('div', {
@@ -286,6 +286,30 @@ function createUIFromData(container, data, submit_to_application, editor = false
 			})
 		]
 	});
+	
+}
+
+
+function calculateSectionWidth(cols, index) {
+
+	if (cols[index].fixed_width) {
+		// fixed width return
+		return (Math.trunc(((parseInt(cols[index].fixed_width)/24)*100) * 100) / 100)+'%';
+		
+	} else { 
+		
+		// else, calculate total fixed width, then divide evenly amongst all non fixed width columns
+		let fixed = 0;
+		let fixed_count = 0;
+		cols.forEach(v => {
+			if (v.fixed_width) {
+				fixed += parseInt(v.fixed_width);
+				fixed_count++;
+			}
+		});
+		return (Math.trunc( (((24-fixed)/24)*100)/(cols.length-fixed_count) * 100) / 100)+'%';
+	
+	}
 	
 }
 
@@ -919,6 +943,16 @@ function editUISection(elem, is_create = false) {
 					]
 				}),
 				Create('label', {
+					innerHTML: 'Fixed Width (1-24)<br />',
+					children: [
+						Create('input', {
+							type: 'text',
+							name: 'section_fixed_width',
+							value: (is_create ? '' : current_data.fixed_width ? current_data.fixed_width : '')
+						})
+					]
+				}),
+				Create('label', {
 					innerHTML: 'Contains Reset Button<br />',
 					children: [
 						Create('input', {
@@ -936,6 +970,7 @@ function editUISection(elem, is_create = false) {
 			if (form_data.is_create == 'true') {
 				let new_section = {
 					section: form_data.section_title,
+					fixed_width: form_data.section_fixed_width,
 					reset: form_data.section_has_reset ? true : false,
 					fields: []
 				};
@@ -950,6 +985,7 @@ function editUISection(elem, is_create = false) {
 			} else {
 				let current_data = GLOBAL.ui.active_data[current_location.section].cols[current_location.column];
 				current_data.section = form_data.section_title;
+				current_data.fixed_width = form_data.section_fixed_width;
 				current_data.reset = form_data.section_has_reset ? true : false;
 			}
 			// refresh current ui generation with new data
