@@ -30,9 +30,13 @@ if (isset($_GET['uid'])) {
 		exit;
 	}
 	if (file_exists($path)) {
-		$content_type = mime_content_type($path);
-		if ($content_type === false) {
-			$content_type = 'text/plain';
+		$finfo = finfo_open(FILEINFO_MIME_TYPE);
+		// ensure fileinfo extension is enabled;
+		if ($finfo) {
+			$content_type = finfo_file($finfo, $path);
+		} else {
+			echo '<h1>ERROR:</h1><p>Please enable the "Fileinfo" extension within your PHP.ini config file.</p>';
+			exit;
 		}
 		session_cache_limiter('nocache');
 		header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
