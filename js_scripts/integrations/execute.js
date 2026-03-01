@@ -28,8 +28,6 @@ function executeCommandList(cl) {
 		return;
 	}
 	
-	console.log('here');
-	
 	// loop and parse commands
 	cl.forEach(command => {
 		

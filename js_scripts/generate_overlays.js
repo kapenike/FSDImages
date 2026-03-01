@@ -101,7 +101,13 @@ function sendAPI(output_overlays, sources) {
 	}
 }
 
-function printLayers(ctx, layers) {
+function printLayers(ctx, layers, init = false) {
+	
+	// if init of print layer, and asset preloading is disabled, load in required assets before call back
+	if (init == true && GLOBAL.active_project.settings.disable_asset_preload) {
+		prepareNonPreloadPrint(ctx, layers);
+		return;
+	}
 	
 	// loop layers from back to front
 	for (let i=layers.length-1; i>-1; i--) {
@@ -222,7 +228,75 @@ function printLayers(ctx, layers) {
 		}
 	
 	}
+}
+
+function prepareNonPreloadPrint(ctx, layers) {
 	
+	// get used asset keys for this print that have not already been loaded
+	let images = requestUsedImageKeys(layers);
+	
+	// if empty, call back now
+	if (images.length == 0) {
+		printLayers(ctx, layers);
+		return;
+	}
+	
+	// counter for loaded images
+	let loaded_images = 0;
+	
+	// start loader
+	ajaxInitLoader('body');
+	
+	// load images into memory
+	images.forEach(asset_key => {
+		let image = new Image();
+		image.src = '/data/'+GLOBAL.active_project.uid+'/sources/'+GLOBAL.active_project.data.assets[asset_key].file;
+		GLOBAL.active_project.data.assets[asset_key].source = null;
+		image.onload = () => {
+			if (GLOBAL.use_vram) {
+				createImageBitmap(image).then(bitmap => {
+					GLOBAL.active_project.data.assets[asset_key].source = bitmap;
+				});
+			} else {
+				GLOBAL.active_project.data.assets[asset_key].source = image;
+			}
+			loaded_images++;
+			if (loaded_images == images.length) {
+				// after all images have loaded, remove loader and call back to print layers
+				// wait 1ms for browser state refresh
+				ajaxRemoveLoader('body');
+				setTimeout(() => {
+					printLayers(ctx, layers);
+				}, 1);
+			}
+		}
+	});
+	
+}
+
+function requestUsedImageKeys(layers, keys = []) {
+	layers.forEach(layer => {
+		// ensure this layer will be printed
+		if (toggleTrue(layer)) {
+			if (layer.type == 'image') {
+				// find layer asset key for global reference
+				let match_asset_filename = getRealValue(layer.value).file;
+				let asset_key = Object.keys(GLOBAL.active_project.data.assets).find(search_asset_key => {
+					if (GLOBAL.active_project.data.assets[search_asset_key].file == match_asset_filename) {
+						return search_asset_key;
+					}
+				});
+				// if found (always should be), and not already included and has not already been loaded, add to key list
+				if (asset_key && typeof GLOBAL.active_project.data.assets[asset_key].source === 'undefined' && !keys.includes(asset_key)) {
+					keys.push(asset_key);
+				}
+			} else if (layer.layers) {
+				// push sub layer references too
+				keys = requestUsedImageKeys(layer.layers, keys);
+			}
+		}
+	});
+	return keys;
 }
 
 function generateOverlay(ctx, output_overlays, overlay) {
@@ -231,7 +305,7 @@ function generateOverlay(ctx, output_overlays, overlay) {
 	ctx.clearRect(0, 0, 1920, 1080);
 	
 	// print layers recursively
-	printLayers(ctx, overlay.layers);
+	printLayers(ctx, overlay.layers, true);
 	
 }
 
@@ -268,8 +342,18 @@ function printImage(ctx, layer) {
 	// get real source
 	let value = getRealValue(layer.value);
 	
-	// if layer toggle and value not falsey and is an actual image, draw image
-	if (toggleTrue(layer) && value && value.source && (value.source instanceof ImageBitmap || value.source instanceof HTMLImageElement)) {
+	// if not an image, return
+	if (value.is_not_image) {
+		return false;
+	}
+	
+	// if layer toggle and value not falsey
+	if (toggleTrue(layer) && value) {
+		
+		// if image needs printed but has not been preloaded, return null to preload and pause printLayers
+		if (typeof value.source === 'undefined') {
+			return null;
+		}
 		
 		let output_width = value.width;
 		let output_height = value.height;
@@ -322,7 +406,11 @@ function printImage(ctx, layer) {
 		
 		ctx.filter = 'none';
 		
+		return true;
+		
 	}
+	
+	return false;
 }
 
 function printText(ctx, layer) {

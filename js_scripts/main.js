@@ -57,8 +57,12 @@ function streamDataLoaded(status, data) {
 		// this is so all projects will continue to work no matter the new layer changes in the future supporting multiple new features
 		legacyLayerCheck();
 
-		// load dependent image sources into GLOBAL
-		loadOverlayDependencies();
+		if (!GLOBAL.active_project.settings.disable_asset_preload) {
+			// load dependent image sources into GLOBAL
+			loadOverlayDependencies();
+		} else {
+			dependenciesLoaded();
+		}
 		
 	} else {
 		alert(data.msg);
@@ -66,15 +70,17 @@ function streamDataLoaded(status, data) {
 	
 }
 
-function loadOverlayDependencies() {
+function loadOverlayDependencies(sources = []) {
 	
-	// dependency sources
-	let sources = [];
-	
-	// store dependency asset keys
-	Object.keys(GLOBAL.active_project.data.assets).forEach(asset_key => {
-		sources.push(asset_key);
-	});
+	// store dependency asset keys from global list if not predefined
+	if (sources.length == 0) {
+		Object.keys(GLOBAL.active_project.data.assets).forEach(asset_key => {
+			// only push images to sources list
+			if (!GLOBAL.active_project.data.assets[asset_key].is_not_image) {
+				sources.push(asset_key);
+			}
+		});
+	}
 	
 	// replace those sources with image objects by using the parent reference to source (sources.source)
 	let loaded = 0;

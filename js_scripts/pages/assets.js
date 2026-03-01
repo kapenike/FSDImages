@@ -143,74 +143,93 @@ function updateAssetData(use_from_quick_upload = false) {
 				
 			}
 			
-			// if file was included in the form submission, load file into source and update affected overlays
+			// if file was included in the form submission
 			if (form_details.asset_file.length > 0) {
-				if (Object.keys(GLOBAL.active_project.overlays).length > 0) {
-					// init loader, generateStreamOverlays will clear
-					ajaxInitLoader('body');
-				}
-				let image = new Image();
-				image.src = '/data/'+GLOBAL.active_project.uid+'/sources/'+data.msg.file;
-				GLOBAL.active_project.data.assets[form_details.asset_slug].source = null;
-				image.onload = () => {
-					if (GLOBAL.use_vram) {
-						createImageBitmap(image).then(bitmap => {
-							GLOBAL.active_project.data.assets[form_details.asset_slug].source = bitmap;
-						});
-					} else {
-						GLOBAL.active_project.data.assets[form_details.asset_slug].source = image;
-					}
-					
-					// request sources associated with the current asset upload
-					let asset_associated_sources = checkDataForPathReference('assets/'+form_details.asset_slug);
-					
-					// if any associated sources, proc overlay generation update
-					if (asset_associated_sources.length > 0) {
-						// convert sources to variable path
-						asset_associated_sources = asset_associated_sources.map(x => { return '$var$'+x+'$/var$'; });
-						setTimeout(() => { generateStreamOverlays(asset_associated_sources) }, 1);
-					}
-					
-					// remove loader
-					ajaxRemoveLoader('body');
+				
+				// if not an image or image preloading is diabled
+				if (data.msg.is_not_image || GLOBAL.active_project.settings.disable_asset_preload) {
 					
 					// if quick upload, call back to finish popup close and print actions
 					if (use_from_quick_upload) {
 						
-						// get variable input id
-						let id = Select('#popup_create_asset').var_input_uid;
-						
-						// get variable input primary form field (hidden)
-						let form_field = Select('#variable_input_'+id)
-						
-						// set form value
-						form_field.value = '$var$$pointer$1$/pointer$assets/'+form_details.asset_slug+'$/var$';
-						
-						// update UI field value
-						Select('#var_set_input_'+id, { innerHTML: '', children: getPathSelectionValueFromFormValue(form_field.value) });
-						
-						// call variable input attached onedit function
-						form_field.onedit();
-						
-						// close popup
-						closePopup();
-						
-						// if overlay editor is active, re-print canvas on refresh of DOM
-						if (Select('#image_editor')) {
-							
-							setTimeout(function () {
-								printCurrentCanvas();
-							}, 1);
-							
-						}
+						finalizeQuickUploadProcess(form_details);
 						
 					}
+					
+				} else {
+				
+					// if image, load file into source and update affected overlays
+					ajaxInitLoader('body');
+					
+					let image = new Image();
+					image.src = '/data/'+GLOBAL.active_project.uid+'/sources/'+data.msg.file;
+					GLOBAL.active_project.data.assets[form_details.asset_slug].source = null;
+					image.onload = () => {
+						if (GLOBAL.use_vram) {
+							createImageBitmap(image).then(bitmap => {
+								GLOBAL.active_project.data.assets[form_details.asset_slug].source = bitmap;
+							});
+						} else {
+							GLOBAL.active_project.data.assets[form_details.asset_slug].source = image;
+						}
+						
+						// request sources associated with the current asset upload
+						let asset_associated_sources = checkDataForPathReference('assets/'+form_details.asset_slug);
+						
+						// if any associated sources, proc overlay generation update
+						if (asset_associated_sources.length > 0) {
+							// convert sources to variable path
+							asset_associated_sources = asset_associated_sources.map(x => { return '$var$'+x+'$/var$'; });
+							setTimeout(() => { generateStreamOverlays(asset_associated_sources) }, 1);
+						}
+						
+						// remove loader
+						ajaxRemoveLoader('body');
+						
+						// if quick upload, call back to finish popup close and print actions
+						if (use_from_quick_upload) {
+							
+							finalizeQuickUploadProcess(form_details);
+							
+						}
+					}
+				
 				}
 			}
 			
 		}
 		
 	}, 'body');
+}
+
+function finalizeQuickUploadProcess(form_details) {
+	
+	// get variable input id
+	let id = Select('#popup_create_asset').var_input_uid;
+	
+	// get variable input primary form field (hidden)
+	let form_field = Select('#variable_input_'+id)
+	
+	// set form value
+	form_field.value = '$var$$pointer$1$/pointer$assets/'+form_details.asset_slug+'$/var$';
+	
+	// update UI field value
+	Select('#var_set_input_'+id, { innerHTML: '', children: getPathSelectionValueFromFormValue(form_field.value) });
+	
+	// call variable input attached onedit function
+	form_field.onedit();
+	
+	// close popup
+	closePopup();
+	
+	// if overlay editor is active, re-print canvas on refresh of DOM
+	if (Select('#image_editor')) {
+		
+		setTimeout(function () {
+			printCurrentCanvas();
+		}, 1);
+		
+	}
 }
 
 function checkForAssetSlug(slug, live_update = true) {
@@ -324,11 +343,10 @@ function setupAssetEditor(slug = null, override_location_write = false) {
 						}
 					}),
 					Create('label', {
-						innerHTML: 'Asset Image',
+						innerHTML: 'Asset File',
 						children: [
 							Create('input', {
 								type: 'file',
-								accept: 'image/*',
 								name: 'asset_file'
 							})
 						]
@@ -374,7 +392,7 @@ function setupAssetEditor(slug = null, override_location_write = false) {
 							})
 						: Create('div')
 					),
-					(asset_data == null
+					(asset_data == null || asset_data.is_not_image
 						? Create('div')
 						:	Create('div', {
 								className: 'asset_preview',

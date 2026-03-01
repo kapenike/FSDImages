@@ -19,6 +19,17 @@ function setNavigationSettings() {
 									})
 								]
 							}),
+							Create('label', {
+								innerHTML: 'Disable Asset Preload <i>(Prevent assets from loading into memory before an overlay is set to generate / print)</i><br />',
+								children: [
+									Create('input', {
+										type: 'checkbox',
+										name: 'disable_asset_preload',
+										value: 'true',
+										checked: GLOBAL.active_project.settings?.disable_asset_preload
+									})
+								]
+							}),
 							Create('div', {
 								className: 'integrations_accordian_title',
 								innerHTML: 'Modify Integration Settings',
@@ -334,8 +345,16 @@ function updateProjectSettings() {
 			GLOBAL.active_project.settings.obs_websocket_location = form_details.obs_websocket_location;
 			GLOBAL.active_project.settings.obs_websocket_auth = form_details.obs_websocket_auth;
 			
-			GLOBAL.active_project.settings.atem_enabled = form_details.atem_enable || false;
-			GLOBAL.active_project.settings.atem_location = form_details.atem_location;
+			// update disabled image preload feature, if changed, reload project
+			let disable_asset_preload = (form_details.disable_asset_preload || false);
+			let reload = GLOBAL.active_project.settings.disable_asset_preload != disable_asset_preload;
+			GLOBAL.active_project.settings.disable_asset_preload = disable_asset_preload;
+			if (reload) {
+				ajax('POST', '/requestor.php', {
+					application: 'load_project_data',
+					uid: GLOBAL.active_project.uid
+				}, streamDataLoaded, 'body');
+			}
 			
 		}
 		

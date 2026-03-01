@@ -30,11 +30,15 @@ if (isset($_GET['uid'])) {
 		exit;
 	}
 	if (file_exists($path)) {
+		$content_type = mime_content_type($path);
+		if ($content_type === false) {
+			$content_type = 'text/plain';
+		}
 		session_cache_limiter('nocache');
 		header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 		header('Cache-Control: post-check=0, pre-check=0', false);
 		header('Expires: '. gmdate('D, d M Y H:i:s \G\M\T', time()));
-		header('Content-Type: image/png');
+		header('Content-Type: '.$content_type);
 		readfile($path);
 	} else {
 		http_response_code(404);

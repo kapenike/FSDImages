@@ -34,11 +34,12 @@ class asset {
 			$registry->{$data->slug}->offset_x = $data->offset_x;
 			$registry->{$data->slug}->offset_y = $data->offset_y;
 			
-			$new_file = app('files')->upload($data->file, getBasePath().'/data/'.$project_uid.'/sources/', ['type' => 'img', 'fname' => true]);
+			$new_file = app('files')->upload($data->file, getBasePath().'/data/'.$project_uid.'/sources/', ['fname' => true]);
 			$registry->{$data->slug}->file = $new_file['msg'];
-			$size = getimagesize(getBasePath().'/data/'.$project_uid.'/sources/'.$new_file['msg']);
-			$registry->{$data->slug}->width = $size[0];
-			$registry->{$data->slug}->height = $size[1];
+			$img_data = getimagesize(getBasePath().'/data/'.$project_uid.'/sources/'.$new_file['msg']);
+			$registry->{$data->slug}->is_not_image = $img_data === false ? true : !in_array($img_data[2], [IMAGETYPE_JPEG,IMAGETYPE_PNG,IMAGETYPE_GIF,IMAGETYPE_BMP]);
+			$registry->{$data->slug}->width = $img_data === false ? 0 : $img_data[0];
+			$registry->{$data->slug}->height = $img_data === false ? 0 : $img_data[1];
 			
 			// update registry data
 			$this->saveRegistry($project_uid, $registry);
@@ -65,9 +66,10 @@ class asset {
 					app('files')->remove(getBasePath().'/data/'.$project_uid.'/sources/', $registry->{$data->type}->file);
 					$new_file = app('files')->upload($data->file, getBasePath().'/data/'.$project_uid.'/sources/', ['type' => 'img', 'fname' => true]);
 					$registry->{$data->type}->file = $new_file['msg'];
-					$size = getimagesize(getBasePath().'/data/'.$project_uid.'/sources/'.$new_file['msg']);
-					$registry->{$data->type}->width = $size[0];
-					$registry->{$data->type}->height = $size[1];
+					$img_data = getimagesize(getBasePath().'/data/'.$project_uid.'/sources/'.$new_file['msg']);
+					$registry->{$data->type}->is_not_image = $img_data === false ? true : !in_array($img_data[2], [IMAGETYPE_JPEG,IMAGETYPE_PNG,IMAGETYPE_GIF,IMAGETYPE_BMP]);
+					$registry->{$data->type}->width = $img_data === false ? 0 : $img_data[0];
+					$registry->{$data->type}->height = $img_data === false ? 0 : $img_data[1];
 				}
 				
 				// if slug change, set new and remove old

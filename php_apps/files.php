@@ -14,15 +14,9 @@ class files {
 		return $ext;
 	}
 	
-	function disallowedExtensions($ext) {
-		return in_array($ext, ['bat','exe','cmd','sh','php','pl','cgi','386','dll','com','torrent','js','app','jar','pif','vb','vbscript','wsf','asp','cer','csr','jsp','drv','sys','ade','adp','bas','chm','cpl','crt','csh','fxp','hlp','hta','inf','ins','isp','jse','htaccess','htpasswd','ksh','lnk','mdb','mde','mdt','mdw','msc','msi','msp','mst','ops','pcd','prg','reg','scr','sct','shb','shs','url','vbe','vbs','wsc','wsf','wsh']);
-	}
-	
 	function checkSettings($file, $settings) {
 		if (isset($settings["type"]) && $settings["type"] == 'img' && !in_array(getimagesize($file["tmp_name"])[2], [IMAGETYPE_JPEG,IMAGETYPE_PNG,IMAGETYPE_GIF,IMAGETYPE_BMP])) {
 			return ["status" => false, "msg" => "Not a supported image type. Supported image formats: jpg, png, gif, bmp"];
-		} else if ($this->disallowedExtensions(strtolower(pathinfo($file["name"])["extension"]))) {
-			return ["status" => false, "msg" => "This file has been disallowed for upload."];
 		}
 		return true;
 	}

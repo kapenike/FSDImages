@@ -22,7 +22,7 @@ function printCurrentCanvas() {
 	ctx.fillRect(0, 0, GLOBAL.overlay_editor.current.dimensions.width, GLOBAL.overlay_editor.current.dimensions.height);
 	
 	// print layers recursively
-	printLayers(ctx, overlay.layers);
+	printLayers(ctx, overlay.layers, true);
 	
 	// define radius draw size for custom clip path points
 	let clip_path_point_radius = definePolygonPointSize();
