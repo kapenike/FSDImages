@@ -27,6 +27,11 @@ class integration {
 	
 	priorityCheck() {
 		
+		// if priority check not enabled, return
+		if (!this.priority_check_enabled) {
+			return;
+		}
+		
 		// remove conflicting actions
 		for (let i=0; i<this.command_list.length; i++) {
 			

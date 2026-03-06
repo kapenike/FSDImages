@@ -16,6 +16,9 @@ class voicemeeter extends integration {
 	// values structure (excluding delay and priority)
 	structure = ['bus', 'value', 'param_1'];
 	
+	// enables priority check
+	priority_check_enabled = true;
+	
 	// priority likeness comparison (&&) automatically includes "action" and "delay"
 	priority_comparison = ['bus'];
 	

@@ -9,7 +9,7 @@
 
 AJAX_QUEUE = [];
 
-function ajax(method, url, obj, callback, loader_id = null) {
+function ajax(method, url, obj, callback = ()=>{}, loader_id = null) {
 	AJAX_QUEUE.push([method, url, obj, callback, loader_id]);
 	if (AJAX_QUEUE.length == 1) {
 		runAjaxQueue();
@@ -61,9 +61,23 @@ function runAjax(method, url, obj, callback, loader_id) {
 		if (loader_id !== null) {
 			ajaxRemoveLoader(loader_id);
 		}
-
+		
+		let response = '';
+		try {
+			response = JSON.parse(this.responseText);
+		} catch {
+			response = this.responseText;
+			if (response == '') {
+				response = null;
+			}
+		}
+		
 		// callback with: status(bool), response(object)
-		callback((this.readyState == 4 && this.status == 200), (this.responseText != '' ? JSON.parse(this.responseText) : null));
+		if (typeof callback === 'string') {
+			window[callback]((this.readyState == 4 && this.status == 200), response);
+		} else {
+			callback((this.readyState == 4 && this.status == 200), response);
+		}
 		
 		// run next ajax command in queue
 		runAjaxQueue();
