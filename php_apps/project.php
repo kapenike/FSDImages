@@ -330,7 +330,8 @@ class project {
 			
 			// return imported project name
 			app('respond')->json(true, 'Project imported successfully.', [
-				'project_name' => $this->registry->{$uid}
+				'project_name' => $this->registry->{$uid},
+				'return_uid' => $uid
 			]);
 			
 			

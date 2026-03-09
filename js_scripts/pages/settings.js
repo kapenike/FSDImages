@@ -202,9 +202,9 @@ function setNavigationSettings() {
 																	// load new project
 																	ajax('POST', '/requestor.php', {
 																		application: 'load_project_data',
-																		uid: GLOBAL.active_project.uid
+																		uid: data.return_uid
 																	}, streamDataLoaded, 'body');
-																} else {
+																} else if (data.import_uid) {
 																	notify({
 																		text: data.text,
 																		confirm: 'Load local project UID: "'+data.import_uid+'"',
@@ -215,6 +215,12 @@ function setNavigationSettings() {
 																			application: 'load_project_data',
 																			uid: data.import_uid
 																		}, streamDataLoaded, 'body');
+																	});
+																} else {
+																	notify({
+																		text: data.msg,
+																		confirm: 'Ok',
+																		cancel: 'Okay'
 																	});
 																}
 															}, 'body');
