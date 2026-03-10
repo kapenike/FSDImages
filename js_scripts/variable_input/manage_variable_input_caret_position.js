@@ -33,12 +33,6 @@ function manageVariableInputCaretPosition(uid, elem) {
 
 function variableInputCaretInsert(parent, child) {
 	
-	// variable caret insert always ensure proper formatting before an insert
-	Create(parent, {
-		innerHTML: '',
-		children: getPathSelectionValueFromFormValue(Select('#variable_input_'+parent.uid).value)
-	}, true);
-	
 	let offset = 0;
 	let children = parent.childNodes;
 	
@@ -48,6 +42,10 @@ function variableInputCaretInsert(parent, child) {
 	}
 	
 	for (let i=0; i<children.length; i++) {
+		// if child is a direct text node, encase in expected real value wrapper before continuing
+		if (children[i].nodeType === Node.TEXT_NODE) {
+			parent.replaceChild(createPathRealEntry(children[i].textContent), children[i]);
+		}
 		let text_node = children[i].childNodes[0];
 		offset += text_node.length;
 		if (offset >= GLOBAL.ui.variable_input_caret.position) {
@@ -63,6 +61,5 @@ function variableInputCaretInsert(parent, child) {
 			break;
 		}
 	}
-
 	
 }

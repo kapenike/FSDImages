@@ -70,7 +70,7 @@ function workerWriteToSwitchboard(value_pairs) {
 			
 			// determine if UI should refresh or dataset based on current navigation, no active navigation when under file menu page .. so ?. check on inner html
 			let current_nav = Select('.active_navigation')?.innerHTML;
-			if (current_nav == 'Switchboard') {
+			if (current_nav == 'Switchboard' && !Select('#ui_editor_toggle').checked) {
 				refreshUIBuild(false);
 			} else if (current_nav == 'Data Sets') {
 				if (Select('[name="dataset_manager_type"]') && Select('[name="dataset_manager_type"]').value != 'create') {
