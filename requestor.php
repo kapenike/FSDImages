@@ -113,11 +113,17 @@ switch($_POST['application']) {
 		break;
 		
 	case 'update_project_details':
+		// log new dataset entries for return along with project details
+		$dataset_create_passthrough = [];
 		// under the case of pinpointed dataset value updates, also allow update of dataset values directly rather than as a whole
 		if (isset($_POST['pinpoint_dataset_updates'])) {
 			app('dataset')->pinpointUpdate($_POST['uid'], $_POST['pinpoint_dataset_updates']);
 		}
-		app('project')->updateprojectDetails($_POST['uid'], $_POST);
+		// create / delete
+		if (isset($_POST['create_delete'])) {
+			$dataset_create_passthrough = app('dataset')->createDelete($_POST['uid'], $_POST['create_delete']);
+		}
+		app('project')->updateprojectDetails($_POST['uid'], $_POST, $dataset_create_passthrough);
 		break;
 		
 	case 'update_project_details_ui_edit':

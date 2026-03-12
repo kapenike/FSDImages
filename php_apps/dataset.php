@@ -61,6 +61,10 @@ class dataset {
 				// get dataset
 				$dataset = json_decode(file_get_contents($data_path));
 				
+				// empty create / delete object key for use in front end actions
+				$dataset->create = '';
+				$dataset->delete = '';
+				
 				// return dataset
 				return $dataset;
 				
@@ -82,10 +86,18 @@ class dataset {
 		foreach($registry as $key=>$value) {
 			$sets->{$value} = $this->load($project_uid, $key);
 		}
+		
 		return $sets;
 	}
 
 	function save($project_uid, $uid, $save) {
+		// ensure create / delete front end actions arent saved
+		if (isset($save->create)) {
+			unset($save->create);
+		}
+		if (isset($save->delete)) {
+			unset($save->delete);
+		}
 		file_put_contents(getBasePath().'/data/'.$project_uid.'/datasets/'.$uid.'/data.json', json_encode($save));
 		return true;
 	}
@@ -176,7 +188,6 @@ class dataset {
 			
 			foreach ($points as $json) {
 
-				// json decode
 				$json = json_decode($json);
 				$source = $json->source;
 				$value = $json->value;
@@ -201,6 +212,11 @@ class dataset {
 						$dataset = $loaded_datasets->{$dataset_uid} = $this->load($project_uid, $dataset_uid);
 					}
 					
+					// break if active loaded dataset errored out
+					if (is_string($dataset)) {
+						continue;
+					}
+					
 					// update pinpoint
 					$dataset->entries->{$source_path[3]}->{$source_path[4]} = $value;
 
@@ -216,6 +232,63 @@ class dataset {
 		}
 		
 		// no exiting return allowed
+	}
+	
+	// create and delete specific entries within a project dataset
+	function createDelete($project_uid, $data) {
+		
+		$return_created_entries = [];
+		
+		$loaded_datasets = (object)[];
+		
+		// get registry as inverted list (set name becomes key, uid becomes value)
+		$registry = array_flip((array)$this->getRegistry($project_uid));
+			
+		foreach ($data as $json) {
+
+			$json = json_decode($json);
+			
+			// optim: load in dataset and stash or request from loaded if exists
+			$dataset = null;
+			if (isset($loaded_datasets->{$json->uid})) {
+				$dataset = $loaded_datasets->{$json->uid};
+			} else {
+				$dataset = $loaded_datasets->{$json->uid} = $this->load($project_uid, $json->uid);
+			}
+			
+			// break if active loaded dataset errored out
+			if (is_string($dataset)) {
+				continue;
+			}
+			
+			if ($json->type == 'delete') {
+				if (isset($dataset->entries->{$json->data})) {
+					unset($dataset->entries->{$json->data});
+				} else {
+					continue;
+				}
+			} else if ($json->type == 'create') {
+				$new_uid = app('uid')->generate($project_uid);
+				$dataset->entries->{$new_uid} = (object)[];
+				foreach ($dataset->structure as $structure_key) {
+					$dataset->entries->{$new_uid}->{$structure_key} = (isset($json->data->{$structure_key}) ? $json->data->{$structure_key} : '');
+				}
+				$return_created_entries[] = [
+					'dataset_uid' => $json->uid,
+					'entry_uid' => $new_uid,
+					'entry' => $dataset->entries->{$new_uid}
+				];
+			}
+			
+		}
+		
+		// save loaded datasets
+		foreach (array_keys(get_object_vars($loaded_datasets)) as $loaded_dataset_uid) {
+			$this->save($project_uid, $loaded_dataset_uid, $loaded_datasets->{$loaded_dataset_uid});
+		}
+		
+		return $return_created_entries;
+		
 	}
 	
 	function remove($project_uid, $uid) {

@@ -66,9 +66,6 @@
 
 FEATURES:
 
-- Integrations
-	- create POST and GET integrations for inline command
-
 - Switchboard
 	- allow multiple pages
 	- offer search option for select list dropdowns
@@ -76,7 +73,6 @@ FEATURES:
 - Dataset
 	- allow sorting and manual movement
 	- allow key structure movement (key up or down in list)
-	- allow api creation and deletion of dataset entries
 	- fix collpase feature for dataset entries as well as add feature to collapse / uncollapse all
 	
 - Assets

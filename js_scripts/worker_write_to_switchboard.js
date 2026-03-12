@@ -8,7 +8,6 @@ function workerWriteToSwitchboard(value_pairs) {
 	let form_details = {
 		application: 'update_project_details',
 		uid: GLOBAL.active_project.uid,
-		pinpoint_dataset_updates: []
 	}
 	
 	// loop values pairs and:
@@ -33,51 +32,8 @@ function workerWriteToSwitchboard(value_pairs) {
 		
 		if (status) {
 			
-			// insert separate dataset paths into standard local side data injection
-			if (form_details.pinpoint_dataset_updates.length > 0) {
-				form_details.pinpoint_dataset_updates.forEach(key_pair => {
-					
-					key_pair = JSON.parse(key_pair);
-					form_details[key_pair.source] = key_pair.value;
-					
-					// detect and push dependent source changes, self source is not pushed here (pushed below)
-					GLOBAL.source_changes.push(...dependentDatasetSourceChanges(key_pair.source));
-
-				});
-			}
-			
-			// using instanced 'form_details', update local project data
-			Object.keys(form_details).forEach(path => {
-				if (isPathVariable(path)) {
-					setRealValue(path, form_details[path]);
-					// source changes are not pushed by a form system like in create_ui, manually do it here
-					GLOBAL.source_changes.push(path);
-				}
-			});
-
-			// generate new overlays with updated sources, once complete, reset updated sources
-			// strip pointers from source changes before sending to overlay generator
-			generateStreamOverlays(GLOBAL.source_changes.map(v => stripPointer(v)), () => {
-				GLOBAL.source_changes = [];
-				
-				// execute 3pa command list, 10ms delay to allow for read buffer to complete from previous p2p data and overlay send
-				setTimeout(function () { 
-					executeCommandList(GLOBAL.command_list);
-					GLOBAL.command_list = [];
-				}, 10);
-				
-			});
-			
-			// determine if UI should refresh or dataset based on current navigation, no active navigation when under file menu page .. so ?. check on inner html
-			let current_nav = Select('.active_navigation')?.innerHTML;
-			if (current_nav == 'Switchboard' && !Select('#ui_editor_toggle').checked) {
-				refreshUIBuild(false);
-			} else if (current_nav == 'Data Sets') {
-				if (Select('[name="dataset_manager_type"]') && Select('[name="dataset_manager_type"]').value != 'create') {
-					let dataset_uid = Select('[name="dataset_manager_type"]').value;
-					loadDataset(GLOBAL.active_project.data.sets[Object.keys(GLOBAL.active_project.data.sets).find(v => GLOBAL.active_project.data.sets[v].uid == dataset_uid)]);
-				}
-			}
+			// send true boolean to let function know this is headless structure change
+			handleProjectUpdateCallback(form_details, data.created_dataset_entries, true);
 			
 		}
 		

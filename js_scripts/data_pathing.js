@@ -67,6 +67,15 @@ function pathIsDirectDatasetEntryField(path) {
 	return false;
 }
 
+// determines if path is a dataset creation / deletion field
+function pathIsDatasetCreaterDeleter(path) {
+	let ref_test = getRealVariableParts(path)[0].variable.split('/');
+	if (ref_test.length == 3 && ref_test[0] == 'sets' && (ref_test[2] == 'create' || ref_test[2] == 'delete')) {
+		return true;
+	}
+	return false;
+}
+
 // determines if path contains any reference to a direct dataset entry
 function isPathNestedDataset(path, start_with_master = false) {
 	let dataset_ref = start_with_master ? path : getRealValue(path, 2);
@@ -111,9 +120,20 @@ function isPathNestedDatasetEntryField(path) {
 }
 
 function splitDatasettersFromList(form) {
+	
+	// init pinpoint entry updates
+	form.pinpoint_dataset_updates = [];
+	
+	// init entry creation / deletions
+	form.create_delete = [];
+	
 	Object.keys(form).forEach((key, index) => {
 		if (isPathOnlyVariable(key)) {
-			if (pathIsDirectDatasetEntryField(key)) {
+			if (pathIsDatasetCreaterDeleter(key)) {
+				
+				handleCreaterDeleterSetting(form, key);
+				
+			} else if (pathIsDirectDatasetEntryField(key)) {
 				// move direct value setting to dataset push list
 				form.pinpoint_dataset_updates.push(JSON.stringify({
 					source: stripPointer(key),
@@ -130,9 +150,71 @@ function splitDatasettersFromList(form) {
 					}));
 					delete form[key];
 				}
+				
 			}
 		}
 	});
+}
+
+function lookForEntryWithinSpecificDataset(dataset, data) {
+	if (isPathOnlyVariable(data)) {
+		let parts = getRealVariableParts(data)[0].variable.split('/');
+		if (parts.length == 4 && parts[0] == 'sets' && parts[1] == dataset && parts[2] == 'entries') {
+			return parts[3];
+		} else {
+			return lookForEntryWithinSpecificDataset(dataset, getRealValue(data, 2));
+		}
+	}
+	return data;
+}
+
+// decode creation / deletion command data from path
+function handleCreaterDeleterSetting(form, key) {
+	
+	// move value to create or delete list
+	let details = getRealVariableParts(key)[0].variable.split('/');
+	let data = form[key];
+	let uid = null;
+	let action = details[2];
+	
+	delete form[key];
+				
+	// ensure dataset name resolves to a valid uid
+	if (GLOBAL.active_project.data.sets[details[1]]) {
+		uid = GLOBAL.active_project.data.sets[details[1]].uid;
+	} else {
+		console.warn('Dataset creation / deletion failed because the dataset name '+details[1]+' did not resolve to a valid dataset');
+		return;
+	}
+				
+	// ensure create contains a valid object or json object
+	if (action == 'create' && !isObject(data)) {
+		try {
+			data = JSON.parse(data);
+		} catch {
+			console.warn('Dataset creation failed because the data sent to '+key+' was not a valid object or JSON object => '+data);
+			// not a valid object, ignore
+			return;
+		}
+	}
+				
+	// ensure delete data uid resolves to a valid uid
+	if (action == 'delete') {
+		data = lookForEntryWithinSpecificDataset(details[1], data);
+		if (typeof data === 'string' && typeof GLOBAL.active_project.data.sets[details[1]].entries[data] === 'undefined') {
+			console.warn('Dataset deletion failed because the delete UID value: '+data+' did not resolve to a valid dataset entry');
+			return;
+		}
+	}
+
+	// append final command
+	form.create_delete.push(JSON.stringify({
+		uid: uid,
+		set_name: details[1],
+		type: action,
+		data: data
+	}));
+	
 }
 
 function getSetterComparisonValue(source) {

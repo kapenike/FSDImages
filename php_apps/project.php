@@ -183,7 +183,7 @@ class project {
 		return true;
 	}
 	
-	function updateprojectDetails($uid, $post) {
+	function updateprojectDetails($uid, $post, $dataset_create_passthrough) {
 		
 		// get original project data
 		$project_data = $this->loadSection($uid, 'data');
@@ -217,7 +217,7 @@ class project {
 		// update data file with project data object
 		$this->save($uid, 'data', $project_data);
 		
-		app('respond')->json(true, 'project data successfully updated.');
+		app('respond')->json(true, 'project data successfully updated.', ["created_dataset_entries" => $dataset_create_passthrough]);
 		
 	}
 	

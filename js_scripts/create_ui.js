@@ -444,7 +444,6 @@ function updateSourceChanges() {
 	// append application and uid values to send object
 	form_details.application = Select('#form_capture').data;
 	form_details.uid = GLOBAL.active_project.uid;
-	form_details.pinpoint_dataset_updates = [];
 	
 	// form fields attempting to write to dataset entries are separated into pinpoint_dataset_updates list
 	splitDatasettersFromList(form_details);
@@ -454,41 +453,7 @@ function updateSourceChanges() {
 		
 		if (status) {
 			
-			// insert separate dataset paths into standard local side data injection
-			if (form_details.pinpoint_dataset_updates.length > 0) {
-				form_details.pinpoint_dataset_updates.forEach(key_pair => {
-					
-					key_pair = JSON.parse(key_pair);
-					form_details[key_pair.source] = key_pair.value;
-					
-					// detect and push dependent source changes, self source was pushed through normal capture
-					GLOBAL.source_changes.push(...dependentDatasetSourceChanges(key_pair.source));
-
-				});
-			}
-			
-			// using instanced 'form_details', update local project data
-			Object.keys(form_details).forEach(path => {
-				if (isPathVariable(path)) {
-					setRealValue(path, form_details[path]);
-				}
-			});
-
-			// generate new overlays with updated sources, once complete, reset updated sources
-			// strip pointers from source changes before sending to overlay generator
-			generateStreamOverlays(GLOBAL.source_changes.map(v => stripPointer(v)), () => {
-				GLOBAL.source_changes = [];
-				
-				// execute 3pa command list, 10ms delay to allow for read buffer to complete from previous p2p data and overlay send
-				setTimeout(function () { 
-					executeCommandList(GLOBAL.command_list);
-					GLOBAL.command_list = [];
-				}, 10);
-				
-			});
-			
-			// rather than attempting to rebuild portions of UI, just reprint it
-			refreshUIBuild(false);
+			handleProjectUpdateCallback(form_details, data.created_dataset_entries);
 		
 		}
 		
