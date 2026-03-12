@@ -152,7 +152,7 @@ function updateAssetData(use_from_quick_upload = false) {
 					// if quick upload, call back to finish popup close and print actions
 					if (use_from_quick_upload) {
 						
-						finalizeQuickUploadProcess(form_details);
+						finalizeUploadProcess(form_details, use_from_quick_upload);
 						
 					}
 					
@@ -168,29 +168,11 @@ function updateAssetData(use_from_quick_upload = false) {
 						if (GLOBAL.use_vram) {
 							createImageBitmap(image).then(bitmap => {
 								GLOBAL.active_project.data.assets[form_details.asset_slug].source = bitmap;
+								finalizeUploadProcess(form_details, use_from_quick_upload);
 							});
 						} else {
 							GLOBAL.active_project.data.assets[form_details.asset_slug].source = image;
-						}
-						
-						// request sources associated with the current asset upload
-						let asset_associated_sources = checkDataForPathReference('assets/'+form_details.asset_slug);
-						
-						// if any associated sources, proc overlay generation update
-						if (asset_associated_sources.length > 0) {
-							// convert sources to variable path
-							asset_associated_sources = asset_associated_sources.map(x => { return '$var$'+x+'$/var$'; });
-							setTimeout(() => { generateStreamOverlays(asset_associated_sources) }, 1);
-						}
-						
-						// remove loader
-						ajaxRemoveLoader('body');
-						
-						// if quick upload, call back to finish popup close and print actions
-						if (use_from_quick_upload) {
-							
-							finalizeQuickUploadProcess(form_details);
-							
+							finalizeUploadProcess(form_details, use_from_quick_upload);
 						}
 					}
 				
@@ -202,33 +184,43 @@ function updateAssetData(use_from_quick_upload = false) {
 	}, 'body');
 }
 
-function finalizeQuickUploadProcess(form_details) {
+function finalizeUploadProcess(form_details, quick_upload) {
 	
-	// get variable input id
-	let id = Select('#popup_create_asset').var_input_uid;
+	// remove loader
+	ajaxRemoveLoader('body');
+
+	if (quick_upload) {
 	
-	// get variable input primary form field (hidden)
-	let form_field = Select('#variable_input_'+id)
-	
-	// set form value
-	form_field.value = '$var$$pointer$1$/pointer$assets/'+form_details.asset_slug+'$/var$';
-	
-	// update UI field value
-	Select('#var_set_input_'+id, { innerHTML: '', children: getPathSelectionValueFromFormValue(form_field.value) });
-	
-	// call variable input attached onedit function
-	form_field.onedit();
-	
-	// close popup
-	closePopup();
-	
-	// if overlay editor is active, re-print canvas on refresh of DOM
-	if (Select('#image_editor')) {
+		// get variable input id
+		let id = Select('#popup_create_asset').var_input_uid;
 		
-		setTimeout(function () {
-			printCurrentCanvas();
-		}, 1);
+		// get variable input primary form field (hidden)
+		let form_field = Select('#variable_input_'+id)
 		
+		// set form value
+		form_field.value = '$var$$pointer$1$/pointer$assets/'+form_details.asset_slug+'$/var$';
+		
+		// update UI field value
+		Select('#var_set_input_'+id, { innerHTML: '', children: getPathSelectionValueFromFormValue(form_field.value) });
+		
+		// call variable input attached onedit function
+		form_field.onedit();
+		
+		// close popup
+		closePopup();
+	
+	} else {
+		
+		// request sources associated with the current asset upload
+		let asset_associated_sources = checkDataForPathReference('assets/'+form_details.asset_slug);
+		
+		// if any associated sources, proc overlay generation update
+		if (asset_associated_sources.length > 0) {
+			// convert sources to variable path
+			asset_associated_sources = asset_associated_sources.map(x => { return '$var$'+x+'$/var$'; });
+			setTimeout(() => { generateStreamOverlays(asset_associated_sources) }, 1);
+		}
+			
 	}
 }
 

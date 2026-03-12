@@ -15,7 +15,7 @@ function editOverlay(slug) {
 		columns: 3,
 		rows: 3,
 		origin: {
-			x: 'left',
+			x: 'center',
 			y: 'top'
 		}
 	}
