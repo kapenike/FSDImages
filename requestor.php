@@ -161,10 +161,6 @@ switch($_POST['application']) {
 		app('integrations/voicemeeterController')->executeCommands($_POST['project_uid'], json_decode($_POST['commands']));
 		break;
 		
-	case 'atem_command':
-		app('integrations/atemController')->executeCommands($_POST['project_uid'], json_decode($_POST['commands']));
-		break;
-		
 	case 'shell_command':
 		app('integrations/shellController')->executeCommands($_POST['project_uid'], json_decode($_POST['commands']));
 		break;
