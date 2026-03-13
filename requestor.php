@@ -164,6 +164,10 @@ switch($_POST['application']) {
 	case 'atem_command':
 		app('integrations/atemController')->executeCommands($_POST['project_uid'], json_decode($_POST['commands']));
 		break;
+		
+	case 'shell_command':
+		app('integrations/shellController')->executeCommands($_POST['project_uid'], json_decode($_POST['commands']));
+		break;
 	
 	default:
 		app('respond')->json(false, 'No application request defined.');

@@ -24,7 +24,8 @@ function executeCommandList(cl) {
 	let integrations = {
 		vb: new voicemeeter,
 		obs: new obs,
-		http: new http
+		http: new http,
+		shell: new shell
 	};
 	
 	// if no integrations are active, return
@@ -109,7 +110,6 @@ function parseCommand(command) {
 	if (command.indexOf('::') > -1) {
 		
 		// parse command
-		
 		let split_id_value = command.split('::');
 		output.identifier = split_id_value[0].trim();
 		split_id_value = split_id_value[1].split('(');
