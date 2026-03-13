@@ -1,3 +1,5 @@
+// the last out-of-control script that needs restructured
+
 // drop down path selection list generator
 function createPathListForEditor(path = null, base_path = null) {
 	
@@ -113,6 +115,14 @@ function createPathListForEditor(path = null, base_path = null) {
 			if ((is_data_set || is_asset) && curr_path[key] && typeof curr_path[key].display !== 'undefined') {
 				print_key = curr_path[key].display;
 			}
+			
+			// Prevention Cases
+			
+			// dataset create and delete actions can only be used when at a root dataset path and in a source setter field
+			if (path != null && is_data_set && path.slice(0,5) == 'sets/' && path.split('/').length == 2 && !data.source_setter && ['create','delete'].includes(print_key)) {
+				return Create('div');
+			}
+			
 			// edge case, if is_asset, check if active path selection input is path only, if so, set as `is_value`
 			if (is_asset && data.path_only) {
 				is_value = true;
