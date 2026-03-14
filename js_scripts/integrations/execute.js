@@ -50,8 +50,8 @@ function executeCommandList(cl) {
 		// ensure parsing is valid
 		if (parsed_command) {
 			
-			// ensure identifier exists
-			if (integrations[parsed_command.identifier]) {
+			// ensure identifier exists and integration is active
+			if (integrations[parsed_command.identifier] && integrations[parsed_command.identifier].active) {
 				
 				// run integration specific parse on remaining data
 				integrations[parsed_command.identifier].parse(parsed_command);

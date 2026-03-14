@@ -46,6 +46,9 @@ class project {
 		$settings->settings->voicemeeter_3pa_enabled = isset($post['vb3pa_enable']);
 		$settings->settings->voicemeeter_api_dll = $post['voicemeeter_api_dll'];
 		
+		// shell command activation
+		$settings->settings->shell_3pa_enabled = isset($post['shell3pa_enable']);
+		
 		// obs api
 		$settings->settings->obs_3pa_enabled = isset($post['obs3pa_enable']);
 		$settings->settings->obs_websocket_location = $post['obs_websocket_location'];

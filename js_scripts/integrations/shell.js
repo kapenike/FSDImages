@@ -7,7 +7,7 @@
 class shell extends integration {
 	
 	// (REQUIRED) inform execute script that this integration is active
-	active = true;
+	active = false;
 	
 	// (REQUIRED) inform execute script of this class unique action identifier
 	identifier = 'shell';
@@ -28,6 +28,8 @@ class shell extends integration {
 		
 		// lowkeylame
 		super();
+		
+		this.active = GLOBAL.active_project.settings.shell_3pa_enabled;
 		
 	}
 	
