@@ -35,8 +35,7 @@ function createPathListForEditor(path = null, base_path = null) {
 			// if path result points to new path, continue path lookup for image search (edge case value determined within list), normal traversal
 			// or the edge case of source setter on dataset entry
 			if (typeof curr_path[nest[i]] === 'string' && (data.image_search || (
-				!data.path_only ||
-				data.source_setter && isPathNestedDataset('$var$'+path+'$/var$')
+				!data.path_only || isPathNestedDataset('$var$'+path+'$/var$')
 			))) {
 				curr_path = getRealValue(curr_path[nest[i]]);
 				continue;
@@ -143,7 +142,7 @@ function createPathListForEditor(path = null, base_path = null) {
 						is_value = true;
 					}
 				}
-			} else if (data.source_setter && is_value) {
+			} else if (is_value) {
 				// source setter can set entire value with therefore or can traverse into dataset reference and save specific values
 				// if sub path is specific dataset entry, allow therefore
 				if (isPathNestedDataset('$var$'+(path == null ? key : path+'/'+key)+'$/var$')) {
