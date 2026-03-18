@@ -291,6 +291,43 @@ class dataset {
 		
 	}
 	
+	function sortEntries($project_uid, $dataset_uid) {
+		
+		$dataset = $this->load($project_uid, $dataset_uid);
+		
+		$sort_list = [];
+		foreach ($dataset->entries as $key => $value) {
+			$value->uid = $key;
+			$sort_list[] = $value;
+		}
+		
+		usort($sort_list, function ($a, $b) {
+			if ($a->display < $b->display) {
+				return -1;
+			} else if ($a->display > $b->display) {
+				return 1;
+			} else {
+				return 0;
+			}
+		});
+		
+		$new_entries = (object)[];
+		foreach ($sort_list as $entry) {
+			$uid = $entry->uid;
+			unset($entry->uid);
+			$new_entries->{$uid} = $entry;
+		}
+		
+		$dataset->entries = $new_entries;
+		
+		$this->save($project_uid, $dataset_uid, $dataset);
+		
+		app('respond')->json(true, 'Successfully sorted dataset '.$dataset_uid, [
+			'uid' => $dataset_uid
+		]);
+		
+	}
+	
 	function remove($project_uid, $uid) {
 		$data_path = getBasePath().'/data/'.$project_uid.'/datasets/'.$uid.'/';
 		if (is_dir($data_path)) {

@@ -32,6 +32,10 @@ html, body {
 	background-color: #f5c527;
 }
 
+.small_btn {
+	padding: 8px 12px !important;
+}
+
 .logo {
 	width: 100%;
 }

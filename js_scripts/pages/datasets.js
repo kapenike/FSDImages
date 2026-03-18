@@ -232,16 +232,21 @@ function setupDatasetEditor(data = null) {
 										]
 									}),
 									(create != true
-										?	Create('button', {
-												className: 'remove_button',
-												innerHTML: 'Remove Dataset',
-												type: 'button',
-												onclick: () => { 
-													notify(
-														'Please confirm you\'d like to permanently remove this data set',
-														() => { removeDataset(data.uid); }
-													);
-												}
+										?	Create('div', {
+												children: [
+													Create('br'),
+													Create('button', {
+														className: 'remove_button small_btn',
+														innerHTML: 'Remove Data Set',
+														type: 'button',
+														onclick: () => { 
+															notify(
+																'Please confirm you\'d like to permanently remove this data set',
+																() => { removeDataset(data.uid); }
+															);
+														}
+													})
+												]
 											})
 										: Create('div')
 									)
@@ -268,7 +273,79 @@ function setupDatasetEditor(data = null) {
 														onclick: function () {
 															this.parentNode.insertAdjacentElement('afterend', newDatasetEntry());
 														}
-													})
+													}),
+													( create != true
+														? Create('div', {
+															style: {
+																display: 'inline-block'
+															},
+															children: [
+																Create('div', {
+																	className: 'create_data_key',
+																	innerHTML: 'sort entries',
+																	style: {
+																		marginLeft: '10px',
+																		backgroundColor: '#f5c527'
+																	},
+																	onclick: function () {
+																		ajax('POST', '/requestor.php', {
+																			project_uid: GLOBAL.active_project.uid,
+																			application: 'sort_dataset',
+																			uid: data.uid
+																		}, (status, data) => {
+																			if (data.status) {
+																				let sets = GLOBAL.active_project.data.sets;
+																				let ref = sets[Object.keys(sets).filter(v => sets[v].uid == data.uid)[0]];
+																				let new_entries = {};
+																				let old_entries = [];
+																				for (let [key, value] of Object.entries(ref.entries)) {
+																					value.uid = key;
+																					old_entries.push(value);
+																				}
+																				old_entries.sort((a,b) => {
+																					if (a.display < b.display) {
+																						return -1;
+																					} else if (a.display > b.display) {
+																						return 1;
+																					} else {
+																						return 0;
+																					}
+																				});
+																				old_entries.forEach(v => {
+																					let uid = v.uid;
+																					delete v.uid;
+																					new_entries[uid] = v;
+																				});
+																				ref.entries = new_entries;
+																				loadDataset(ref);
+																			}
+																		});
+																	}
+																}),
+																Create('div', {
+																	className: 'create_data_key',
+																	innerHTML: 'collapse all',
+																	style: {
+																		marginLeft: '10px'
+																	},
+																	onclick: function () {
+																		collapseAll(true);
+																	}
+																}),
+																Create('div', {
+																	className: 'create_data_key',
+																	innerHTML: 'expand all',
+																	style: {
+																		marginLeft: '10px'
+																	},
+																	onclick: function () {
+																		collapseAll(false);
+																	}
+																})
+															]
+														})
+														: Create('div')
+													)
 												]
 											}),
 											...Object.keys(data.entries).map(uid => {
@@ -283,6 +360,18 @@ function setupDatasetEditor(data = null) {
 				]
 			})
 		]
+	});
+}
+
+function collapseAll(is) {
+	Array.from(MSelect('.dataset_entry_title')).forEach(pelem => {
+		let elem = pelem.parentNode.children[2];
+		if (is) {
+			elem.style.height = '0px';
+			elem.style.overflow = 'hidden';
+		} else {
+			elem.removeAttribute('style');
+		}
 	});
 }
 
@@ -445,7 +534,7 @@ function newDatasetEntry(uid = null, entry = null, structure_override = null) {
 			Create('div', {
 				className: 'dataset_entry_title',
 				onclick: function () {
-					let elem = this.parentNode.children[1];
+					let elem = this.parentNode.children[2];
 					if (elem.style.height == '0px') {
 						elem.removeAttribute('style');
 					} else {

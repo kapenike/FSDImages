@@ -142,6 +142,10 @@ switch($_POST['application']) {
 		app('dataset')->update($_POST);
 		break;
 		
+	case 'sort_dataset':
+		app('dataset')->sortEntries($_POST['project_uid'], $_POST['uid']);
+		break;
+		
 	case 'remove_dataset':
 		// remove dataset
 		app('dataset')->remove($_POST['project_uid'], $_POST['uid']);
