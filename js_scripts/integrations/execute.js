@@ -24,8 +24,7 @@ function executeCommandList(cl) {
 	let integrations = {
 		vb: new voicemeeter,
 		obs: new obs,
-		http: new http,
-		shell: new shell
+		http: new http
 	};
 	
 	// if no integrations are active, return
