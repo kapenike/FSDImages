@@ -244,6 +244,8 @@ class project {
 			// uploaded file name
 			$file_name = $zip['msg'];
 			
+			// notify response if importing fonts
+			$importing_fonts = false;
 			
 			// extract project archive to the current project directory
 			$zip = new ZipArchive;
@@ -316,6 +318,40 @@ class project {
 				// remove temporary project name file
 				unlink(getBasePath().'/data/'.$uid.'/project_name.txt');
 				
+				// if importing fonts
+				if (file_exists(getBasePath().'/data/'.$uid.'/fonts') && file_exists(getBasePath().'/data/'.$uid.'/fonts/import_font_registry.json')) {
+					// new fonts
+					$import_fonts = json_decode(file_get_contents(getBasePath().'/data/'.$uid.'/fonts/import_font_registry.json'));
+					// existing fonts
+					$app_fonts = app('fonts')->getFontRegistry();
+					foreach ($import_fonts as $font => $font_data) {
+						if (!isset($app_fonts->{$font})) {
+							// prepare new font entry container
+							$app_fonts->{$font} = (object)['fonts' => []];
+						}
+						// loop font styles within import font container
+						foreach ($font_data->fonts as $font_entry) {
+							$font_index = array_search($font_entry->weight, array_column($app_fonts->{$font}->fonts, 'weight'));
+							if ($font_index !== false) {
+								// if style found, remove old font style file, and insert new entry incase of font file changes
+								// do not reload front end under this condition, trade offs of rarity
+								unlink(getBasePath().'/fonts/'.$app_fonts->{$font}->fonts[$font_index]->filename);
+								$app_fonts->{$font}->fonts[$font_index] = $font_entry;
+							} else {
+								// if not found, prepare for front-end notification to reload for new font load
+								$importing_fonts = true;
+								// insert new font style
+								$app_fonts->{$font}->fonts[] = $font_entry;
+							}							
+							// always move imported font to project font directory, assumed newest
+							rename(getBasePath().'/data/'.$uid.'/fonts/'.$font_entry->filename, getBasePath().'/fonts/'.$font_entry->filename);
+						}
+					}
+					app('fonts')->saveFontRegistry($app_fonts);
+					unlink(getBasePath().'/data/'.$uid.'/fonts/import_font_registry.json');
+					rmdir(getBasePath().'/data/'.$uid.'/fonts');
+				}
+				
 				// clear old overlay output directory
 				app('directoryFileList')->delete(getBasePath().'/overlay_output/'.$uid);
 				
@@ -334,7 +370,8 @@ class project {
 			// return imported project name
 			app('respond')->json(true, 'Project imported successfully.', [
 				'project_name' => $this->registry->{$uid},
-				'return_uid' => $uid
+				'return_uid' => $uid,
+				'font_import' => $importing_fonts
 			]);
 			
 			
@@ -344,7 +381,7 @@ class project {
 	}
 	
 	function export($uid) {
-		
+
 		// prevent user abort
 		ignore_user_abort(true);
 		
@@ -356,14 +393,32 @@ class project {
 			// log project name
 			$zip->addFromString('project_name.txt', $project_name);
 			
+			// collect used fonts and include in export
+			$used_fonts = $this->collectFontsFrom(app('overlay')->getAll($uid));
+			$font_export_registry = (object)[];
+			if (count($used_fonts) > 0) {
+				$font_registry = json_decode(file_get_contents(getBasePath().'/fonts/font_registry.json'));
+				foreach ($font_registry as $font => $data) {
+					if (!isset($data->is_default) && in_array($font, $used_fonts)) {
+						$font_export_registry->{$font} = $data;
+						foreach ($data->fonts as $font_entry) {
+							$zip->addFile(getBasePath().'fonts/'.$font_entry->filename, 'fonts/'.$font_entry->filename);
+						}
+					}
+				}
+				if (count((array)$font_export_registry) > 0) {
+					$zip->addFromString('fonts/import_font_registry.json', json_encode($font_export_registry));
+				}
+			}
+			
 			// set a base path
-			$base_path = getBasePath().'/data/'.$uid.'/';
+			$base_path = getBasePath().'data/'.$uid;
 			
 			// add files to zip archive
 			foreach (app('directoryFileList')->get([], $base_path) as $file_path) {
-				$zip->addFile($file_path, str_replace($base_path, '', $file_path));
+				$zip->addFile($file_path, str_replace($base_path.'/', '', $file_path));
 			}
-
+			
 			// save project archive
 			$zip->close();
 			
@@ -374,6 +429,26 @@ class project {
 			app('respond')->json(false, 'Error creating archive export for project: '.$project_name);
 		}
 		
+	}
+	
+	function collectFontsFrom($obj, $fonts = []) {
+		if (is_array($obj)) {
+			foreach ($obj as $arr) {
+				$fonts = $this->collectFontsFrom($arr, $fonts);
+			}
+		} else if (is_object($obj)) {
+			foreach ($obj as $key => $value) {
+				if ($key == 'font') {
+					$rnfont = trim($value, "'");
+					if (!in_array($rnfont, $fonts)) {
+						$fonts[] = $rnfont;
+					}
+				} else {
+					$fonts = $this->collectFontsFrom($value, $fonts);
+				}
+			}
+		}
+		return $fonts;
 	}
 	
 	function downloadAndDeleteExport($project_name) {

@@ -217,12 +217,31 @@ function setNavigationSettings() {
 															ajax('POST', '/requestor.php', send_data, (status, data) => {
 																if (status && data.status) {
 																	// update project name in local registry
-																	GLOBAL.project_registry[GLOBAL.active_project.uid] = data.project_name;
-																	// load new project
-																	ajax('POST', '/requestor.php', {
-																		application: 'load_project_data',
-																		uid: data.return_uid
-																	}, streamDataLoaded, 'body');
+																	if (data.font_import) {
+																		notify({
+																			text: 'Your project has imported some dependent fonts. This requires a browser refresh to properly manage your project overlays. Would you like to refresh now?',
+																			confirm: 'Refresh Now',
+																			cancel: 'Continue to Imported Project'
+																		},
+																		() => {
+																			location.reload();
+																		},
+																		() => {
+																			GLOBAL.project_registry[GLOBAL.active_project.uid] = data.project_name;
+																			// load new project
+																			ajax('POST', '/requestor.php', {
+																				application: 'load_project_data',
+																				uid: data.return_uid
+																			}, streamDataLoaded, 'body');
+																		});
+																	} else {
+																		GLOBAL.project_registry[GLOBAL.active_project.uid] = data.project_name;
+																		// load new project
+																		ajax('POST', '/requestor.php', {
+																			application: 'load_project_data',
+																			uid: data.return_uid
+																		}, streamDataLoaded, 'body');
+																	}
 																} else if (data.import_uid) {
 																	notify({
 																		text: data.text,
@@ -237,7 +256,7 @@ function setNavigationSettings() {
 																	});
 																} else {
 																	notify({
-																		text: data.msg,
+																		text: data.msg || data,
 																		confirm: 'Ok',
 																		cancel: 'Okay'
 																	});
