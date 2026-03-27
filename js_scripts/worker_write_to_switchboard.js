@@ -8,6 +8,24 @@ function workerWriteToSwitchboard(value_pairs) {
 	let form_details = {
 		application: 'update_project_details',
 		uid: GLOBAL.active_project.uid,
+		create_delete: []
+	}
+	
+	// handle create delete before casting to normal form capture on this edge case of raw data handling from api scripts rather than text from switchboard
+	// this allows api to handle multiple creations and deletions as a batch unlike the switchboard
+	// handled one by one and then split off into form_details.create_delete on success
+	for (let i=0; i<value_pairs.length; i++) {
+		let key_value = value_pairs[i];
+		if (pathIsDatasetCreaterDeleter(key_value.source)) {
+			let create_delete_temp_handler = { create_delete: [] };
+			create_delete_temp_handler[key_value.source] = key_value.value;
+			handleCreaterDeleterSetting(create_delete_temp_handler, key_value.source);
+			if (create_delete_temp_handler.create_delete.length > 0) {
+				form_details.create_delete.push(create_delete_temp_handler.create_delete.pop());
+				value_pairs.splice(i, 1);
+				i--;
+			}
+		}
 	}
 	
 	// loop values pairs and:

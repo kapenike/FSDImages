@@ -124,13 +124,15 @@ function splitDatasettersFromList(form) {
 	// init pinpoint entry updates
 	form.pinpoint_dataset_updates = [];
 	
-	// init entry creation / deletions
-	form.create_delete = [];
+	// init entry creation / deletions if not already defined (edge situation where worker write to switchboard has to predefine for array handling)
+	if (typeof form.create_delete === 'undefined') {
+		form.create_delete = [];
+	}
 	
 	Object.keys(form).forEach((key, index) => {
 		if (isPathOnlyVariable(key)) {
 			if (pathIsDatasetCreaterDeleter(key)) {
-				
+				// normal switchboard form capture for creater / deleters
 				handleCreaterDeleterSetting(form, key);
 				
 			} else if (pathIsDirectDatasetEntryField(key)) {
