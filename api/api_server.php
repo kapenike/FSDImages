@@ -461,6 +461,22 @@ class websocket {
 							'worker_push' => $json->worker_push
 						]);
 						
+					} else if (isset($this->client_details[$index]->pipe_write_auth) && isset($json->worker_request) && $this->client_details[$index]->project_uid != null) {
+						
+						// request specific data that may not have been declared during setup
+						$requested_data = (object)['requested_data' => (object)[]];
+
+						// request master data list using project id, boolean for a non exiting return
+						$project = app('project')->load($this->client_details[$index]->project_uid, true);
+						if ($project !== false) {
+							$project = app('dataPathing')->convertAll($project);
+							foreach ($json->worker_request as $data_point) {
+								$requested_data->requested_data->{$data_point} = app('dataPathing')->getRealValue($project, '$var$'.$data_point.'$/var$');
+							}
+						}
+
+						socket_write($this->clients[$index], $this->package(json_encode($requested_data)));
+						
 					}
 					
 				}

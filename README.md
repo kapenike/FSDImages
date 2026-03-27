@@ -64,30 +64,15 @@
 
 ## To-DO
 
-FEATURES:
+- Overlay editor overhaul
+	- launch with window for open / edit / quick overlay duplicate
+	- fix all drag states to allow x / y lock
+	- right click select layer improvements
+	- allow global copy and paste of layers between overlays
+	- round all movements to the nearest 100th dec
+	- ctrl + t transform feature
+	- ctral + z / ctrl + y
 
-- Switchboard
-	- allow multiple pages
-	- offer search option for select list dropdowns
-		
-- Dataset
-	- allow sorting and manual movement
-	- allow key structure movement (key up or down in list)
-	- fix collpase feature for dataset entries as well as add feature to collapse / uncollapse all
+- ReadMe docs for API
 	
-- Assets
-	- allow api to create assets and return their system reference slug, also allow deletion
-
-- Overlay editor features
-	- global copy and paste layer between overlays
-	- add border radius option to individual points on custom path, or all points for either square or custom path
-	- stash start drag point of clip path individual point as to allow x / y lock drag during move event
-	- when adding a new layer during the active selection of a group layer, add new layer within the group layer rather than adjacent
-	- allow drag and drop "below" another layer
-	- ctrl + z, ctrl + y: undo and redo
-	- allow image rotation
-	- allow text to overflow when prompted and provide a new height dimension, with that allow vertical positioning, default top but allow center and bottom, update flipLayer function with new positioning possibilities
-	- ctrl + t for a new UI to control rotation and dimensions of layer object
-	
-Tutorial
 - Video Tutorial

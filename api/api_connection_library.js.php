@@ -81,6 +81,11 @@ class api_server {
 		}) }));
 	}
 	
+	// expects array of paths
+	dataRequest(data) {
+		this.connection.send(JSON.stringify({ worker_request: data }));
+	}
+	
 	// request overlay from server with project uid and overlay slug
 	requestOverlay(uid, overlay_slug) {
 		return 'http://<?php echo $config->host.':'.$config->host_port; ?>/request_image/?uid='+uid+'&overlay_slug='+overlay_slug+'&'+Date.now();

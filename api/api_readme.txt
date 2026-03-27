@@ -80,3 +80,9 @@ Workers can communicate with all clients, and clients can message the worker by 
 api_server.writePipe({
 	test: 'Send this data to clients if a worker, or send to worker if a client'
 });
+
+## API Request ##
+workers can now request specific data points at any time without listening to it using
+apiserver.dataRequest(['sets/Some/Datapath']);
+which is then returned under
+data.requested_data
