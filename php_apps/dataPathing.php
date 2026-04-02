@@ -15,7 +15,10 @@ class dataPathing {
 			}
 			$ref = $project->data;
 			foreach (explode('/', $value) as $path_pointer) {
-				if (isset($ref->{$path_pointer})) {
+				if ($this->isPathVariable($ref)) {
+					$ref = $this->getRealValue($project, $ref);
+				}
+				if (property_exists($ref,$path_pointer)) {
 					$ref = $ref->{$path_pointer};
 				} else {
 					$ref = null;
