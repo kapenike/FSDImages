@@ -344,7 +344,9 @@ class project {
 								$app_fonts->{$font}->fonts[] = $font_entry;
 							}							
 							// always move imported font to project font directory, assumed newest
-							rename(getBasePath().'/data/'.$uid.'/fonts/'.$font_entry->filename, getBasePath().'/fonts/'.$font_entry->filename);
+							if (file_exists(getBasePath().'/data/'.$uid.'/fonts/'.$font_entry->filename)) {
+								rename(getBasePath().'/data/'.$uid.'/fonts/'.$font_entry->filename, getBasePath().'/fonts/'.$font_entry->filename);
+							}
 						}
 					}
 					app('fonts')->saveFontRegistry($app_fonts);
