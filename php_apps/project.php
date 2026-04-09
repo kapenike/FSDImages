@@ -331,12 +331,13 @@ class project {
 						}
 						// loop font styles within import font container
 						foreach ($font_data->fonts as $font_entry) {
-							$font_index = array_search($font_entry->weight, array_column($app_fonts->{$font}->fonts, 'weight'));
-							if ($font_index !== false) {
+							$font_by_weight_index = array_search($font_entry->weight, array_column($app_fonts->{$font}->fonts, 'weight'));
+							$font_by_style_index = array_search($font_entry->style, array_column($app_fonts->{$font}->fonts, 'style'));
+							if ($font_by_weight_index !== false && $font_by_style_index !== false) {
 								// if style found, remove old font style file, and insert new entry incase of font file changes
 								// do not reload front end under this condition, trade offs of rarity
-								unlink(getBasePath().'/fonts/'.$app_fonts->{$font}->fonts[$font_index]->filename);
-								$app_fonts->{$font}->fonts[$font_index] = $font_entry;
+								unlink(getBasePath().'/fonts/'.$app_fonts->{$font}->fonts[$font_by_weight_index]->filename);
+								$app_fonts->{$font}->fonts[$font_by_weight_index] = $font_entry;
 							} else {
 								// if not found, prepare for front-end notification to reload for new font load
 								$importing_fonts = true;
