@@ -76,6 +76,15 @@ function createUIFromData(container, data, submit_to_application, editor = false
 										}),
 										...section.fields.map((field, field_index) => {
 											
+											// if getRealValue of hide on is falsey, do not show, unless in edit mode
+											if (!editor && field.hide_on != '' && typeof field.hide_on !== 'undefined') {
+												let hide_on = getRealValue(field.hide_on);
+												if (hide_on == 'false' || !hide_on) {
+													return Create('div', { className: 'hidden_field' });
+												}
+											}
+
+											
 											if (field.type == 'text' || field.type == 'number') {
 												
 												return Create('div', {
@@ -483,6 +492,7 @@ function toggleUIEditor(flag) {
 			// return to data update on save
 			GLOBAL.navigation.on_save = updateSourceChanges;
 		}
+		refreshUIBuild(flag);
 	}
 }
 
@@ -1015,6 +1025,19 @@ function editUIField(elem, is_create = false) {
 					]
 				}),
 				Create('span', {
+					innerHTML: 'Hide On',
+					className: 'spanlabel',
+					children: [
+						createPathVariableField({
+							name: 'input_hide_on',
+							value: {
+								value: is_create ? '' : current_data.hide_on ?? ''
+							},
+							allow_path_only: false
+						})
+					]
+				}),
+				Create('span', {
 					innerHTML: 'Save To Path',
 					className: 'spanlabel',
 					id: 'save_to_path_input',
@@ -1059,12 +1082,14 @@ function editUIField(elem, is_create = false) {
 			if (form_data.input_type == 'text') {
 				new_field_data = {
 					type: 'text',
+					hide_on: form_data.input_hide_on,
 					title: form_data.input_label,
 					source: form_data.source_path
 				}
 			} else if (form_data.input_type == 'checkbox') {
 				new_field_data = {
 					type: 'checkbox',
+					hide_on: form_data.input_hide_on,
 					title: form_data.input_label,
 					source: form_data.source_path,
 					value: form_data.checked_value_output
@@ -1072,6 +1097,7 @@ function editUIField(elem, is_create = false) {
 			} else if (form_data.input_type == 'radio' || form_data.input_type == 'select') {
 				new_field_data = {
 					type: form_data.input_type,
+					hide_on: form_data.input_hide_on,
 					title: form_data.input_label,
 					source: form_data.source_path,
 					values: form_data['pair_value_display[]'].map((display, index) => {
@@ -1097,6 +1123,7 @@ function editUIField(elem, is_create = false) {
 			} else if (form_data.input_type == 'dataset') {
 				new_field_data = {
 					type: 'dataset',
+					hide_on: form_data.input_hide_on,
 					title: form_data.input_label,
 					source: form_data.source_path,
 					set: form_data.input_dataset
@@ -1104,12 +1131,14 @@ function editUIField(elem, is_create = false) {
 			} else if (form_data.input_type == 'display') {
 				new_field_data = {
 					type: 'display',
+					hide_on: form_data.input_hide_on,
 					title: form_data.input_label
 				}
 			} else if (form_data.input_type == 'button') {
 				let sub_setter_id = form_data['stash_pair_sub_setter_id_ref'];
 				new_field_data = {
 					type: form_data.input_type,
+					hide_on: form_data.input_hide_on,
 					title: form_data.input_label,
 					sub_setters: form_data['sub_pair_value_display_'+sub_setter_id+'[]'].map((source, sub_index) => {
 						return {

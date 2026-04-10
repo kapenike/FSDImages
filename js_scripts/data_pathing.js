@@ -52,7 +52,7 @@ function toggleOnComparison(value) {
 // determines if path is a direct dataset entry
 function pathIsDirectDatasetEntry(path) {
 	let ref_test = getRealVariableParts(path)[0].variable.split('/');
-	if (ref_test.length == 4 && ref_test[0] == 'sets' && ref_test[2] == 'entries') {
+	if (ref_test.length == 4 && ref_test[0] == 'sets' && ref_test[2] == 'entries' && ref_test[3].slice(0,4) == 'uid_') {
 		return true;
 	}
 	return false;
@@ -61,7 +61,7 @@ function pathIsDirectDatasetEntry(path) {
 // determines if path is a direct dataset entry field (for source setter)
 function pathIsDirectDatasetEntryField(path) {
 	let ref_test = getRealVariableParts(path)[0].variable.split('/');
-	if (ref_test.length == 5 && ref_test[0] == 'sets' && ref_test[2] == 'entries') {
+	if (ref_test.length == 5 && ref_test[0] == 'sets' && ref_test[2] == 'entries' && ref_test[3].slice(0,4) == 'uid_') {
 		return true;
 	}
 	return false;
@@ -77,6 +77,7 @@ function pathIsDatasetCreaterDeleter(path) {
 }
 
 // determines if path contains any reference to a direct dataset entry
+// used as a GAP closer, if a single portion of a variable path is reference chained, this collapses that which can be later used by standard object traversal
 function isPathNestedDataset(path, start_with_master = false) {
 	let dataset_ref = start_with_master ? path : getRealValue(path, 2);
 	if (isPathOnlyVariable(dataset_ref)) {
@@ -93,18 +94,30 @@ function isPathNestedDataset(path, start_with_master = false) {
 function isPathNestedDatasetEntryField(path) {
 	let traverse_path = GLOBAL.active_project.data;
 	let pathing = getRealVariableParts(path)[0].variable.split('/');
-	// must have a remaining path, so pathing check can only be done on path before end (.length-1)
-	for (let i=0; i<pathing.length-1; i++) {
+	
+	// must have a remaining path, so pathing check can only be done on path before end
+	let end = pathing.pop();
+	
+	// loop pathing traversal looking for string reference to "gap close" and end at the fine path key in the provided path
+	for (let i=0; i<pathing.length; i++) {
 		traverse_path = traverse_path[pathing[i]];
 		if (typeof traverse_path === 'string') {
+			
+			// gap close
 			let is_dataset_reference = isPathNestedDataset(traverse_path, true);
 			if (is_dataset_reference) {
-				// if string reference within data pathing contains a direct dataset entry reference, append remaining pathing and test if is a direct dataset entry field reference
-				let combine_path = is_dataset_reference.slice(0, -6)+'/'+pathing.filter((v, i2) => i2 > i).join('/')+'$/var$';
-				if (pathIsDirectDatasetEntryField(combine_path)) {
-					return combine_path;
+				
+				// if final path, check if it satisfies the requirement for source setting
+				if (i == pathing.length-1) {
+					is_dataset_reference = is_dataset_reference.slice(0,-6)+'/'+end+'$/var$';
+					if (pathIsDirectDatasetEntryField(is_dataset_reference)) {
+						return is_dataset_reference;
+					}
+					return false;
 				}
-				return false; 
+				
+				// object traverse further
+				traverse_path = getRealValue(is_dataset_reference);
 			} else {
 				return false;
 			}
@@ -386,6 +399,12 @@ function getRealValue(value, depth = null, base_path = GLOBAL.active_project.dat
 				while (path.length > 0) {
 					
 					let path_part = path.shift();
+					
+					// allow path forwarding before expected end-of-path result during depth searches
+					//  !! dataset path forwarding explicitly uses depth search for this process
+					if (depth !== null && isPathVariable(reference_path)) {
+						reference_path = getRealValue(reference_path, null, base_path, head);
+					}
 					
 					// pathing protection
 					if (typeof reference_path[path_part] === 'undefined') {

@@ -331,13 +331,16 @@ class project {
 						}
 						// loop font styles within import font container
 						foreach ($font_data->fonts as $font_entry) {
-							$font_by_weight_index = array_search($font_entry->weight, array_column($app_fonts->{$font}->fonts, 'weight'));
-							$font_by_style_index = array_search($font_entry->style, array_column($app_fonts->{$font}->fonts, 'style'));
-							if ($font_by_weight_index !== false && $font_by_style_index !== false) {
-								// if style found, remove old font style file, and insert new entry incase of font file changes
-								// do not reload front end under this condition, trade offs of rarity
-								unlink(getBasePath().'/fonts/'.$app_fonts->{$font}->fonts[$font_by_weight_index]->filename);
-								$app_fonts->{$font}->fonts[$font_by_weight_index] = $font_entry;
+							$font_found = null;
+							foreach ($app_fonts->{$font}->fonts as $index => $existing_font) {
+								if ($existing_font->style == $font_entry->style && $existing_font->weight == $font_entry->weight) {
+									$font_found = $index;
+									break;
+								}
+							}
+							if ($font_found !== null) {
+								// if style found, insert new entry incase of font file changes
+								$app_fonts->{$font}->fonts[$font_found] = $font_entry;
 							} else {
 								// if not found, prepare for front-end notification to reload for new font load
 								$importing_fonts = true;
@@ -346,6 +349,9 @@ class project {
 							}							
 							// always move imported font to project font directory, assumed newest
 							if (file_exists(getBasePath().'/data/'.$uid.'/fonts/'.$font_entry->filename)) {
+								if ($font_found !== null && file_exists(getBasePath().'/fonts/'.$app_fonts->{$font}->fonts[$font_found]->filename)) {
+									unlink(getBasePath().'/fonts/'.$app_fonts->{$font}->fonts[$font_found]->filename);
+								}
 								rename(getBasePath().'/data/'.$uid.'/fonts/'.$font_entry->filename, getBasePath().'/fonts/'.$font_entry->filename);
 							}
 						}
