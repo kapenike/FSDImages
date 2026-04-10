@@ -1,13 +1,14 @@
 # FSDImages
 ![FSD Dynamic Data Images](/logo.png)
 - Automate image changes using custom data fields, datasets and asset lists
-- FSDImages changes will automatically update live in an OBS scene
+- Control 3rd party applications like OBS and Voicemeeter!
+- Available websocket API is simple and allows for creating custom apps that manage your applications data and actions
 
 > [!IMPORTANT]  
 > The primary directory **FSDImages** cannot be renamed. FSDImages does not use Apache and therefore has no hierarchical method to manage data paths. The directory named FSDImages is used for relative pathing.
 
-> [!IMPORTANT]
-> When the application is chosen to run on external IPv4, all incoming requests will be subject to whitelisted IP address checks. This list can be modified from the local machine application `file > Whitelisted IP Addresses`
+> [!NOTE]
+> Launching the FSDImages application on your local ipv4 (`php start.php external`) does allow remote access to the application, but only supports a single "controller" at the API level. This will be the first client connected. There is currently no shared data between the two devices, so please control from one device at a time, although multi device controller support will be a future feature. Custom API apps allow many different devices to control separate or shared portions of the application that work in tandem with an active controller. External connections must have their IP whitelisted from the FILE menu's `Whitelisted IP Addresses` tab. This includes any API application with write permissions to the active controller. Please open the [API README.md](api/README.md) for more information. 
 
 ## Windows Download
 - Download and extract from: [https://firststepdesign.co/file/FSDImages.zip](https://firststepdesign.co/file/FSDImages.zip) (28.6 MB)
@@ -37,6 +38,7 @@
 		- `max_input_vars=1000` -> `max_input_vars=10000`
 		- ensure the php_zip extension is enabled `extension=zip`, no `;` preceding it
 		- ensure the php_sockets extension is enabled `extension=sockets`, no `;` preceding it
+    - ensure the php_fileinfo extension is enabled `extension=file_info`, no `;` preceding it
 		
 - Clone or Download and extract the repository
 - Rename the primary directory to `FSDImages` NOT `FSDImages-main`
@@ -47,7 +49,7 @@
 	
 	> php start.php external all
 	
-	- to start the websocket search during launch using `all` and start the application on your external ipv4 rather than localhost using `external`
+	- to start the websocket API server during launch: `all` and start the application on your external ipv4 rather than localhost using: `external`
 	
 - Close the application with
 	> php stop.php
@@ -60,10 +62,9 @@
 	
 - Visit `localhost:8000` (or external IPv4:8000) in your web browser to start using the application!
 
-- Websockets works for Linux and Windows ... no test case for Mac available so either donate one to me or commit a change for all files under  `/api/`
 
 ## To-DO
-
+- Upgrade windows package to use FrankenPHP
 - Overlay editor overhaul
 	- launch with window for open / edit / quick overlay duplicate
 	- fix all drag states to allow x / y lock
@@ -72,7 +73,4 @@
 	- round all movements to the nearest 100th dec
 	- ctrl + t transform feature
 	- ctral + z / ctrl + y
-
-- ReadMe docs for API
-	
 - Video Tutorial
