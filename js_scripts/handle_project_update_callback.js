@@ -7,7 +7,8 @@ function handleProjectUpdateCallback(form_details, created, api_write = false) {
 			key_pair = JSON.parse(key_pair);
 			form_details[key_pair.source] = key_pair.value;
 			
-			// detect and push dependent source changes, self source was pushed through normal capture
+			// detect and push dependent source changes
+			GLOBAL.source_changes.push(key_pair.source);
 			GLOBAL.source_changes.push(...dependentDatasetSourceChanges(key_pair.source));
 
 		});
@@ -21,6 +22,7 @@ function handleProjectUpdateCallback(form_details, created, api_write = false) {
 	if (formatted_create_delete.length > 0) {
 		formatted_create_delete.filter(v => v.type == 'delete').forEach(delete_entry => {
 			delete GLOBAL.active_project.data.sets[delete_entry.set_name].entries[delete_entry.data];
+			GLOBAL.source_changes.push('$var$sets/'+delete_entry.set_name+'/entries/'+delete_entry.data+'$/var$');
 			GLOBAL.source_changes.push(...dependentDatasetSourceChanges('$var$sets/'+delete_entry.set_name+'/entries/'+delete_entry.data+'$/var$'));
 		});
 	}

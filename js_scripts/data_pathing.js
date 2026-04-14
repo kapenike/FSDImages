@@ -61,7 +61,7 @@ function pathIsDirectDatasetEntry(path) {
 // determines if path is a direct dataset entry field (for source setter)
 function pathIsDirectDatasetEntryField(path) {
 	let ref_test = getRealVariableParts(path)[0].variable.split('/');
-	if (ref_test.length == 5 && ref_test[0] == 'sets' && ref_test[2] == 'entries' && ref_test[3].slice(0,4) == 'uid_') {
+	if (ref_test.length == 5 && ref_test[0] == 'sets' && ref_test[2] == 'entries' && ref_test[3].slice(0,4) == 'uid_' && typeof ref_test[4] === 'string') {
 		return true;
 	}
 	return false;
@@ -314,7 +314,11 @@ function checkDataForPathReference(path, data = GLOBAL.active_project.data, app_
 		} else if (typeof current === 'string' && current.indexOf(path) > -1) {
 			source_list.push(temp_app_path);
 		} else if (typeof current === 'string' && isPathOnlyVariable(current)) {
-			source_list.push(...checkDataForPathReference(path, getRealValue(current), temp_app_path, visited));
+			let push = getRealValue(current);
+			// prevent loose path forward handling from passing through when explicit matching is required
+			if (JSON.stringify(push) != JSON.stringify(getRealValue('$var$'+temp_app_path+'$/var$'))) {
+				source_list.push(...checkDataForPathReference(path, push, temp_app_path, visited));
+			}
 		}
 	}
 	return source_list;

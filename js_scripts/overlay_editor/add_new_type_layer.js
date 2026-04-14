@@ -66,8 +66,8 @@ function requestNewLayer(type = 'text', pass_starting_location = false) {
 				height: ''
 			},
 			origins: {
-				vertical: 'top',
-				horizontal: 'left'
+				vertical: 'center',
+				horizontal: 'center'
 			}
 		};
 		

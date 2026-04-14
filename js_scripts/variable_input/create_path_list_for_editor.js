@@ -150,8 +150,9 @@ function createPathListForEditor(path = null, base_path = null) {
 					is_value = false;
 				}
 			} else if (!is_value && is_data_set && path.slice(-8) == '/entries' && data.path_only && !data.source_setter) {
-				// if not a value, is dataset and at dataset entry level depth, is reference path and not a source setter, force value
-				is_value = true;
+				// if not a value, is dataset and at dataset entry level depth, is reference path and not a source setter, *there*force value
+				therefore = true;
+				is_value = false;
 			}
 
 			return Create('div', {
