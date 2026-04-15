@@ -29,6 +29,11 @@ class security {
 		return $this->host_launch_ip == app('FSDImages')->local_host && in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '::1']) || $this->host_launch_ip != app('FSDImages')->local_host && $this->host_launch_ip == $_SERVER['REMOTE_ADDR'];
 	}
 	
+	function isAcceptedIP($ip) {
+		// machine ipv4 or in accepted list
+		return $_SERVER['REMOTE_ADDR'] == $this->local_ipv4 || in_array($_SERVER['REMOTE_ADDR'], $this->ip_accept_list);
+	}
+	
 	function test() {
 		
 		// allow access to api_connection_library.js.php and fonts.php library
@@ -39,7 +44,7 @@ class security {
 		// allow local machine / authorized ips to access worker_auth_connection_key.js.php even when mistmatched localhost to ipv4 application launch
 		if (
 			str_contains(basename($_SERVER['PHP_SELF']), 'worker_auth_connection_key.js.php') && (// access from file only
-				$this->isLocalMachine() || in_array($_SERVER['REMOTE_ADDR'], $this->ip_accept_list) || // local machine / whitelisted ip or...
+				$this->isLocalMachine() || $this->isAcceptedIP($_SERVER['REMOTE_ADDR']) || // local machine / whitelisted ip or...
 				app('server')->getServerData()->host_launch_ip == app('FSDImages')->local_host && // launched on localhost but accessed from local ipv4 (API host server)
 				$_SERVER['REMOTE_ADDR'] == app('server')->ipv4
 			)
@@ -48,7 +53,7 @@ class security {
 		}
 		
 		// if local cli or if local machine or whitelisted ip
-		if (php_sapi_name() === 'cli' || $this->isLocalMachine() || in_array($_SERVER['REMOTE_ADDR'], $this->ip_accept_list)) {
+		if (php_sapi_name() === 'cli' || $this->isLocalMachine() || $this->isAcceptedIP($_SERVER['REMOTE_ADDR'])) {
 			return true;
 		}
 		
