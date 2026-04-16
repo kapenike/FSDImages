@@ -50,7 +50,7 @@ function featureGroupLayerClipPath(layer) {
 					Create('label', {
 						innerHTML: 'Background Color',
 						children: [
-							createColorPicker(layer.clip_path.color || '#ffffffff', function (value) {
+							createColorPicker(layer.clip_path.color || '#ffffff00', function (value) {
 								getLayerById(GLOBAL.overlay_editor.active_layer).clip_path.color = value;
 								printCurrentCanvas();
 							})
@@ -86,7 +86,7 @@ function featureGroupLayerClipPath(layer) {
 									Create('label', {
 										innerHTML: 'Color',
 										children: [
-											createColorPicker(layer.clip_path.border.color || '#ffffffff', function (value) {
+											createColorPicker(layer.clip_path.border.color || '#ffffff00', function (value) {
 												getLayerById(GLOBAL.overlay_editor.active_layer).clip_path.border.color = value;
 												printCurrentCanvas();
 											})
