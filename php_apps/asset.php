@@ -37,7 +37,7 @@ class asset {
 			$new_file = app('files')->upload($data->file, getBasePath().'/data/'.$project_uid.'/sources/', ['fname' => true]);
 			$registry->{$data->slug}->file = $new_file['msg'];
 			$img_data = getimagesize(getBasePath().'/data/'.$project_uid.'/sources/'.$new_file['msg']);
-			$registry->{$data->slug}->is_not_image = $img_data === false ? true : !in_array($img_data[2], [IMAGETYPE_JPEG,IMAGETYPE_PNG,IMAGETYPE_GIF,IMAGETYPE_BMP]);
+			$registry->{$data->slug}->is_not_image = $img_data === false ? true : !in_array($img_data[2], [IMAGETYPE_JPEG,IMAGETYPE_PNG,IMAGETYPE_GIF,IMAGETYPE_BMP,IMAGETYPE_WEBP]);
 			$registry->{$data->slug}->width = $img_data === false ? 0 : $img_data[0];
 			$registry->{$data->slug}->height = $img_data === false ? 0 : $img_data[1];
 			

@@ -122,25 +122,6 @@ function setNavigationSettings() {
 												]
 											})
 										]
-									}),
-									Create('div', {
-										className: 'col',
-										style: {
-											width: '33.3%',
-										},
-										children: [
-											Create('label', {
-												innerHTML: 'Enable Shell Commands',
-												children: [
-													Create('input', {
-														type: 'checkbox',
-														name: 'shell3pa_enable',
-														value: 'true',
-														checked: GLOBAL.active_project.settings?.shell_3pa_enabled
-													})
-												]
-											})
-										]
 									})
 								]
 							}),
@@ -384,8 +365,6 @@ function updateProjectSettings() {
 			// update 3pa
 			GLOBAL.active_project.settings.voicemeeter_3pa_enabled = form_details.vb3pa_enable || false;
 			GLOBAL.active_project.settings.voicemeeter_api_dll = form_details.voicemeeter_api_dll;
-			
-			GLOBAL.active_project.settings.shell_3pa_enabled = form_details.shell3pa_enable || false;
 			
 			GLOBAL.active_project.settings.obs_3pa_enabled = form_details.obs3pa_enable || false;
 			GLOBAL.active_project.settings.obs_websocket_location = form_details.obs_websocket_location;

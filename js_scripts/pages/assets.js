@@ -384,6 +384,21 @@ function setupAssetEditor(slug = null, override_location_write = false) {
 							})
 						: Create('div')
 					),
+					(asset_data != null
+						?	Create('label', {
+								innerHTML: 'Asset Location',
+								children: [
+									Create('input', {
+										type: 'text',
+										readOnly: 'true',
+										onclick: function () { this.focus(); this.select() },
+										type: 'text',
+										value: '/data/'+GLOBAL.active_project.uid+'/sources/'+asset_data.file
+									})
+								]
+							})
+						: Create('div')
+					),
 					(asset_data == null || asset_data.is_not_image
 						? Create('div')
 						:	Create('div', {
