@@ -46,6 +46,15 @@ function createUIFromData(container, data, submit_to_application, editor = false
 						return Create('div', {
 							className: 'row',
 							children: upper_section.cols.map((section, col_index) => {
+								
+								// if getRealValue of hide on is falsey, do not show, unless in edit mode
+								if (!editor && section.hide_on != '' && typeof section.hide_on !== 'undefined') {
+									let hide_on = getRealValue(section.hide_on);
+									if (hide_on == 'false' || !hide_on) {
+										return Create('div', { className: 'hidden_field' });
+									}
+								}
+								
 								return Create('div', {
 									innerHTML: '<h3>'+getRealValue(section.section)+'</h3>',
 									data: JSON.stringify({ section: section_index, column: col_index }),
@@ -798,16 +807,20 @@ function createUIEditMenu(x, y, elem) {
 		if (elem.className == 'ui_field') {
 			
 			// get label title
-			let label_title = elem.children[0];
-			if (label_title.tagName == 'LABEL') {
-				label_title = label_title.childNodes[0].textContent;
+			let label_title = elem?.children[0];
+			if (label_title?.tagName == 'LABEL') {
+				label_title = label_title.childNodes[0]?.textContent;
 			} else {
-				if (elem.children[0].className == 'radio_group') {
+				if (elem.children[0]?.className == 'radio_group') {
 					label_title = elem.children[0].textContent;
 				} else {
-					label_title = elem.children[1].textContent;
+					label_title = elem.children[1]?.textContent;
 				}
 			}
+			if (typeof label_title === 'undefined') {
+				label_title = 'Undefined';
+			}
+			
 			// limit label title length
 			label_title = label_title.length > 20 ? label_title.slice(0,17)+'...' : label_title;
 			
@@ -917,6 +930,19 @@ function editUISection(elem, is_create = false) {
 						})
 					]
 				}),
+				Create('span', {
+					innerHTML: 'Hide On',
+					className: 'spanlabel',
+					children: [
+						createPathVariableField({
+							name: 'input_hide_on',
+							value: {
+								value: is_create ? '' : current_data.hide_on ?? ''
+							},
+							allow_path_only: false
+						})
+					]
+				}),
 				Create('label', {
 					innerHTML: 'Fixed Width (1-24)<br />',
 					children: [
@@ -946,6 +972,7 @@ function editUISection(elem, is_create = false) {
 				let new_section = {
 					section: form_data.section_title,
 					fixed_width: form_data.section_fixed_width,
+					hide_on: form_data.input_hide_on,
 					reset: form_data.section_has_reset ? true : false,
 					fields: []
 				};
@@ -961,6 +988,7 @@ function editUISection(elem, is_create = false) {
 				let current_data = GLOBAL.ui.active_data[current_location.section].cols[current_location.column];
 				current_data.section = form_data.section_title;
 				current_data.fixed_width = form_data.section_fixed_width;
+				current_data.hide_on = form_data.input_hide_on;
 				current_data.reset = form_data.section_has_reset ? true : false;
 			}
 			// refresh current ui generation with new data

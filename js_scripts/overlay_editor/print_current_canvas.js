@@ -33,7 +33,7 @@ function printCurrentCanvas() {
 		let selection_layer = getLayerById(GLOBAL.overlay_editor.active_layer);
 		
 		ctx.lineWidth = 2/GLOBAL.overlay_editor.scale;
-		ctx.setLineDash([6, 8]);
+		ctx.setLineDash([1, 2]);
 		ctx.strokeStyle = '#0051ff';
 		
 		if (selection_layer.type == 'clip_path' && selection_layer.clip_path.type == 'custom') {

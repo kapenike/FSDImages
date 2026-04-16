@@ -49,6 +49,11 @@ html, body {
 	cursor: grabbing;
 }
 
+.editable_ui .ui_field {
+	min-height: 10px;
+	background-color: #444444de;
+}
+
 .editable_ui input, .editable_ui select, .editable_ui .radio_group {
 	background-color: red !important;
 	color: red !important;
