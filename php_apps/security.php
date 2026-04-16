@@ -36,19 +36,15 @@ class security {
 	
 	function test() {
 		
+		$access_url = parse_url($_SERVER['REQUEST_URI']);
+		
 		// allow access to api_connection_library.js.php and fonts.php library
-		if (in_array(basename($_SERVER['PHP_SELF']), ['api_connection_library.js.php', 'fonts']) && str_contains(getcwd(), (app('server')->OS == 'Windows' ? 'FSDImages\api' : 'FSDImages/api'))) {
+		if (in_array($access_url['path'], ['/api/api_connection_library.js.php', '/api_connection_library.js.php', '/api/fonts', '/fonts']) && str_contains(getcwd(), (app('server')->OS == 'Windows' ? 'FSDImages\api' : 'FSDImages/api'))) {
 			return true;
 		}
 		
 		// allow local machine / authorized ips to access worker_auth_connection_key.js.php even when mistmatched localhost to ipv4 application launch
-		if (
-			str_contains(basename($_SERVER['PHP_SELF']), 'worker_auth_connection_key.js.php') && (// access from file only
-				$this->isLocalMachine() || $this->isAcceptedIP($_SERVER['REMOTE_ADDR']) || // local machine / whitelisted ip or...
-				app('server')->getServerData()->host_launch_ip == app('FSDImages')->local_host && // launched on localhost but accessed from local ipv4 (API host server)
-				$_SERVER['REMOTE_ADDR'] == app('server')->ipv4
-			)
-		) {
+		if (in_array($access_url['path'], ['/api/worker_auth_connection_key.js.php', '/worker_auth_connection_key.js.php']) && ($this->isLocalMachine() || $this->isAcceptedIP($_SERVER['REMOTE_ADDR']))) {
 			return true;
 		}
 		
