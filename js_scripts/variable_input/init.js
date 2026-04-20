@@ -81,7 +81,8 @@ function createPathVariableField(settings = {}) {
 					childList: true,
 					subtree: true,
 					characterData: true,
-					characterDataOldValue: true
+					characterDataOldValue: true,
+					attributes: true
 				});
 			}, 1);
 		})();

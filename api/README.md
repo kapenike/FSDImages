@@ -6,7 +6,7 @@
 > [!NOTE]
 > The API is meant to directly interface with the CONTROLLER. The controller is the primary application launched on localhost:8000. This application handles overlay generation and data saving, without it running and connected, API scripts can only receive the current requested data and overlays or request new data. Without an active controller, the API scripts cannot write data to storage, receive live updates from the controller on updated fields or overlays, and cannot send data that will call for an overlay update.
 
-**The API server runs under `/api/`, meaning that access to scripts through a browser will be at `yourlocalipv4:8136/ext/`**
+**The API server runs under `/api/`, meaning that access to scripts through a browser will be at `yourlocalipv4:8136/ext/`. If you would like to create a permanent hyperlink from the controller application to this url (given that your IPV4 is subject to change), `/api/forward/ext/` under the controller application (e.g localhost:8000) will forward to the active API server url.**
 
 The API server was created to allow custom scripts to manage importing 3pa API data. It was also created to manage user input from unauthorized clients. For this reason the API clients function in two specific ways: a Client or a Worker:
 	- Clients can request any data, any overlay, listen to a specific pipe, and write to a Worker only over their declared pipe. A Client cannot directly communicate with the controller. A Client also cannot write to any other clients directly.

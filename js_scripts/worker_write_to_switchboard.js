@@ -16,7 +16,7 @@ function workerWriteToSwitchboard(value_pairs) {
 	// handled one by one and then split off into form_details.create_delete on success
 	for (let i=0; i<value_pairs.length; i++) {
 		let key_value = value_pairs[i];
-		if (pathIsDatasetCreaterDeleter(key_value.source)) {
+		if (key_value.source && pathIsDatasetCreaterDeleter(key_value.source)) {
 			let create_delete_temp_handler = { create_delete: [] };
 			create_delete_temp_handler[key_value.source] = key_value.value;
 			handleCreaterDeleterSetting(create_delete_temp_handler, key_value.source);
