@@ -21,11 +21,10 @@
 function executeCommandList(cl) {
 	
 	// initialize 3pa integration classes
-	let integrations = {
-		vb: new voicemeeter,
-		obs: new obs,
-		http: new http
-	};
+	let integrations = {}
+	Object.keys(INTEGRATIONS).forEach(key => {
+		integrations[key] = eval('new '+INTEGRATIONS[key].class_name);
+	});
 	
 	// if no integrations are active, return
 	if (Object.keys(integrations).every(key => integrations[key].active == false)) {

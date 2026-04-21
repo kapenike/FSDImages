@@ -41,20 +41,55 @@ class project {
 		
 		// disable asset preload
 		$settings->settings->disable_asset_preload = isset($post['disable_asset_preload']);
-		
-		// voicemeeter api
-		$settings->settings->voicemeeter_3pa_enabled = isset($post['vb3pa_enable']);
-		$settings->settings->voicemeeter_api_dll = $post['voicemeeter_api_dll'];
-		
-		// obs api
-		$settings->settings->obs_3pa_enabled = isset($post['obs3pa_enable']);
-		$settings->settings->obs_websocket_location = $post['obs_websocket_location'];
-		$settings->settings->obs_websocket_auth = $post['obs_websocket_auth'];
 
 		file_put_contents(getBasePath().'/data/'.$uid.'/container.json', json_encode($settings));
 		
 		// all good
 		app('respond')->json(true, 'project settings updated.');
+	}
+	
+	function updateIntegrations($uid, $post) {
+		
+		// get settings file, update, then put back
+		$settings = json_decode(file_get_contents(getBasePath().'/data/'.$uid.'/container.json'));
+		
+		// legacy fix for integrations as subset of settings
+		if (!isset($settings->settings->integrations)) {
+			$settings->settings->integrations = (object)[];
+		}
+		
+		// ensure integration id was sent
+		if (!isset($post['integration_id'])) {
+			app('respond')->json(false, 'No integration id sent.');
+		}
+		
+		// ensure integration data container exists
+		if (!isset($settings->settings->integrations->{$post['integration_id']})) {
+			$settings->settings->integrations->{$post['integration_id']} = (object)[];
+		}
+		
+		// post all non system fields directly to object
+		foreach ($post as $key => $value) {
+			if ($key != 'integration_id' && $key != 'project_uid' && $key != 'application') {
+				$settings->settings->integrations->{$post['integration_id']}->{$key} = $value;
+			}
+		}
+		
+		// edge case for enabled field boolean
+		if (!isset($post['enabled']) && isset($settings->settings->integrations->{$post['integration_id']}->enabled)) {
+			$settings->settings->integrations->{$post['integration_id']}->enabled = false;
+		} else if (isset($post['enabled'])) {
+			$settings->settings->integrations->{$post['integration_id']}->enabled = true;
+		}
+		
+		file_put_contents(getBasePath().'/data/'.$uid.'/container.json', json_encode($settings));
+		
+		// all good
+		app('respond')->json(true, 'Project integration updated.', [
+			'integration_id' => $post['integration_id'],
+			'complete_return' => $settings->settings->integrations->{$post['integration_id']}
+		]);
+		
 	}
 	
 	function register($project_name) {
@@ -92,12 +127,19 @@ class project {
 		// create project container json file
 		file_put_contents(getBasePath().'/data/'.$uid.'/container.json', json_encode((object)[
 			'uid' => $uid,
-			'settings' => [
-				'voicemeeter_3pa_enabled' => false,
-				'voicemeeter_api_dll' => 'C:\\Program Files (x86)\\VB\\Voicemeeter\\VoicemeeterRemote64.dll',
-				'obs_3pa_enabled' => false,
-				'obs_websocket_location' => 'localhost:4455',
-				'obs_websocket_auth' => ''
+			'settings' => (object)[
+				'disable_asset_preload' => false,
+				'integrations' => (object)[
+					'voicemeeter' => (object)[
+						'enabled' => false,
+						'api_dll' => 'C:\Program Files (x86)\VB\Voicemeeter\VoicemeeterRemote64.dll'
+					],
+					'obs' => (object)[
+						'enabled' => false,
+						'location' => 'localhost:4455',
+						'auth' => ''
+					]
+				]
 			]
 		]));
 		

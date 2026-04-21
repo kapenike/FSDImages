@@ -84,6 +84,10 @@ switch($_POST['application']) {
 	case 'update_project_settings':
 		app('project')->updateSettings($_POST['uid'], $_POST);
 		break;
+		
+	case 'update_integration_data':
+		app('project')->updateIntegrations($_POST['uid'], $_POST);
+		break;
 	
 	case 'load_project_registration':
 		// return project registry

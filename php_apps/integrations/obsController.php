@@ -9,8 +9,13 @@ class obsController {
 		// obtain connection details from project settings
 		$obs_connection_details = json_decode(file_get_contents(getBasePath().'/data/'.$json->project_uid.'/container.json'))->settings;
 		
+		// ensure connection data exists
+		if (isset($obs_connection_details->integrations) && isset($obs_connection_details->integrations->obs)) {
+			$obs_connection_details = $obs_connection_details->integrations->obs;
+		}
+		
 		// split host and port
-		$split_host_port = explode(':', $obs_connection_details->obs_websocket_location);
+		$split_host_port = explode(':', $obs_connection_details->location);
 
 		// check if obs connection exists
 		$found_obs_client = false;
@@ -48,7 +53,7 @@ class obsController {
 		$API_SERVER->client_details[] = (object)[
 			'uid' => str_pad(++$API_SERVER->client_uid, 4, '0', STR_PAD_LEFT),
 			'type' => 'obs',
-			'ip' => $obs_connection_details->obs_websocket_location,
+			'ip' => $obs_connection_details->location,
 			'host' => $split_host_port[0],
 			'port' => $split_host_port[1]
 		];
@@ -74,7 +79,7 @@ class obsController {
 		// auth process
 		$salt = $response->d->authentication->salt;
 		$challenge = $response->d->authentication->challenge;
-		$secret = base64_encode(hash('sha256', $obs_connection_details->obs_websocket_auth.$salt, true));
+		$secret = base64_encode(hash('sha256', $obs_connection_details->auth.$salt, true));
 		$auth = base64_encode(hash('sha256', $secret.$challenge, true));
 		
 		// send back auth challenge

@@ -12,7 +12,7 @@ class voicemeeterController {
 			long VBVMR_GetParameterFloat(char * szParamName, float * pValue);
 			long VBVMR_SetParameterStringA(char * szParamName, char * szString);
 			long VBVMR_IsParametersDirty(void);
-		", json_decode(file_get_contents(getBasePath().'/data/'.$puid.'/container.json'))->settings->voicemeeter_api_dll);
+		", json_decode(file_get_contents(getBasePath().'/data/'.$puid.'/container.json'))->settings->integrations->voicemeeter->api_dll);
 		
 		// attempt to login
 		if ($ffi->VBVMR_Login() === 0) {
@@ -45,7 +45,7 @@ class voicemeeterController {
 			// logout
 			$ffi->VBVMR_Logout();
 			
-			app('respond')->json(true, 'Error logging into voicemeeter remote api.');
+			app('respond')->json(true, 'VB commands completed.');
 			
 		} else {
 			

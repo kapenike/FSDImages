@@ -1,3 +1,22 @@
+// a declaration of integration classes / display names / and form elements
+const INTEGRATIONS = {
+	vb: {
+		class_name: 'voicemeeter',
+		display: 'Voicemeeter',
+		ui: function () { return getVoicemeeterEntryUI(); }
+	},
+	obs: {
+		class_name: 'obs',
+		display: 'OBS Studio',
+		ui: function () { return getObsEntryUI(); }
+	},
+	http: {
+		class_name: 'http',
+		display: 'HTTP Requests',
+		ui: null
+	}
+};
+
 class integration {
 	
 	// final command list of current integration run

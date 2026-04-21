@@ -116,7 +116,7 @@ class api_controller {
 	}
 	
 	obsconnect() {
-		if (this.status == true && this.state == 'control' && GLOBAL.active_project.settings.obs_3pa_enabled) {
+		if (this.status == true && this.state == 'control' && GLOBAL.active_project.settings?.integrations?.obs?.enabled) {
 			this.connection.send(JSON.stringify({
 				action: 'init_obs_controller',
 				project_uid: GLOBAL.active_project.uid

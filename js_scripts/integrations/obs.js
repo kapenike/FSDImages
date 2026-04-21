@@ -34,7 +34,7 @@ class obs extends integration {
 		// lowkeylame
 		super();
 		
-		this.active = GLOBAL.active_project.settings.obs_3pa_enabled && API_SERVER.status == true;
+		this.active = GLOBAL.active_project.settings?.integrations?.obs?.enabled && API_SERVER.status == true;
 
 	}
 	

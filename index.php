@@ -18,6 +18,13 @@ forEach(app('directoryFileList')->get([], './js_scripts') as $file) {
 // global font object
 var FONTS = null;
 
+// globally prevent form submission on enter
+window.addEventListener('keydown', function(e) {
+  if (e.keyCode === 13) {
+    e.preventDefault();
+  }
+});
+
 document.addEventListener('DOMContentLoaded', function() {
 	// on document ready, import custom fonts into document.fonts, then run initStreamOverlay()
 	FONTS = JSON.parse('<?php echo app('fonts')->getFontList(); ?>');

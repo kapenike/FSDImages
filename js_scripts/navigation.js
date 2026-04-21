@@ -227,6 +227,15 @@ function openFileDropdown() {
 							}),
 							Create('div', {
 								className: 'dropdown_action',
+								innerHTML: 'Integrations',
+								onclick: function () {
+									fileStateManager();
+									GLOBAL.navigation.on_save = updateIntegrationData,
+									setNavigationIntegrations();
+								}
+							}),
+							Create('div', {
+								className: 'dropdown_action',
 								innerHTML: 'Font Manager',
 								onclick: function () {
 									fileStateManager();
