@@ -57,8 +57,10 @@ function handleProjectUpdateCallback(form_details, created, api_write = false) {
 		
 		// execute 3pa command list, 10ms delay to allow for read buffer to complete from previous p2p data and overlay send
 		setTimeout(function () { 
-			executeCommandList(GLOBAL.command_list);
-			GLOBAL.command_list = [];
+			if (GLOBAL.command_list.length > 0) {
+				executeCommandList(GLOBAL.command_list);
+				GLOBAL.command_list = [];
+			}
 		}, 10);
 		
 	});

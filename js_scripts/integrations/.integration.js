@@ -10,6 +10,11 @@ const INTEGRATIONS = {
 		display: 'OBS Studio',
 		ui: function () { return getObsEntryUI(); }
 	},
+	startgg: {
+		class_name: 'startgg',
+		display: 'Start GG',
+		ui: function () { return getStartGGEntryUI(); }
+	},
 	http: {
 		class_name: 'http',
 		display: 'HTTP Requests',

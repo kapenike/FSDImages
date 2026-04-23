@@ -8,7 +8,7 @@ function getVoicemeeterEntryUI() {
 						type: 'checkbox',
 						name: 'enabled',
 						value: 'true',
-						checked: GLOBAL.active_project.settings?.integrations?.voicemeeter?.enabled
+						checked: GLOBAL.active_project.settings?.integrations?.vb?.enabled
 					})
 				]
 			}),
@@ -19,7 +19,7 @@ function getVoicemeeterEntryUI() {
 					Create('input', {
 						type: 'text',
 						name: 'api_dll',
-						value: GLOBAL.active_project.settings?.integrations?.voicemeeter?.api_dll || ''
+						value: GLOBAL.active_project.settings?.integrations?.vb?.api_dll || ''
 					})
 				]
 			})

@@ -172,6 +172,10 @@ class dataset {
 		// save dataset
 		$this->save($post['project_uid'], $dataset->uid, $dataset);
 		
+		// ensure returned dataset has create and delete endpoints after save removed them
+		$dataset->create = '';
+		$dataset->delete = '';
+		
 		// return dataset
 		app('respond')->json(true, $dataset);
 	}

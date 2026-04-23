@@ -535,7 +535,9 @@ class websocket {
 				// edge case: if OBS, check for stray reponse. expected connection close, otherwise ensure unexpected response will not interact with system
 				if ($this->client_details[$index]->type == 'obs') {
 					if (str_contains(substr($data, 4), 'Server stopping.')) {
-						return false;
+						$this->closeClientConnection($index);
+						$index--;
+						continue;
 					} else {
 						// prevent hanging or disconnect on unexpected message from OBS. processInput will discard this message
 						$data = json_encode(['obs' => false]);

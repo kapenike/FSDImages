@@ -36,6 +36,11 @@ class security {
 	
 	function test() {
 		
+		// if local cli or if local machine or whitelisted ip
+		if (php_sapi_name() === 'cli' || $this->isLocalMachine() || $this->isAcceptedIP($_SERVER['REMOTE_ADDR'])) {
+			return true;
+		}
+		
 		$access_url = parse_url($_SERVER['REQUEST_URI']);
 		
 		// allow access to api_connection_library.js.php and fonts.php library
@@ -45,11 +50,6 @@ class security {
 		
 		// allow local machine / authorized ips to access worker_auth_connection_key.js.php even when mistmatched localhost to ipv4 application launch
 		if (in_array($access_url['path'], ['/api/worker_auth_connection_key.js.php', '/worker_auth_connection_key.js.php']) && ($this->isLocalMachine() || $this->isAcceptedIP($_SERVER['REMOTE_ADDR']))) {
-			return true;
-		}
-		
-		// if local cli or if local machine or whitelisted ip
-		if (php_sapi_name() === 'cli' || $this->isLocalMachine() || $this->isAcceptedIP($_SERVER['REMOTE_ADDR'])) {
 			return true;
 		}
 		

@@ -30,7 +30,7 @@ class voicemeeter extends integration {
 		// lowkeylame
 		super();
 		
-		this.active = GLOBAL.active_project.settings?.integrations?.voicemeeter?.enabled;
+		this.active = GLOBAL.active_project.settings?.integrations?.vb?.enabled;
 		
 	}
 	

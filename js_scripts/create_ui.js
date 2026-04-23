@@ -119,8 +119,22 @@ function createUIFromData(container, data, submit_to_application, editor = false
 												// edge case for handling dataset select
 												let dataset_values = null;
 												
+												let temp = false;
+												
 												if (field.type == 'dataset') {
 													
+													// check for valid data set override
+													if (field.set_override && field.set_override.trim() != '') {
+														let set_override = getRealValue(field.set_override);
+														if (typeof set_override === 'string') {
+															set_override = set_override.trim();
+															if (typeof GLOBAL.active_project.data.sets[set_override] !== 'undefined') {
+																temp = true;
+																field.set = set_override;
+															}
+														}
+													}
+
 													if (typeof GLOBAL.active_project.data.sets[field.set] === 'undefined') {
 														dataset_values = [
 															{
@@ -150,7 +164,7 @@ function createUIFromData(container, data, submit_to_application, editor = false
 														});
 													}
 												}
-												
+
 												return Create('div', {
 													className: 'ui_field',
 													data: JSON.stringify({ section: section_index, column: col_index, field: field_index }),
@@ -522,6 +536,10 @@ function getUpperContainer(elem, class_name = null) {
 
 // on mouse down, define a draggable field or section and create a shadow clone to show user is dragging
 function uiEditMouseDown(event) {
+	// prevent action during popup
+	if (Select('#popup')) {
+		return;
+	}
 	if (GLOBAL.ui.drag_elem || event.buttons == '2') {
 		event.preventDefault();
 		return;
@@ -562,6 +580,10 @@ function uiDragSetBorder(elem, side = null) {
 
 // on drag move, highlight possible drop locations and save for use on mouse up
 function uiEditMouseMove(event) {
+	// prevent action during popup
+	if (Select('#popup')) {
+		return;
+	}
 	event.preventDefault();
 	
 	if (GLOBAL.ui.drag_clone) {
@@ -638,6 +660,10 @@ function resetDrag() {
 }
 
 function uiEditMouseUp(event) {
+	// prevent action during popup
+	if (Select('#popup')) {
+		return;
+	}
 	event.preventDefault();
 
 	if (GLOBAL.ui.drop_side != null) {
@@ -718,6 +744,10 @@ function updateUIChange() {
 
 // edit menu
 function uiEditRightMouse(event) {
+	// prevent action during popup
+	if (Select('#popup')) {
+		return;
+	}
 	event.preventDefault();
 	
 	// if dragging, cancel drag
@@ -931,7 +961,7 @@ function editUISection(elem, is_create = false) {
 					]
 				}),
 				Create('span', {
-					innerHTML: 'Hide On',
+					innerHTML: 'Show On',
 					className: 'spanlabel',
 					children: [
 						createPathVariableField({
@@ -1053,7 +1083,7 @@ function editUIField(elem, is_create = false) {
 					]
 				}),
 				Create('span', {
-					innerHTML: 'Hide On',
+					innerHTML: 'Show On',
 					className: 'spanlabel',
 					children: [
 						createPathVariableField({
@@ -1154,7 +1184,8 @@ function editUIField(elem, is_create = false) {
 					hide_on: form_data.input_hide_on,
 					title: form_data.input_label,
 					source: form_data.source_path,
-					set: form_data.input_dataset
+					set: form_data.input_dataset,
+					set_override: form_data.input_variable_dataset,
 				}
 			} else if (form_data.input_type == 'display') {
 				new_field_data = {
@@ -1351,6 +1382,19 @@ function fieldBuilderForDataset(data) {
 						})
 					})
 				]
+			}),
+			Create('span', {
+				innerHTML: 'Active Data Set Variable Override',
+				className: 'spanlabel',
+				children: [
+					createPathVariableField({
+						name: 'input_variable_dataset',
+						value: {
+							value: data == null ? '' : data.set_override || ''
+						},
+						allow_path_only: false
+					})
+				]
 			})
 		]
 	});
@@ -1530,16 +1574,11 @@ function createNewSubSetterField(key_value, id) {
 
 function closePopup() {
 	if (Select('#popup')) {
-		// enabled editor
-		toggleUIEditor(true);
-		
 		Select('#popup').remove();
 	}
 }
 
 function createPopUp(title, content, on_save) {
-	// disable editor while popup is active
-	toggleUIEditor(false);
 	
 	Select('#body').appendChild(Create('div', {
 		id: 'popup',

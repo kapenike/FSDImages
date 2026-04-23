@@ -536,7 +536,7 @@ label {
 }
 
 /* form styles */
-input[type="text"], input[type="color"], input[type="number"], input[type="file"], input[type="checkbox"], textarea, select {
+input[type="text"], input[type="password"], input[type="color"], input[type="number"], input[type="file"], input[type="checkbox"], textarea, select {
 	width: 100%;
 	padding: 8px 12px;
 	font-size: 11px;

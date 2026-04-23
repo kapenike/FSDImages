@@ -28,7 +28,7 @@ function getObsEntryUI() {
 				innerHTML: 'OBS Websocket Password',
 				children: [
 					Create('input', {
-						type: 'text',
+						type: 'password',
 						name: 'auth',
 						value: GLOBAL.active_project.settings?.integrations?.obs?.auth || ''
 					})
