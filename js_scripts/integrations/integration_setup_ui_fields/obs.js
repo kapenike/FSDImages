@@ -30,6 +30,12 @@ function getObsEntryUI() {
 					Create('input', {
 						type: 'password',
 						name: 'auth',
+						onfocus: function () {
+							this.type = 'text';
+						},
+						onblur: function () {
+							this.type = 'password';
+						},
 						value: GLOBAL.active_project.settings?.integrations?.obs?.auth || ''
 					})
 				]
