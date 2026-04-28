@@ -58,7 +58,7 @@ class startgg extends integration {
 		
 		// this integration only accepts a single action, so shift the first sent and use
 		let action = quickstart
-			? { action: 'importAll', preserve: false }
+			? { action: 'importAll', preserve: GLOBAL.active_project.settings?.integrations?.startgg?.preserve_attendees != 'false' }
 			: this.command_list.shift();
 			
 		if (typeof action === 'undefined') {
@@ -319,13 +319,13 @@ class startgg extends integration {
 						set_id: v.id,
 						identifier: v.identifier,
 						title: v.fullRoundText,
-						team_size: team_size
+						team_size: team_size.toString()
 					};
 					if (team_size > max_team_size) {
 						max_team_size = team_size;
 					}
 					for (let i=0; i<2; i++) {
-						entry['team_'+(i+1)+'_score'] = v.slots?.[i]?.standing.stats.score.value;
+						entry['team_'+(i+1)+'_score'] = v.slots?.[i]?.standing?.stats?.score?.value || '0';
 						for (let i2=0; i2<team_size; i2++) {
 							let participant_uid = Object.keys(attendee_ref)[Object.keys(attendee_ref).findIndex(x => attendee_ref[x].id == v.slots?.[i]?.entrant?.participants?.[i2]?.id)];
 							if (typeof participant_uid === 'string') {
@@ -333,7 +333,7 @@ class startgg extends integration {
 							} else {
 								participant_uid = '';
 							}
-							entry['team_'+(i+1)+'_player'+(i2+1)] = participant_uid;
+							entry['team_'+(i+1)+'_player_'+(i2+1)] = participant_uid;
 						}
 					}
 					
@@ -436,7 +436,7 @@ class startgg extends integration {
 
 					// if found, check for updates
 					map.forEach(key => {
-						if (found[key] != entry[key]) {
+						if (found[key] != entry[key] && typeof found[key] !== 'undefined') {
 							update_list.push({
 								source: 'sets/'+dataset+'/entries/'+entry_uid+'/'+key,
 								value: found[key]

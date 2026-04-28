@@ -256,6 +256,9 @@ function getDepthComparisonValue(value, inc = null) {
 }
 
 function getRealVariableParts(value) {
+	if (typeof value !== 'string') {
+		value = value == null ? '' : value.toString();
+	}
 	let return_data = [];
 	let split = value.replaceAll('$var$','$delimiter$').replaceAll('$/var$','$delimiter$').split('$delimiter$');	
 	for (let i=0; i<split.length; i++) {

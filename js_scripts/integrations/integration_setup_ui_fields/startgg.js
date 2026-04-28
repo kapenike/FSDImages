@@ -55,7 +55,7 @@ function getStartGGEntryUI() {
 				innerHTML: 'Quick Import Tournament',
 				onclick: function () {
 					let quickstart = new startgg;
-					quickstart.run(GLOBAL.active_project.settings?.integrations?.startgg?.preserve_attendees != 'false');
+					quickstart.run(true);
 				}
 			})
 		]
