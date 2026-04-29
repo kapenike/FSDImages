@@ -152,7 +152,7 @@ function splitDatasettersFromList(form) {
 				// move direct value setting to dataset push list
 				form.pinpoint_dataset_updates.push(JSON.stringify({
 					source: stripPointer(key),
-					value: form[key]
+					value: form[key].toString()
 				}));
 				delete form[key];
 			} else {
@@ -161,7 +161,7 @@ function splitDatasettersFromList(form) {
 				if (sub_reference) {
 					form.pinpoint_dataset_updates.push(JSON.stringify({
 						source: stripPointer(sub_reference),
-						value: form[key]
+						value: form[key].toString()
 					}));
 					delete form[key];
 				}
@@ -221,6 +221,13 @@ function handleCreaterDeleterSetting(form, key) {
 			return;
 		}
 	}
+	
+	// ensure all values are of type string
+	Object.keys(data).forEach(key => {
+		if (typeof data[key] !== 'string') {
+			data[key] = data[key].toString();
+		}
+	});
 
 	// append final command
 	form.create_delete.push(JSON.stringify({

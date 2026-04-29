@@ -119,26 +119,20 @@ function createUIFromData(container, data, submit_to_application, editor = false
 												// edge case for handling dataset select
 												let dataset_values = null;
 												
-												let temp = false;
-												
 												if (field.type == 'dataset') {
 													
 													// check for valid data set override
-													if (field.set_override && field.set_override.trim() != '') {
+													if (field.set_override.trim() != '') {
 														let set_override = getRealValue(field.set_override);
 														if (typeof set_override === 'string') {
-															set_override = set_override.trim();
-															if (typeof GLOBAL.active_project.data.sets[set_override] !== 'undefined') {
-																temp = true;
-																field.set = set_override;
-															}
+															field.set = set_override.trim();
 														}
 													}
 
 													if (typeof GLOBAL.active_project.data.sets[field.set] === 'undefined') {
 														dataset_values = [
 															{
-																display: '!!Removed Dataset!!',
+																display: '!!Inactive Dataset!!',
 																value: ''
 															}
 														];
