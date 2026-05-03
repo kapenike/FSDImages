@@ -63,11 +63,16 @@ function executeCommandList(cl) {
 	// run priority check, then execute commands for each integration
 	Object.keys(integrations).forEach(key => {
 		
-		// filter out conflicting commands
-		integrations[key].priorityCheck();
+		// if command list not empty
+		if (integrations[key].command_list.length > 0) {
+			
+			// filter out conflicting commands
+			integrations[key].priorityCheck();
+			
+			// run commands
+			integrations[key].run();
 		
-		// run commands
-		integrations[key].run();
+		}
 		
 	});
 	

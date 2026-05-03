@@ -122,7 +122,7 @@ function createUIFromData(container, data, submit_to_application, editor = false
 												if (field.type == 'dataset') {
 													
 													// check for valid data set override
-													if (field.set_override.trim() != '') {
+													if (field.set_override && field.set_override.trim() != '') {
 														let set_override = getRealValue(field.set_override);
 														if (typeof set_override === 'string') {
 															field.set = set_override.trim();
