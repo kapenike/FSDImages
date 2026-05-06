@@ -244,8 +244,8 @@ class startgg extends integration {
 					project_uid: GLOBAL.active_project.uid,
 					uid: GLOBAL.active_project.data.sets[bracket].uid
 				}, (status, data) => {
-					console.log(total_completed);
 					total_completed++;
+					delete GLOBAL.active_project.data.sets[bracket];
 					if (total_completed >= total) {
 						callback();
 					}
