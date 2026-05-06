@@ -228,6 +228,12 @@ function createUIFromData(container, data, submit_to_application, editor = false
 												
 											} else if (field.type == 'checkbox') {
 												
+												// source save to path comparisons can be complex
+												let depth_value = getSetterComparisonValue(field.source);
+												
+												// get value of checkbox based on depth value
+												let checkbox_value = getDepthComparisonValue(field.value);
+												
 												return Create('div', {
 													className: 'ui_field',
 													data: JSON.stringify({ section: section_index, column: col_index, field: field_index }),
@@ -239,9 +245,16 @@ function createUIFromData(container, data, submit_to_application, editor = false
 																Create('input', {
 																	type: field.type,
 																	name: field.source,
-																	onkeydown: function () { logSourceChange(this); },
-																	data: getDepthComparisonValue(field.value),
-																	checked: getRealValue(field.source) != ''
+																	onchange: function () {
+																		let pre_check_status = this.checked;
+																		MSelect('[name="'+field.source+'"]', {
+																			checked: false
+																		});
+																		this.checked = pre_check_status;
+																		logSourceChange(this);
+																	},
+																	data: checkbox_value,
+																	checked: depth_value == checkbox_value
 																}),
 																Create('br')
 															]
@@ -420,9 +433,21 @@ function updateSourceChanges() {
 		}
 	});
 	
-	// include non-checked boxes and set value to data value rather than boolean
+	// include non-checked boxes and set value to data value rather than boolean, also look for association and submit only checked value or empty
+	let checkbox_name_list = [];
 	Array.from(MSelect('input[type="checkbox"]')).filter(v => v.name != '').forEach(checkbox => {
-		form_details[checkbox.name] = checkbox.checked ? checkbox.data : '';
+		if (!checkbox_name_list.includes(checkbox.name)) {
+			checkbox_name_list.push(checkbox.name);
+		}
+	});
+	checkbox_name_list.forEach(checkbox_name => {
+		let found_value = '';
+		Array.from(MSelect('[name="'+checkbox_name+'"]')).forEach(checkbox_elem => {
+			if (checkbox_elem.checked) {
+				found_value = checkbox_elem.data;
+			}
+		});
+		form_details[checkbox_name] = found_value;
 	});
 	
 	// discover action button form entries

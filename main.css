@@ -480,6 +480,10 @@ html, body {
 	}
 }
 
+.ui_field label {
+	font-size: 12px;
+}
+
 label {
 	color: #ededed;
 }
