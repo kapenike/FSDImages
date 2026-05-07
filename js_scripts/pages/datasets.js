@@ -376,6 +376,10 @@ function collapseAll(is) {
 }
 
 function preventDuplicate(type, input) {
+	
+	// ensure proper naming
+	input.value = input.value.replaceAll(' ', '_').replace(/[\W]/g, '');
+	
 	let inc = 0;
 	if (type == 'dataset_title') {
 		let original_display = input.data;
