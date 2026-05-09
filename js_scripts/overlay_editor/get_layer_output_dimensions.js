@@ -81,12 +81,40 @@ function getLayerOutputDimensions(layer) {
 			
 			// if a true clipping path, use layer dimensions and positions
 			if (layer.clip_path.type == 'square') {
+				
 				output.x = layer.clip_path.offset.x;
 				output.y = layer.clip_path.offset.y;
 				output.layer_x = layer.clip_path.offset.x;
 				output.layer_y = layer.clip_path.offset.y;
 				output.width = layer.clip_path.dimensions.width;
 				output.height = layer.clip_path.dimensions.height;
+				
+			} else if (layer.clip_path.type == 'custom') {
+				
+				// if custom clip path, get bounding dimensions for the case of nested group drag
+				let max_x = null;
+				let max_y = null;
+				
+				layer.clip_path.clip_points.forEach(points => {
+					
+					if (output.x == null || points.x < output.x) {
+						output.x = points.x;
+					}
+					if (output.y == null || points.y < output.y) {
+						output.y = points.y;
+					}
+					if (max_x == null || points.x > max_x) {
+						max_x = points.x;
+					}
+					if (max_y == null || points.y > max_y) {
+						max_y = points.y;
+					}
+					
+				});
+				
+				output.width = max_x - output.x;
+				output.height = max_y - output.y;
+				
 			} else {
 				
 				let max_x = null;

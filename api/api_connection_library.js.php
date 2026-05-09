@@ -5,7 +5,7 @@ require('../app.php');
 
 // get api connection details
 $config = (object)[
-	'host' => app('server')->ipv4,
+	'host' => explode(':', app('server')->getServerData()->client_running_on)[0],
 	'ws_port' => app('server')->websocket_port,
 	'host_port' => app('server')->client_port
 ];

@@ -12,15 +12,43 @@ function moveGroupLayer(layer, obj) {
 			x_diff = typeof obj.x !== 'undefined' ? obj.x - layer_dim.x : 0;
 			y_diff = typeof obj.y !== 'undefined' ? obj.y - layer_dim.y : 0;
 		}
-		layer.layers.forEach(sub_layer => {
-			sub_layer.offset.x = precise(sub_layer.offset.x + x_diff);
-			sub_layer.offset.y = precise(sub_layer.offset.y + y_diff);
-		});
+		recurseMoveAllGroup(layer.layers, x_diff, y_diff);
+		if (layer.clip_path.type == 'custom') {
+			layer.clip_path.clip_points = layer.clip_path.clip_points.map(points => {
+				return {
+					x: points.x + x_diff,
+					y: points.y + y_diff
+				};
+			});
+		}
 		// if contains clip path, move clip path origin coords too
 		if (layer.clip_path.type != 'none') {
-			layer.clip_path.offset.x = precise(layer.clip_path.offset.x + x_diff);
-			layer.clip_path.offset.y = precise(layer.clip_path.offset.y + y_diff);
+			layer.clip_path.offset.x = preciseAndTrim(layer.clip_path.offset.x + x_diff);
+			layer.clip_path.offset.y = preciseAndTrim(layer.clip_path.offset.y + y_diff);
 		}
 		
 	}
+}
+
+function recurseMoveAllGroup(layers, x_diff, y_diff) {
+	layers.forEach(sub_layer => {
+		if (sub_layer.clip_path) {
+			if (sub_layer.clip_path.type == 'custom') {
+				sub_layer.clip_path.clip_points = sub_layer.clip_path.clip_points.map(points => {
+					return {
+						x: points.x + x_diff,
+						y: points.y + y_diff
+					};
+				});
+			}
+			recurseMoveAllGroup(sub_layer.layers, x_diff, y_diff);
+			if (sub_layer.clip_path.type != 'none') {
+				sub_layer.clip_path.offset.x = preciseAndTrim(sub_layer.clip_path.offset.x + x_diff);
+				sub_layer.clip_path.offset.y = preciseAndTrim(sub_layer.clip_path.offset.y + y_diff);
+			}
+		} else {
+			sub_layer.offset.x = preciseAndTrim(sub_layer.offset.x + x_diff);
+			sub_layer.offset.y = preciseAndTrim(sub_layer.offset.y + y_diff);
+		}
+	});
 }
