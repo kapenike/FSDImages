@@ -12,7 +12,7 @@ class voicemeeterController {
 			long VBVMR_GetParameterFloat(char * szParamName, float * pValue);
 			long VBVMR_SetParameterStringA(char * szParamName, char * szString);
 			long VBVMR_IsParametersDirty(void);
-		", json_decode(file_get_contents(getBasePath().'/data/'.$puid.'/container.json'))->settings->integrations->voicemeeter->api_dll);
+		", json_decode(file_get_contents(getBasePath().'/data/'.$puid.'/container.json'))->settings->integrations->vb->api_dll);
 		
 		// attempt to login
 		if ($ffi->VBVMR_Login() === 0) {
