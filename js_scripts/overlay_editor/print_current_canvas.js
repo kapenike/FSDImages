@@ -34,10 +34,17 @@ function printCurrentCanvas() {
 		
 		ctx.lineWidth = 2/GLOBAL.overlay_editor.scale;
 		ctx.setLineDash([1, 2]);
-		ctx.strokeStyle = '#0051ff';
 		
-		if (selection_layer.type == 'clip_path' && selection_layer.clip_path.type == 'custom') {
+		// if transform, use different color code
+		if (GLOBAL.overlay_editor.tools.transform) {
+			ctx.strokeStyle = '#32cd32';
+		} else {
+			ctx.strokeStyle = '#0051ff';
+		}
+		
+		if (selection_layer.type == 'clip_path' && selection_layer.clip_path.type == 'custom' && GLOBAL.overlay_editor.tools.transform == false) {
 			
+			// custom clip path selection
 			GLOBAL.overlay_editor.active_layer_selection = {
 				custom_clip_path: true,
 				points: JSON.parse(JSON.stringify(selection_layer.clip_path.clip_points)),
@@ -100,13 +107,20 @@ function printCurrentCanvas() {
 					ctx.strokeRect(out_dim.x, out_dim.y, out_dim.width, out_dim.height);
 				}
 				
-				// save selection area for dragging logic
+				// save selection area for eventWithinActiveSelection
 				GLOBAL.overlay_editor.active_layer_selection = out_dim;
+				
 			} else {
 				GLOBAL.overlay_editor.active_layer_selection = null;
 			}
 		
 		}
+		
+		// if transform tool is active, print sizing boxes
+		if (GLOBAL.overlay_editor.tools.transform == true && GLOBAL.overlay_editor.active_layer_selection != null) {
+			transformToolPrintSizingBoxes();
+		}
+		
 	}
 	
 }

@@ -1,4 +1,6 @@
 function imageEditorMouseMove(event) {
+	
+	// drag layer elements in layer window pane
 	if (GLOBAL.overlay_editor.image_editor_drag != null) {
 		
 		if (GLOBAL.overlay_editor.image_editor_drag.dragging == false) {
@@ -56,13 +58,13 @@ function imageEditorMouseMove(event) {
 		
 		// sub group movement
 		if (selection_layer_reference.type == 'clip_path') {
-			dragRecurseSubGroupMovement(selection_layer_reference.layers, GLOBAL.overlay_editor.layer_selection_drag.sub_layer_origins, x_diff, y_diff);
+			dragRecurseSubGroupMovement(selection_layer_reference.layers, GLOBAL.overlay_editor.layer_selection_drag.clip_origins.children, x_diff, y_diff);
 		}
 
 		// if custom clip path, move all points of master layer
-		if (selection_layer_reference.type == 'clip_path' && selection_layer_reference.clip_path.type == 'custom') {
+		if (selection_layer_reference.type == 'clip_path' && selection_layer_reference.clip_path.type == 'custom' && GLOBAL.overlay_editor.layer_selection_drag.clip_origins.parent != null) {
 			for (let i=0; i<selection_layer_reference.clip_path.clip_points.length; i++) {
-				let origin = GLOBAL.overlay_editor.layer_selection_drag.custom_clip_path_origins[i];
+				let origin = GLOBAL.overlay_editor.layer_selection_drag.clip_origins.parent[i];
 				selection_layer_reference.clip_path.clip_points[i] = {
 					x: preciseAndTrim(origin.x - x_diff),
 					y: preciseAndTrim(origin.y - y_diff)
@@ -105,6 +107,15 @@ function imageEditorMouseMove(event) {
 		}
 		printCurrentCanvas();
 		
+	} else if (GLOBAL.overlay_editor.transform_action_drag) {
+		
+		// translate window cursor position to canvas position
+		let translate_cursor = translateWindowToCanvas(event.clientX, event.clientY);
+		
+		// transform action drag
+		transformActionDrag(translate_cursor);
+		printCurrentCanvas();
+		
 	}
 	
 }
@@ -122,8 +133,8 @@ function dragRecurseSubGroupMovement(layers, origins, x_diff, y_diff) {
 			if (sub_layer.clip_path.type == 'custom') {
 				for (let i2=0; i2<sub_layer.clip_path.clip_points.length; i2++) {
 					layers[i].clip_path.clip_points[i2] = {
-						x: preciseAndTrim(sub_origins.custom_clip_path_origins[i2].x - x_diff),
-						y: preciseAndTrim(sub_origins.custom_clip_path_origins[i2].y - y_diff)
+						x: preciseAndTrim(sub_origins.sub_clip_origin[i2].x - x_diff),
+						y: preciseAndTrim(sub_origins.sub_clip_origin[i2].y - y_diff)
 					}
 				}
 			}

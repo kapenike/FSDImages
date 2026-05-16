@@ -13,9 +13,10 @@ function featureTextRotation(layer) {
 						children: [
 							Create('input', {
 								type: 'number',
+								step: '0.2',
 								value: layer.style.rotation ?? 0,
 								onkeyup: function () {
-									let rotation = parseInt(this.value);
+									let rotation = precise(this.value);
 									if (rotation > 360) {
 										rotation = 0;
 										this.value = rotation;
@@ -28,7 +29,7 @@ function featureTextRotation(layer) {
 									printCurrentCanvas();
 								},
 								onchange: function () {
-									let rotation = parseInt(this.value);
+									let rotation = precise(this.value);
 									if (rotation > 360) {
 										rotation = 0;
 										this.value = rotation;

@@ -93,5 +93,10 @@ function imageEditorMouseUp(event) {
 		// reset custom clip path point drag
 		GLOBAL.overlay_editor.custom_clip_path.drag_point = null;
 		
+	} else if (GLOBAL.overlay_editor.transform_action_drag != null) {
+		
+		// reset transform drag
+		GLOBAL.overlay_editor.transform_action_drag = null;
+		
 	}
 }

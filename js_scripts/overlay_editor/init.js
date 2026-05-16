@@ -20,6 +20,9 @@ function editOverlay(slug) {
 		}
 	}
 	
+	// container for overlay editor tool states
+	resetToolState();
+	
 	// generate overlay editor ui
 	generateOverlayEditorUI();
 	
@@ -29,6 +32,12 @@ function editOverlay(slug) {
 	// init event listeners for editor tools
 	createImageEditorListeners();
 	
+}
+
+function resetToolState() {
+	GLOBAL.overlay_editor.tools = {
+		transform: false
+	};
 }
 
 function resizeValueInits(isInit = false) {

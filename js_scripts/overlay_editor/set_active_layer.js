@@ -8,6 +8,9 @@ function setActiveLayer(index, from_context_menu = false) {
 	// set active layer index
 	GLOBAL.overlay_editor.active_layer = index == null ? null : index.toString().split('_').filter(x => x != 'layer').join('_');
 	
+	// reset tool state
+	resetToolState();
+	
 	// print new canvas to use selection region on the new active layer
 	printCurrentCanvas();
 	

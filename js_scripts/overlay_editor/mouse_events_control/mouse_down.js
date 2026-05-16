@@ -8,10 +8,10 @@ function imageEditorMouseDown(event) {
 	// translate window cursor position to canvas position
 	let translate_cursor = translateWindowToCanvas(event.clientX, event.clientY);
 	
-	// check if point drag on custom clip path layer
+	// check if point drag on custom clip path layer, prevented during transform feature
 	if (GLOBAL.overlay_editor.active_layer != null) {
 		let layer = getLayerById(GLOBAL.overlay_editor.active_layer);
-		if (layer.type == 'clip_path' && layer.clip_path.type == 'custom') {
+		if (layer.type == 'clip_path' && layer.clip_path.type == 'custom' && GLOBAL.overlay_editor.tools.transform == false) {
 			
 			// define selection radius
 			let radius_selection = definePolygonPointSize();
@@ -54,6 +54,8 @@ function imageEditorMouseDown(event) {
 	if (event.target.id == 'workspace') {
 		
 		if (eventWithinActiveSelection(translate_cursor)) {
+
+			// layer drag master object
 			GLOBAL.overlay_editor.layer_selection_drag = {
 				origin: {
 					x: event.clientX,
@@ -63,21 +65,34 @@ function imageEditorMouseDown(event) {
 					x: GLOBAL.overlay_editor.active_layer_selection.layer_x,
 					y: GLOBAL.overlay_editor.active_layer_selection.layer_y
 				},
-				sub_layer_origins: null
+				clip_origins: null
 			}
 			
-			// if custom clip path, stash point origins for master drag, sub custom clip path origins are stored within the `sub_layer_origins` method below
-			if (GLOBAL.overlay_editor.active_layer_selection.custom_clip_path) {
-				GLOBAL.overlay_editor.layer_selection_drag.custom_clip_path_origins = GLOBAL.overlay_editor.active_layer_selection.points;
-			}
-			
-			// stash group layer children origins
+			// get layer
 			let layer = getLayerById(GLOBAL.overlay_editor.active_layer);
+			
+			// stash group origins
 			if (typeof layer.clip_path !== 'undefined') {
-				GLOBAL.overlay_editor.layer_selection_drag.sub_layer_origins = recurseLayerSubOrigins(layer.layers);
+				GLOBAL.overlay_editor.layer_selection_drag.clip_origins = {
+					parent: null,
+					children: null
+				};
+				// stash immediate points on custom clip path
+				if (layer.clip_path.type == 'custom') {
+					// this is not guaranteed to have the points stashed within "active_layer_selection" because of the transform feature, grab from active layer instead
+					GLOBAL.overlay_editor.layer_selection_drag.clip_origins.parent = JSON.parse(JSON.stringify(layer.clip_path.clip_points));
+				}
+				// stash all child origins
+				GLOBAL.overlay_editor.layer_selection_drag.clip_origins.children = recurseLayerSubOrigins(layer.layers);
 			}
 			
-			// prevent canvas drag if selection drag true
+			// prevent further actions if selection drag true
+			return;
+		}
+		
+		// check for transform action drags
+		if (initTransformActionDrag(translate_cursor)) {
+			// if init returns true, prevent further actions
 			return;
 		}
 		
@@ -106,7 +121,7 @@ function recurseLayerSubOrigins(layers) {
 			}
 			// if custom clip path, also stash point origins (dereferenced)
 			if (v.clip_path.type == 'custom') {
-				return_sub_origins.custom_clip_path_origins = JSON.parse(JSON.stringify(v.clip_path.clip_points));
+				return_sub_origins.sub_clip_origin = JSON.parse(JSON.stringify(v.clip_path.clip_points));
 			}
 			// if square clip path, also stash offset origins (dereferenced)
 			if (v.clip_path.type == 'square') {
