@@ -46,20 +46,23 @@ function initHotKeyListeners() {
 			GLOBAL.held_keys.t = true;
 		}
 		
+		// detect if is overlay editor and not input field
+		let is_oec = Select('#image_editor') && !isInputField(event);
+		
 		// hotkey actions
 		if (GLOBAL.held_keys.ctrl && GLOBAL.held_keys.s) {
 			// save
 			event.preventDefault();
 			GLOBAL.held_keys.reset = true;
 			onSaveAction();
-		} else if (GLOBAL.held_keys.shift && GLOBAL.held_keys.d) {
+		} else if (GLOBAL.held_keys.shift && GLOBAL.held_keys.d && is_oec) {
 			// remove layer selection
 			event.preventDefault();
 			GLOBAL.held_keys.reset = true;
 			if (GLOBAL.overlay_editor.active_layer != null) {
 				setActiveLayer(null);
 			}
-		} else if (GLOBAL.held_keys.shift && GLOBAL.held_keys.t) {
+		} else if (GLOBAL.held_keys.shift && GLOBAL.held_keys.t && is_oec) {
 			// enabled transform tool
 			event.preventDefault();
 			GLOBAL.held_keys.reset = true;
@@ -87,4 +90,10 @@ function initHotKeyListeners() {
 		GLOBAL.held_keys.reset = false;
 	});
 	
+}
+
+function isInputField(e) {
+	return ['INPUT','TEXTAREA'].includes(e?.target.tagName)
+		?	['text','password','date','datetime-local','email'].includes(e.target.type)
+		: e?.target.isContentEditable;
 }
