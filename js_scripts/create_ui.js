@@ -106,7 +106,17 @@ function createUIFromData(container, data, submit_to_application, editor = false
 																Create('input', {
 																	type: field.type,
 																	name: field.source,
-																	onkeydown: function () { logSourceChange(this); },
+																	onkeydown: function () { 
+																		logSourceChange(this);
+																	},
+																	onkeypress: (field.auto_save == 'true'
+																		? function (event) {
+																				if (event.keyCode == 13) {
+																					onSaveAction();
+																				}
+																			}
+																		: () => {}
+																	), 
 																	value: getRealValue(field.source)
 																})
 															]
@@ -168,7 +178,10 @@ function createUIFromData(container, data, submit_to_application, editor = false
 															children: [
 																Create('select', {
 																	name: field.source,
-																	onchange: function () { logSourceChange(this); },
+																	onchange: (field.auto_save == 'true'
+																		?	function () { logSourceChange(this); onSaveAction(); }
+																		: function () { logSourceChange(this); }
+																	),
 																	children: (dataset_values == null ? field.values : dataset_values).map(option => {
 																		
 																		// source save to path comparisons can be complex
@@ -211,6 +224,10 @@ function createUIFromData(container, data, submit_to_application, editor = false
 																		Create('input', {
 																			type: 'radio',
 																			onclick: function () { logSourceChange(this); },
+																			onchange: (field.auto_save == 'true'
+																				?	function () { onSaveAction(); }
+																				: () => {}
+																			),
 																			name: field.source,
 																			value: radio_value,
 																			checked: radio_value == depth_value,
@@ -245,6 +262,10 @@ function createUIFromData(container, data, submit_to_application, editor = false
 																Create('input', {
 																	type: field.type,
 																	name: field.source,
+																	checkForAutoSave: (field.auto_save == 'true'
+																		?	function () { onSaveAction(); }
+																		: () => {}
+																	),
 																	onchange: function () {
 																		let pre_check_status = this.checked;
 																		MSelect('[name="'+field.source+'"]', {
@@ -252,6 +273,7 @@ function createUIFromData(container, data, submit_to_application, editor = false
 																		});
 																		this.checked = pre_check_status;
 																		logSourceChange(this);
+																		this.checkForAutoSave();
 																	},
 																	data: checkbox_value,
 																	checked: depth_value == checkbox_value
@@ -967,19 +989,6 @@ function editUISection(elem, is_create = false) {
 					value: elem.data
 				}),
 				Create('span', {
-					innerHTML: 'Section Title',
-					className: 'spanlabel',
-					children: [
-						createPathVariableField({
-							name: 'section_title',
-							value: {
-								value: is_create ? '' : current_data.section
-							},
-							allow_path_only: false
-						})
-					]
-				}),
-				Create('span', {
 					innerHTML: 'Show On',
 					className: 'spanlabel',
 					children: [
@@ -987,6 +996,19 @@ function editUISection(elem, is_create = false) {
 							name: 'input_hide_on',
 							value: {
 								value: is_create ? '' : current_data.hide_on ?? ''
+							},
+							allow_path_only: false
+						})
+					]
+				}),
+				Create('span', {
+					innerHTML: 'Section Title',
+					className: 'spanlabel',
+					children: [
+						createPathVariableField({
+							name: 'section_title',
+							value: {
+								value: is_create ? '' : current_data.section
 							},
 							allow_path_only: false
 						})
@@ -1083,6 +1105,19 @@ function editUIField(elem, is_create = false) {
 					name: 'current_location',
 					value: elem.data
 				}),
+				Create('span', {
+					innerHTML: 'Show On',
+					className: 'spanlabel',
+					children: [
+						createPathVariableField({
+							name: 'input_hide_on',
+							value: {
+								value: is_create ? '' : current_data.hide_on ?? ''
+							},
+							allow_path_only: false
+						})
+					]
+				}),
 				Create('label', {
 					innerHTML: 'Input Type',
 					children: [
@@ -1101,16 +1136,17 @@ function editUIField(elem, is_create = false) {
 						})
 					]
 				}),
-				Create('span', {
-					innerHTML: 'Show On',
-					className: 'spanlabel',
+				Create('label', {
+					id: 'auto_save_on_change',
 					children: [
-						createPathVariableField({
-							name: 'input_hide_on',
-							value: {
-								value: is_create ? '' : current_data.hide_on ?? ''
-							},
-							allow_path_only: false
+						Create('input', {
+							type: 'checkbox',
+							name: 'auto_save',
+							value: 'true',
+							checked: is_create ? false : current_data.auto_save ?? ''
+						}),
+						Create('span', {
+							innerHTML: ' Auto Save On Change',
 						})
 					]
 				}),
@@ -1160,6 +1196,7 @@ function editUIField(elem, is_create = false) {
 				new_field_data = {
 					type: 'text',
 					hide_on: form_data.input_hide_on,
+					auto_save: form_data.auto_save,
 					title: form_data.input_label,
 					source: form_data.source_path
 				}
@@ -1167,6 +1204,7 @@ function editUIField(elem, is_create = false) {
 				new_field_data = {
 					type: 'checkbox',
 					hide_on: form_data.input_hide_on,
+					auto_save: form_data.auto_save,
 					title: form_data.input_label,
 					source: form_data.source_path,
 					value: form_data.checked_value_output
@@ -1175,6 +1213,7 @@ function editUIField(elem, is_create = false) {
 				new_field_data = {
 					type: form_data.input_type,
 					hide_on: form_data.input_hide_on,
+					auto_save: form_data.auto_save,
 					title: form_data.input_label,
 					source: form_data.source_path,
 					values: form_data['pair_value_display[]'].map((display, index) => {
@@ -1201,6 +1240,7 @@ function editUIField(elem, is_create = false) {
 				new_field_data = {
 					type: 'dataset',
 					hide_on: form_data.input_hide_on,
+					auto_save: form_data.auto_save,
 					title: form_data.input_label,
 					source: form_data.source_path,
 					set: form_data.input_dataset,
@@ -1421,6 +1461,7 @@ function fieldBuilderForDataset(data) {
 
 function fieldBuilderForDisplay(data) {
 	Select('#save_to_path_input').remove();
+	Select('#auto_save_on_change').remove();
 	Select('#input_edit_options', {
 		innerHTML: ''
 	});

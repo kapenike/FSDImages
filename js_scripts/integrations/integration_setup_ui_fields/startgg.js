@@ -54,8 +54,12 @@ function getStartGGEntryUI() {
 				type: 'button',
 				innerHTML: 'Quick Import Tournament',
 				onclick: function () {
-					let quickstart = new startgg;
-					quickstart.run(true);
+					updateIntegrationData((status) => {
+						if (status) {
+							let quickstart = new startgg;
+							quickstart.run(true);
+						}
+					});
 				}
 			})
 		]

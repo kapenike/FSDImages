@@ -224,7 +224,9 @@ function handleCreaterDeleterSetting(form, key) {
 	
 	// ensure all values are of type string
 	Object.keys(data).forEach(key => {
-		if (typeof data[key] !== 'string') {
+		if (typeof data[key] === 'undefined') {
+			data[key] = '';
+		} else if (typeof data[key] !== 'string') {
 			data[key] = data[key].toString();
 		}
 	});

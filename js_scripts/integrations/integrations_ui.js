@@ -91,7 +91,7 @@ function setupIntegrationsInput(key) {
 	})
 }
 
-function updateIntegrationData() {
+function updateIntegrationData(callback = ()=>{}) {
 	
 	// use form style capture to easily inherit form capture methods
 	let form_details = formToObj('integration_creation_form');
@@ -107,8 +107,10 @@ function updateIntegrationData() {
 		
 		if (status && data.status) {
 			GLOBAL.active_project.settings.integrations[data.integration_id] = data.complete_return;
+			callback(true);
 		} else {
 			notify(data.msg)
+			callback(false);
 		}
 		
 	}, 'body');
