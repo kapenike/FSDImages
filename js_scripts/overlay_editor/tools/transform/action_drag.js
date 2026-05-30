@@ -74,6 +74,12 @@ function loopTransformActionDrag(ref, layer, action, x_diff, y_diff) {
 		let is_left = (action.indexOf('left') > -1 ? -1 : 1);
 		let is_top = (action.indexOf('top') > -1 ? -1 : 1);
 		
+		// if shift held, center image on change ... size differential is now double
+		if (GLOBAL.held_keys.shift) {
+			x_diff = x_diff * 2;
+			y_diff = y_diff * 2;
+		}
+		
 		// ensure ref dimensions exist, stashed for faster access in remaining drag movements
 		if (ref.dimensions.width == '' || ref.dimensions.height == '') {
 			let image_default_size = getRealValue(ref.value);
@@ -132,6 +138,30 @@ function loopTransformActionDrag(ref, layer, action, x_diff, y_diff) {
 				}
 			}
 			
+		}
+		
+		// if shift held, center position image on change
+		if (GLOBAL.held_keys.shift) {
+			if (layer.origins.horizontal == 'center') {
+				x_diff = 0;
+			} else {
+				x_diff = x_diff/2;
+				if (layer.origins.horizontal == 'left') {
+					is_left = -1;
+				} else if (layer.origins.horizontal == 'right') {
+					is_left = 1;
+				}
+			}
+			if (layer.origins.vertical == 'center') {
+				y_diff = 0;
+			} else {
+				y_diff = y_diff/2;
+				if (layer.origins.vertical == 'top') {
+					is_top = -1;
+				} else if (layer.origins.vertical == 'bottom') {
+					is_top = 1;
+				}
+			}
 		}
 		
 		layer.offset.x = layer.origins.horizontal == 'center'

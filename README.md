@@ -39,6 +39,7 @@
 		- ensure the php_zip extension is enabled `extension=zip`, no `;` preceding it
 		- ensure the php_sockets extension is enabled `extension=sockets`, no `;` preceding it
     - ensure the php_fileinfo extension is enabled `extension=file_info`, no `;` preceding it
+		- ensure the php_curl extension is enabled `extension=curl`, no `;` preceding it
 		
 - Clone or Download and extract the repository
 - Rename the primary directory to `FSDImages` NOT `FSDImages-main`
