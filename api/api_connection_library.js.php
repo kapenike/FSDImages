@@ -4,11 +4,7 @@
 require('../app.php');
 
 // get api connection details
-$config = (object)[
-	'host' => explode(':', app('server')->getServerData()->client_running_on)[0],
-	'ws_port' => app('server')->websocket_port,
-	'host_port' => app('server')->client_port
-];
+$config = app('server')->requestConnectionDetails();
 
 
 ?>
@@ -22,7 +18,7 @@ class api_server {
 	constructor(project_uid, listeners, event_functions, is_self_controlled = true) {
 		
 		// create connection
-		this.connection = new WebSocket('ws://<?php echo $config->host.':'.$config->ws_port; ?>');
+		this.connection = new WebSocket('ws://<?php echo $config->api_ip.':'.$config->ws_port; ?>');
 		
 		this.project_uid = project_uid;
 		this.listeners = listeners;
@@ -88,13 +84,13 @@ class api_server {
 	
 	// request overlay from server with project uid and overlay slug
 	requestOverlay(uid, overlay_slug) {
-		return 'http://<?php echo $config->host.':'.$config->host_port; ?>/request_image/?uid='+uid+'&overlay_slug='+overlay_slug+'&'+Date.now();
+		return 'http://<?php echo $config->api_ip.':'.$config->client_port; ?>/request_image/?uid='+uid+'&overlay_slug='+overlay_slug+'&'+Date.now();
 	}
 	
 	// request asset image from server using project uid and asset_slug OR filename with "is_file" flag set to true
 	requestAsset(uid, asset_slug, is_file = false) {
 		let asset_reference = is_file ? 'asset_filename='+asset_slug : 'asset_slug='+asset_slug;
-		return 'http://<?php echo $config->host.':'.$config->host_port; ?>/request_image/?uid='+uid+'&'+asset_reference+'&time='+Date.now();
+		return 'http://<?php echo $config->api_ip.':'.$config->client_port; ?>/request_image/?uid='+uid+'&'+asset_reference+'&time='+Date.now();
 	}
 	
 }

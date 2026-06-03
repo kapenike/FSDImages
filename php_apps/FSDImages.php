@@ -2,32 +2,33 @@
 
 class FSDImages {
 	
-	// location of locally served application
-	public $local_host = 'localhost';
-	public $application_port = '8000';
-	public $application_ip = null;
-	
 	function start($args) {
 		
 		// return running ip:ports to cli
 		$cli_notif = (object)[];
 		
+		// only available on windows currently, allow api server to launch on a given network adapter
+		$use_adapter = false;
+		for ($i=0; $i<count($args); $i++) {
+			if (str_contains($args[$i], 'websocket_use_adapter=')) {
+				$use_adapter = trim(explode('websocket_use_adapter=',$args[$i])[1]);
+				break;
+			}
+		}
+		
 		// if websocket only start
 		if (in_array('websocket', $args)) {
 			
-			$cli_notif->client = app('server')->launchApiServer();
+			$cli_notif->client = app('server')->launchApiServer($use_adapter);
 			
 		} else {
 		
-			// check if application should run on external ipv4 or localhost (external IP called via 'php start_client.php external')
-			$this->application_ip = (in_array('external', $args) ? app('server')->ipv4 : $this->local_host);
-			
-			// start client
-			$cli_notif->host = app('server')->launchApplication($this->application_ip);
+			// start client, "external" arg determines if it should launch on ipv4 or localhost
+			$cli_notif->host = app('server')->launchApplication(in_array('external', $args));
 			
 			// if CLI includes 'all', start websocket server and client server as well
 			if (in_array('all', $args)) {
-				$cli_notif->client = app('server')->launchApiServer();
+				$cli_notif->client = app('server')->launchApiServer($use_adapter);
 			}
 		
 		}

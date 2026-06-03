@@ -18,6 +18,8 @@
 - Websocket server can be initialized from the launcher or within the application itself
 
 *The windows download includes an example project by default. Check it out to learn how the application works!*
+> [!NOTE]
+> For developers running on windows, launch parameter `websocket_use_adapter=` can be used to launch the API server (client and host) on a separate network for public / private interactions. (e.g.) on Windows the default launch will use the IPv4 address under section `Ethernet adapter Ethernet:`, but with a custom script launch of `php start.php all external websocket_use_adapter="Wireless LAN adapter Wi-Fi:"` ... the application can bridge the transfer gap of a private LAN and a public WIFI network. Built for public wifi interactions that influence a private network broadcast!
 
 
 ## Linux / MacOS install

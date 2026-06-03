@@ -55,7 +55,7 @@ class api_controller {
 	connect() {
 		
 		// controller connection init
-		this.connection = new WebSocket('ws://'+this.details.ipv4+':'+this.details.ws_port);
+		this.connection = new WebSocket('ws://'+this.details.api_ip+':'+this.details.ws_port);
 		
 		// validate controller status
 		this.connection.addEventListener('open', (event) => {

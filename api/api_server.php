@@ -24,7 +24,7 @@ class websocket {
 		// setup server
 		$this->server = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 		socket_set_option($this->server, SOL_SOCKET, SO_REUSEADDR, 1);
-		socket_bind($this->server, $config->ipv4, $config->ws_port);
+		socket_bind($this->server, $config->api_ip, $config->ws_port);
 		socket_listen($this->server);
 		
 		// server will run in non blocking mode

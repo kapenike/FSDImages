@@ -5,11 +5,16 @@ class security {
 	private $local_ipv4 = null;
 	private $ip_accept_list = [];
 	private $host_launch_ip = null;
+	private $api_launch_ip = null;
+	private $local_host = null;
 	
 	function __construct() {
-		$this->local_ipv4 = app('server')->ipv4;
+		$server_data = app('server')->getServerData();
+		$this->local_ipv4 = $server_data->ipv4;
+		$this->local_host = app('server')->local_host;
 		$this->requestIPAcceptList();
-		$this->host_launch_ip = app('server')->getServerData()->host_launch_ip;
+		$this->host_launch_ip = $server_data->host_launch_ip;
+		$this->api_launch_ip = $server_data->api_ip;
 	}
 	
 	function saveIPAcceptList() {
@@ -26,12 +31,12 @@ class security {
 	}
 	
 	function isLocalMachine() {
-		return $this->host_launch_ip == app('FSDImages')->local_host && in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '::1']) || $this->host_launch_ip != app('FSDImages')->local_host && $this->host_launch_ip == $_SERVER['REMOTE_ADDR'];
+		return $this->host_launch_ip == $this->local_host && in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '::1']) || $this->host_launch_ip != $this->local_host && $this->host_launch_ip == $_SERVER['REMOTE_ADDR'];
 	}
 	
 	function isAcceptedIP($ip) {
 		// machine ipv4 or in accepted list
-		return $_SERVER['REMOTE_ADDR'] == $this->local_ipv4 || in_array($_SERVER['REMOTE_ADDR'], $this->ip_accept_list);
+		return $_SERVER['REMOTE_ADDR'] == $this->local_ipv4 || $_SERVER['REMOTE_ADDR'] == $this->api_launch_ip || in_array($_SERVER['REMOTE_ADDR'], $this->ip_accept_list);
 	}
 	
 	function test() {
@@ -45,11 +50,6 @@ class security {
 		
 		// allow access to api_connection_library.js.php and fonts.php library
 		if (in_array($access_url['path'], ['/api/api_connection_library.js.php', '/api_connection_library.js.php', '/api/fonts', '/fonts']) && str_contains(getcwd(), (app('server')->OS == 'Windows' ? 'FSDImages\api' : 'FSDImages/api'))) {
-			return true;
-		}
-		
-		// allow local machine / authorized ips to access worker_auth_connection_key.js.php even when mistmatched localhost to ipv4 application launch
-		if (in_array($access_url['path'], ['/api/worker_auth_connection_key.js.php', '/worker_auth_connection_key.js.php']) && ($this->isLocalMachine() || $this->isAcceptedIP($_SERVER['REMOTE_ADDR']))) {
 			return true;
 		}
 		

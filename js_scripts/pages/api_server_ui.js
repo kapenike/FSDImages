@@ -180,7 +180,7 @@ function updateServerStatus() {
 													readOnly: 'true',
 													onclick: function () { this.focus(); this.select() },
 													type: 'text',
-													value: 'http://'+API_SERVER.details.ipv4+':'+API_SERVER.details.client_port
+													value: 'http://'+API_SERVER.details.api_ip+':'+API_SERVER.details.client_port
 												})
 											]
 										})
@@ -229,7 +229,7 @@ function updateServerStatus() {
 													},
 													id: 'generate_auto_connect_overlay_slug',
 													onchange: function () {
-														Select('#generate_auto_connect_overlay_output').value = 'http://'+API_SERVER.details.ipv4+':'+API_SERVER.details.client_port+'?uid='+Select('#generate_auto_connect_overlay_project_id').value+'&overlay='+this.value
+														Select('#generate_auto_connect_overlay_output').value = 'http://'+API_SERVER.details.api_ip+':'+API_SERVER.details.client_port+'?uid='+Select('#generate_auto_connect_overlay_project_id').value+'&overlay='+this.value
 													}
 												}),
 												Create('input', {
