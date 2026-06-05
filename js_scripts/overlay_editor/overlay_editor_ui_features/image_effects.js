@@ -7,19 +7,51 @@ function featureImageEffects(layer) {
 				innerHTML: 'Image Effects'
 			}),
 			Create('div', {
+				className: 'row',
 				children: [
-					Create('label', {
-						innerHTML: 'Grayscale',
+					Create('div', {
+						className: 'col',
+						style: {
+							width: '25%'
+						},
 						children: [
-							Create('br'),
-							Create('input', {
-								type: 'checkbox',
-								checked: layer.effects.grayscale ? true : false,
-								value: true,
-								onchange: function () {
-									getLayerById(GLOBAL.overlay_editor.active_layer).effects.grayscale = this.checked;
-									printCurrentCanvas();
-								}
+							Create('label', {
+								innerHTML: 'Grayscale',
+								children: [
+									Create('br'),
+									Create('input', {
+										type: 'checkbox',
+										checked: layer.effects.grayscale ? true : false,
+										value: true,
+										onchange: function () {
+											getLayerById(GLOBAL.overlay_editor.active_layer).effects.grayscale = this.checked;
+											printCurrentCanvas();
+										}
+									})
+								]
+							})
+						]
+					}),
+					Create('div', {
+						className: 'col',
+						style: {
+							width: '25%'
+						},
+						children: [
+							Create('label', {
+								innerHTML: 'Mirror',
+								children: [
+									Create('br'),
+									Create('input', {
+										type: 'checkbox',
+										checked: layer.effects.mirror ? true : false,
+										value: true,
+										onchange: function () {
+											getLayerById(GLOBAL.overlay_editor.active_layer).effects.mirror = this.checked;
+											printCurrentCanvas();
+										}
+									})
+								]
 							})
 						]
 					})

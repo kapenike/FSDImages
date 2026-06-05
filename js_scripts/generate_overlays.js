@@ -302,7 +302,7 @@ function requestUsedImageKeys(layers, keys = []) {
 function generateOverlay(ctx, output_overlays, overlay) {
 	
 	// reset canvas
-	ctx.clearRect(0, 0, 1920, 1080);
+	ctx.clearRect(0, 0, overlay.dimensions.width, overlay.dimensions.height);
 	
 	// print layers recursively
 	printLayers(ctx, overlay.layers, true);
@@ -391,20 +391,34 @@ function printImage(ctx, layer) {
 			origins_offset_x -= output_width;
 		}
 		
+		// calculate position for effects manipulation
+		let output_x = layer.offset.x + parseInt(value.offset_x) + origins_offset_x;
+		let output_y = layer.offset.y + parseInt(value.offset_y) + origins_offset_y;
+		
 		// image effects
 		if (layer.effects.grayscale) {
 			ctx.filter = 'grayscale(100%)';
 		}
+		if (layer.effects.mirror) {
+			output_x = 0-output_x-output_width;
+			ctx.scale(-1,1);
+		}
 		
 		ctx.drawImage(
 			value.source,
-			layer.offset.x + parseInt(value.offset_x) + origins_offset_x,
-			layer.offset.y + parseInt(value.offset_y) + origins_offset_y,
+			output_x,
+			output_y,
 			output_width,
 			output_height
 		);
 		
-		ctx.filter = 'none';
+		// reset image effects
+		if (layer.effects.grayscale) {
+			ctx.filter = 'none';
+		}
+		if (layer.effects.mirror) {
+			ctx.scale(1,1);
+		}
 		
 		return true;
 		
