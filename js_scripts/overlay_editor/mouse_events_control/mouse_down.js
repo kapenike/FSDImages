@@ -91,7 +91,7 @@ function imageEditorMouseDown(event) {
 		}
 		
 		// check for transform action drags
-		if (initTransformActionDrag(translate_cursor)) {
+		if (GLOBAL.overlay_editor.active_layer && initTransformActionDrag(translate_cursor)) {
 			// if init returns true, prevent further actions
 			return;
 		}

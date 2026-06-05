@@ -417,7 +417,7 @@ function printImage(ctx, layer) {
 			ctx.filter = 'none';
 		}
 		if (layer.effects.mirror) {
-			ctx.scale(1,1);
+			ctx.scale(-1,1);
 		}
 		
 		return true;
