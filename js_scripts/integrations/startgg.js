@@ -123,6 +123,11 @@ class startgg extends integration {
 								prefix
 								user {
 									genderPronoun
+									location {
+										city
+										state
+										country
+									}
 								}
 							}
 						}
@@ -141,13 +146,16 @@ class startgg extends integration {
 						display: v.gamerTag,
 						id: v.id.toString(),
 						prefix: v.prefix || '',
+						city: v.user.location.city || '',
+						state: v.user.location.state || '',
+						country: v.user.location.country || '',
 						pronouns: v.user.genderPronoun || ''
 					}
 				});
 				
 				this.importDataset('SGG_Attendees',
 					entries,
-					['display','id','prefix','pronouns'], 
+					['display','id','prefix','city','state','country','pronouns'], 
 					{ entries: 'id', preserve: preserve },
 					() => {
 						// if set to process all, continue to importing brackets
