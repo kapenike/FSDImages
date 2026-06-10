@@ -121,7 +121,7 @@ class startgg extends integration {
 						callback(merge_obj);
 					} else {
 						// only merge new object if past page one
-						if (pointer[last_key].pageInfo.page > 1) {
+						if (variables.page > 1) {
 							pointer[last_key].push(...new_pointer[last_key].nodes);
 						}
 						// increment page variable
