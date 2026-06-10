@@ -125,4 +125,5 @@ class api_controller {
 	}
 	
 }
-const API_SERVER = new api_controller();
+
+// CALL TO API CONTROLLER INIT WITHIN DOMCONTENTLOADED EVENT WITHIN INDEX.PHP

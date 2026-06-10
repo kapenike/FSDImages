@@ -17,8 +17,12 @@ forEach(app('directoryFileList')->get([], './js_scripts') as $file) {
 <script>
 // global font object
 var FONTS = null;
+// global api server object
+var API_SERVER = null;
 
 document.addEventListener('DOMContentLoaded', function() {
+	// init api server connection
+	API_SERVER = new api_controller();
 	// on document ready, import custom fonts into document.fonts, then run initStreamOverlay()
 	FONTS = JSON.parse('<?php echo app('fonts')->getFontList(); ?>');
 	let loaded_fonts = 0;

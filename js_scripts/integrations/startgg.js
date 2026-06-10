@@ -84,7 +84,7 @@ class startgg extends integration {
 		
 	}
 	
-	query(query, variables, callback) {
+	query(query, variables, callback, page_merge = null, merge_obj = null) {
 		fetch('https://api.start.gg/gql/alpha', {
 			method: 'POST',
 			headers: {
@@ -97,10 +97,41 @@ class startgg extends integration {
 		}).then((data) => {
 			if (typeof data.success !== 'undefined' && data.success == false || data.errors) {
 				ajaxRemoveLoader('body');
-				notify('Error connecting to Start.GG. Please check your integration configs "Tournament Slug" and "Developer Auth Token" fields.<br /><strong>StartGG Error:</strong> '+data.message+'');
+				notify('Error connecting to Start.GG. Please check your integration configs "Tournament Slug" and "Developer Auth Token" fields.<br /><strong>StartGG Error:</strong> '+(data.message || data.errors?.[0]?.message)+'');
 				return;
 			} else {
-				callback(data);
+				// paging requested
+				if (page_merge != null) {
+					if (merge_obj == null) {
+						merge_obj = data;
+					}
+					// define path to page info and new pointer data
+					let pointer = merge_obj;
+					let new_pointer = data;
+					page_merge.page_on.forEach((v, i) => {
+						if (i < page_merge.page_on.length-1) {
+							pointer = pointer[v];
+							new_pointer = new_pointer[v];
+						}
+					});
+					// last key used inline for original object reference setter
+					let last_key = page_merge.page_on[page_merge.page_on.length-1];
+					if (variables.page >= pointer[last_key].pageInfo.totalPages) {
+						// if paging has ended, return data to callback
+						callback(merge_obj);
+					} else {
+						// only merge new object if past page one
+						if (pointer[last_key].pageInfo.page > 1) {
+							pointer[last_key].push(...new_pointer[last_key].nodes);
+						}
+						// increment page variable
+						variables.page++;
+						// query into next page
+						this.query(query, variables, callback, page_merge, merge_obj);
+					}
+				} else {
+					callback(data);
+				}
 			}
 		});
 	}
@@ -280,7 +311,9 @@ class startgg extends integration {
 						name
 						sets(page: $page, perPage: $perPage, sortType: STANDARD) {
 							pageInfo {
-								total
+								page
+								totalPages
+								perPage
 							}
 							nodes {
 								id
@@ -310,7 +343,7 @@ class startgg extends integration {
 			{
 				phaseId: phase_id,
 				page: 1,
-				perPage: 512
+				perPage: 100
 			},
 			(data) => {
 				
@@ -369,6 +402,9 @@ class startgg extends integration {
 				);
 				
 				
+			},
+			{
+				page_on: ['data','phase','sets']
 			}
 		);
 		
