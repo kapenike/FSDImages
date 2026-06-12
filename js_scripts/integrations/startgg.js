@@ -109,20 +109,16 @@ class startgg extends integration {
 					let pointer = merge_obj;
 					let new_pointer = data;
 					page_merge.page_on.forEach((v, i) => {
-						if (i < page_merge.page_on.length-1) {
-							pointer = pointer[v];
-							new_pointer = new_pointer[v];
-						}
+						pointer = pointer[v];
+						new_pointer = new_pointer[v];
 					});
-					// last key used inline for original object reference setter
-					let last_key = page_merge.page_on[page_merge.page_on.length-1];
-					if (variables.page >= pointer[last_key].pageInfo.totalPages) {
+					if (variables.page >= pointer.pageInfo.totalPages) {
 						// if paging has ended, return data to callback
 						callback(merge_obj);
 					} else {
 						// only merge new object if past page one
 						if (variables.page > 1) {
-							pointer[last_key].push(...new_pointer[last_key].nodes);
+							pointer.nodes.push(...new_pointer.nodes);
 						}
 						// increment page variable
 						variables.page++;

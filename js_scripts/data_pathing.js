@@ -467,8 +467,13 @@ function getRealValue(value, depth = null, base_path = GLOBAL.active_project.dat
 	} else {
 		
 		// allow eval on flat string
-		if (typeof value === 'string' && value.slice(0,6) == 'eval::') {
-			value = eval(value.slice(6)).toString();
+		if (typeof value === 'string') {
+			if (value.slice(0,6) == 'eval::') {
+				value = eval(value.slice(6)).toString();
+			} else if (value.slice(0,5) == 'obj::') {
+				// special case to convert eval string into expected object
+				value = getRealValue(eval(value.slice(5)).toString());
+			}
 		}
 		
 	}
