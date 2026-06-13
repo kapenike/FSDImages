@@ -173,10 +173,10 @@ class startgg extends integration {
 						display: v.gamerTag,
 						id: v.id.toString(),
 						prefix: v.prefix || '',
-						city: v.user.location.city || '',
-						state: v.user.location.state || '',
-						country: v.user.location.country || '',
-						pronouns: v.user.genderPronoun || ''
+						city: v.user?.location.city || '',
+						state: v.user?.location.state || '',
+						country: v.user?.location.country || '',
+						pronouns: v.user?.genderPronoun || ''
 					}
 				});
 				
@@ -205,13 +205,17 @@ class startgg extends integration {
 		
 		this.query(
 			`
-				query TournamentPhases($slug: String!) {
+				query TournamentPhasesAndTeamSizes($slug: String!) {
 					tournament(slug: $slug) {
 						id
 						name
 						events {
 							id
 							name
+							teamRosterSize {
+								minPlayers
+								maxPlayers
+							}
 							phases {
 								id
 								name
@@ -235,6 +239,7 @@ class startgg extends integration {
 						entries.push({
 							display: tournament_event.name+' - '+phase.name,
 							bracket: 'SGG_'+tournament_event.name+' : '+phase.name,
+							team_size: (tournament_event.teamRosterSize == null ? 1 : Math.max(tournament_event.teamRosterSize.maxPlayers, tournament_event.teamRosterSize.minPlayers)).toString(),
 							event_id: tournament_event.id.toString(),
 							phase_id: phase.id.toString()
 						});
@@ -252,7 +257,7 @@ class startgg extends integration {
 				
 				this.importDataset('SGG_Tournament',
 					entries,
-					['display','bracket','event_id','phase_id'], 
+					['display','bracket','team_size','event_id','phase_id'], 
 					{ entries: 'phase_id', preserve: false },
 					() => {
 						this.manageBracketContainers(brackets, () => {
@@ -305,7 +310,7 @@ class startgg extends integration {
 					phase(id: $phaseId) {
 						id
 						name
-						sets(page: $page, perPage: $perPage, sortType: STANDARD) {
+						sets(page: $page, perPage: $perPage, sortType: STANDARD, filters: { state: [1,2] }) {
 							pageInfo {
 								page
 								totalPages
@@ -339,32 +344,36 @@ class startgg extends integration {
 			{
 				phaseId: phase_id,
 				page: 1,
-				perPage: 100
+				perPage: 50
 			},
 			(data) => {
 				
 				let attendee_ref = GLOBAL.active_project.data.sets.SGG_Attendees.entries;
-				let max_team_size = 0;
+				let phase_ref = GLOBAL.active_project.data.sets.SGG_Tournament.entries;
+				let team_size_lookup = Object.keys(phase_ref).findIndex(x => phase_ref[x].phase_id == phase_id);
+				if (team_size_lookup < 0) {
+					notify('Phase lookup failed.');
+					ajaxRemoveLoader('body');
+					return;
+				}
+				team_size_lookup = phase_ref[Object.keys(phase_ref)[team_size_lookup]].team_size;
 		
 				let entries = data.data.phase.sets.nodes.map(v => {
 					let team_1 = v.slots?.[0] || null;
 					let team_2 = v.slots?.[1] || null;
-					let team_size = Math.max((team_1?.entrant?.participants?.length || 0), (team_2?.entrant?.participants?.length || 0));
 					
 					let entry = {
 						display: v.identifier+' - '+v.fullRoundText+': '+(team_1?.entrant?.name || '?')+' vs '+(team_2?.entrant?.name || '?'),
 						set_id: v.id,
 						identifier: v.identifier,
 						title: v.fullRoundText,
-						team_size: team_size.toString()
+						team_size: team_size_lookup
 					};
-					if (team_size > max_team_size) {
-						max_team_size = team_size;
-					}
 					for (let i=0; i<2; i++) {
 						entry['team_'+(i+1)+'_score'] = v.slots?.[i]?.standing?.stats?.score?.value || '0';
-						for (let i2=0; i2<team_size; i2++) {
-							let participant_uid = Object.keys(attendee_ref)[Object.keys(attendee_ref).findIndex(x => attendee_ref[x].id == v.slots?.[i]?.entrant?.participants?.[i2]?.id)];
+						for (let i2=0; i2<team_size_lookup; i2++) {
+							let find_index = Object.keys(attendee_ref).findIndex(x => attendee_ref[x].id == v.slots?.[i]?.entrant?.participants?.[i2]?.id);
+							let participant_uid = find_index > -1 ? Object.keys(attendee_ref)[find_index] : null;
 							if (typeof participant_uid === 'string') {
 								participant_uid = '$var$$pointer$1$/pointer$sets/SGG_Attendees/entries/'+participant_uid+'$/var$';
 							} else {
@@ -391,7 +400,7 @@ class startgg extends integration {
 				this.importDataset(phase.bracket,
 					entries,
 					Object.keys(entries[0]), 
-					{ entries: 'set_id', preserve: false },
+					{ entries: 'set_id', preserve: true },
 					() => {
 						this.checkForSwitchBoardRefresh();
 					}
