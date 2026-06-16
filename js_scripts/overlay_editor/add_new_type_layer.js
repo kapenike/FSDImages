@@ -7,8 +7,8 @@ function requestNewLayer(type = 'text', pass_starting_location = false) {
 	
 	// if overlay is not new and undefined, center new layer created from layers UI in the current canvas window
 	if (GLOBAL.overlay_editor.current) {
-		x = GLOBAL.overlay_editor.current.dimensions.width/2+GLOBAL.overlay_editor.canvas_window.x;
-		y = GLOBAL.overlay_editor.current.dimensions.height/2+GLOBAL.overlay_editor.canvas_window.y;
+		x = (((GLOBAL.overlay_editor.current.dimensions.width/2)*GLOBAL.overlay_editor.scale) + GLOBAL.overlay_editor.canvas_window.x)/GLOBAL.overlay_editor.scale;
+		y = (((GLOBAL.overlay_editor.current.dimensions.height/2)*GLOBAL.overlay_editor.scale) + GLOBAL.overlay_editor.canvas_window.y)/GLOBAL.overlay_editor.scale;
 	}
 	
 	// if passing start location, override

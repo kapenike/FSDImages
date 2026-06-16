@@ -97,6 +97,7 @@ function imageEditorMouseUp(event) {
 		
 		// reset transform drag
 		GLOBAL.overlay_editor.transform_action_drag = null;
+		setupLayerInfoEditor();
 		
 	}
 }
