@@ -241,7 +241,8 @@ class startgg extends integration {
 							bracket: 'SGG_'+tournament_event.name+' : '+phase.name,
 							team_size: (tournament_event.teamRosterSize == null ? 1 : Math.max(tournament_event.teamRosterSize.maxPlayers, tournament_event.teamRosterSize.minPlayers)).toString(),
 							event_id: tournament_event.id.toString(),
-							phase_id: phase.id.toString()
+							phase_id: phase.id.toString(),
+							last_set_update: '1767294000'
 						});
 					});
 				});
@@ -257,7 +258,7 @@ class startgg extends integration {
 				
 				this.importDataset('SGG_Tournament',
 					entries,
-					['display','bracket','team_size','event_id','phase_id'], 
+					['display','bracket','team_size','event_id','phase_id','last_set_update'], 
 					{ entries: 'phase_id', preserve: false },
 					() => {
 						this.manageBracketContainers(brackets, () => {
@@ -304,13 +305,24 @@ class startgg extends integration {
 	
 	importBracket(phase_id) {
 		
+		let phase_ref = GLOBAL.active_project.data.sets.SGG_Tournament.entries;
+		let phase_lookup_uid = Object.keys(phase_ref).findIndex(x => phase_ref[x].phase_id == phase_id);
+		if (phase_lookup_uid < 0) {
+			notify('Phase lookup failed.');
+			ajaxRemoveLoader('body');
+			return;
+		}
+		phase_lookup_uid = Object.keys(phase_ref)[phase_lookup_uid];
+		let phase_lookup = phase_ref[phase_lookup_uid];
+		let start_lookup_time = Date.now();
+		
 		this.query(
 			`
-				query PhaseSets($phaseId: ID!, $page: Int!, $perPage: Int!) {
+				query PhaseSets($phaseId: ID!, $page: Int!, $perPage: Int!, $updateTime: Timestamp!) {
 					phase(id: $phaseId) {
 						id
 						name
-						sets(page: $page, perPage: $perPage, sortType: STANDARD, filters: { state: [1,2] }) {
+						sets(page: $page, perPage: $perPage, sortType: STANDARD, filters: { updatedAfter: $updateTime }) {
 							pageInfo {
 								page
 								totalPages
@@ -344,19 +356,13 @@ class startgg extends integration {
 			{
 				phaseId: phase_id,
 				page: 1,
-				perPage: 50
+				perPage: 50,
+				updateTime: parseInt(phase_lookup.last_set_update)
 			},
 			(data) => {
 				
 				let attendee_ref = GLOBAL.active_project.data.sets.SGG_Attendees.entries;
-				let phase_ref = GLOBAL.active_project.data.sets.SGG_Tournament.entries;
-				let team_size_lookup = Object.keys(phase_ref).findIndex(x => phase_ref[x].phase_id == phase_id);
-				if (team_size_lookup < 0) {
-					notify('Phase lookup failed.');
-					ajaxRemoveLoader('body');
-					return;
-				}
-				team_size_lookup = phase_ref[Object.keys(phase_ref)[team_size_lookup]].team_size;
+				let team_size_lookup = phase_lookup.team_size;
 		
 				let entries = data.data.phase.sets.nodes.map(v => {
 					let team_1 = v.slots?.[0] || null;
@@ -393,16 +399,36 @@ class startgg extends integration {
 					return;
 				}
 		
-				// check if phase container exists, create if not, then update
-				let set_entries = GLOBAL.active_project.data.sets.SGG_Tournament.entries;
-				let phase = set_entries[Object.keys(set_entries).filter(v => set_entries[v].phase_id == phase_id).pop()];
-				
-				this.importDataset(phase.bracket,
+				// check if phase container exists, create if not, then update				
+				this.importDataset(phase_lookup.bracket,
 					entries,
 					Object.keys(entries[0]), 
 					{ entries: 'set_id', preserve: true },
 					() => {
-						this.checkForSwitchBoardRefresh();
+						// update phase last set lookup time
+						let pin_point_timestamp_update = [JSON.stringify({
+							source: '$var$sets/SGG_Tournament/entries/'+phase_lookup_uid+'/last_set_update$/var$',
+							value: start_lookup_time
+						})];
+						ajax('POST', '/requestor.php', {
+							application: 'update_project_details',
+							uid: GLOBAL.active_project.uid,
+							pinpoint_dataset_updates: pin_point_timestamp_update,
+							create_delete: []
+						}, (status, data) => {
+							if (status && data.status) {
+								// make local pinpointed changes
+								pin_point_timestamp_update.forEach(pin => {
+									let data = JSON.parse(pin);
+									setRealValue(data.source, data.value);
+								});
+								this.checkForSwitchBoardRefresh();
+							} else {
+								this.checkForSwitchBoardRefresh();
+								notify(data.msg);
+							}
+						});
+						
 					}
 				);
 				
