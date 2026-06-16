@@ -66,7 +66,7 @@ function initHotKeyListeners() {
 			// enabled transform tool
 			event.preventDefault();
 			GLOBAL.held_keys.reset = true;
-			if (GLOBAL.overlay_editor.active_layer != null) {
+			if (GLOBAL.overlay_editor.active_layer != null && getLayerById(GLOBAL.overlay_editor.active_layer).type != 'clip_path') {
 				GLOBAL.overlay_editor.tools.transform = !GLOBAL.overlay_editor.tools.transform;
 			}
 			printCurrentCanvas();

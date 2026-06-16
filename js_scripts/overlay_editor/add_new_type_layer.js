@@ -26,7 +26,7 @@ function requestNewLayer(type = 'text', pass_starting_location = false) {
 			title: 'Untitled Text Layer',
 			value: '',
 			style: {
-				font: 'Arial',
+				font: '\'Arial\'',
 				fontStyle: 'normal',
 				fontWeight: '400',
 				fontSize: '22',

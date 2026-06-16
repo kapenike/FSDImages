@@ -23,7 +23,7 @@ function featureTextStyle(layer) {
 											return Create('option', {
 												innerHTML: font,
 												value: "'"+font+"'",
-												selected: layer.style.font == "'"+font+"'"
+												selected: layer.style.font == font || layer.style.font == "'"+font+"'"
 											})
 										}),
 										onchange: function () {
