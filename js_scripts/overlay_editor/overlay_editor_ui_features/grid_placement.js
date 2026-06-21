@@ -188,6 +188,19 @@ function setupMoveOnGridContainer() {
 								}
 							}
 							
+							if (layer.type == 'image') {
+								if (layer.origins.horizontal == 'center') {
+									new_x += layer_dim.width/2;
+								} else if (layer.origins.horizontal == 'right') {
+									new_x += layer_dim.width;
+								}
+								if (layer.origins.vertical == 'center') {
+									new_y += layer_dim.height/2;
+								} else if (layer.origins.vertical == 'bottom') {
+									new_y += layer_dim.height;
+								}
+							}
+							
 							if (layer.type == 'clip_path') {
 								moveGroupLayer(layer, {
 									x: new_x,

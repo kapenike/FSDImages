@@ -7,7 +7,7 @@ function initHotKeyListeners() {
 		alt: false,
 		s: false,
 		d: false,
-		t: false,
+		e: false,
 		reset: false
 	};
 	
@@ -42,8 +42,8 @@ function initHotKeyListeners() {
 			GLOBAL.held_keys.s = true;
 		} else if (event.keyCode == 68) {
 			GLOBAL.held_keys.d = true;
-		} else if (event.keyCode == 84) {
-			GLOBAL.held_keys.t = true;
+		} else if (event.keyCode == 69) {
+			GLOBAL.held_keys.e = true;
 		}
 		
 		// detect if is overlay editor and not input field
@@ -55,14 +55,14 @@ function initHotKeyListeners() {
 			event.preventDefault();
 			GLOBAL.held_keys.reset = true;
 			onSaveAction();
-		} else if (GLOBAL.held_keys.shift && GLOBAL.held_keys.d && is_oec) {
+		} else if (GLOBAL.held_keys.ctrl && GLOBAL.held_keys.d && is_oec) {
 			// remove layer selection
 			event.preventDefault();
 			GLOBAL.held_keys.reset = true;
 			if (GLOBAL.overlay_editor.active_layer != null) {
 				setActiveLayer(null);
 			}
-		} else if (GLOBAL.held_keys.shift && GLOBAL.held_keys.t && is_oec) {
+		} else if (GLOBAL.held_keys.ctrl && GLOBAL.held_keys.e && is_oec) {
 			// enabled transform tool
 			event.preventDefault();
 			GLOBAL.held_keys.reset = true;
@@ -84,8 +84,8 @@ function initHotKeyListeners() {
 			GLOBAL.held_keys.s = false;
 		} else if (event.keyCode == 68) {
 			GLOBAL.held_keys.d = false;
-		} else if (event.keyCode == 84) {
-			GLOBAL.held_keys.t = false;
+		} else if (event.keyCode == 69) {
+			GLOBAL.held_keys.e = false;
 		}
 		GLOBAL.held_keys.reset = false;
 	});
@@ -94,6 +94,6 @@ function initHotKeyListeners() {
 
 function isInputField(e) {
 	return ['INPUT','TEXTAREA'].includes(e?.target.tagName)
-		?	['text','password','date','datetime-local','email'].includes(e.target.type)
+		? ['text','password','date','datetime-local','email'].includes(e.target.type)
 		: e?.target.isContentEditable;
 }
