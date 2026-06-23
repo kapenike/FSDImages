@@ -23,7 +23,7 @@
 
 
 ## Linux / MacOS install
-*The base code does not include an example project by default, download and import it from: [https://firststepdesign.co/file/Example.fsdi](https://firststepdesign.co/file/Example.fsdi) (220.3 KB)*
+*The base code does not include an example project by default, download and import it from: [https://firststepdesign.co/file/Tutorial.fsdi](https://firststepdesign.co/file/Tutorial.fsdi) (96 KB)*
 
 - Install PHP (will vary depending on your distro)
 	> sudo apt install php
@@ -67,13 +67,13 @@
 
 
 ## To-DO
-- Upgrade windows package to use FrankenPHP
-- Overlay editor overhaul
-	- launch with window for open / edit / quick overlay duplicate
-	- fix all drag states to allow x / y lock
-	- right click select layer improvements
-	- allow global copy and paste of layers between overlays
-	- round all movements to the nearest 100th dec
-	- ctrl + t transform feature
-	- ctral + z / ctrl + y
-- Video Tutorial
+- Create in-app updater
+- Overlay Editor
+	- change UI to support an initial screen with all overlays and +create overlay, allowing single click into an overlay
+	- ctrl + z, ctrl + y
+	- ctrl + c, ctrl + v between overlays
+	- clipping path transform with nested support
+	- allow inside / outside path border
+	- allow gradient
+	- allow layer opacity rather than just fill / border and text opacity
+- Fix "bug" where update of dataset call to parent dataset lookup / change can find and mark path forwarded values reliant on that dataset as changed
