@@ -99,7 +99,7 @@ function generateprojectSelectionScreen() {
 											() => {}
 										);
 									} else {
-										notify('Your current application ia already up-to-date!');
+										notify('Your current application is already up-to-date!');
 									}
 								} else {
 									notify('Failed to request version from FSDImages Git Repository :(')
