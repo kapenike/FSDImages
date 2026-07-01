@@ -18,6 +18,37 @@ function initTransformActionDrag(cursor) {
 		}
 	});
 	
+	// if found, and active layer is custom clip path, convert to standard area selection
+	if (found && GLOBAL.overlay_editor.active_layer_selection.custom_clip_path) {
+		let min_x = null;
+		let min_y = null;
+		let max_x = null;
+		let max_y = null;
+		let new_dim = {};
+		GLOBAL.overlay_editor.active_layer_selection.points.forEach(v => {
+			if (min_x == null || v.x < min_x) {
+				min_x = v.x;
+			}
+			if (max_x == null || v.x > max_x) {
+				max_x = v.x;
+			}
+			if (min_y == null || v.x < min_y) {
+				min_y = v.x;
+			}
+			if (max_y == null || v.x > max_y) {
+				max_y = v.x;
+			}
+		});
+		GLOBAL.overlay_editor.active_layer_selection = {
+			height: max_y - min_y,
+			width: max_x - min_x,
+			layer_x: min_x,
+			layer_y: min_y,
+			x: min_x,
+			y: min_y
+		};
+	}
+	
 	return found;
 	
 }

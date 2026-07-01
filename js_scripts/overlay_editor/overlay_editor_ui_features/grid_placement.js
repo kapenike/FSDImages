@@ -130,11 +130,16 @@ function featureCreateGridPlacement() {
 					{
 						title: Create('div', {
 							id: 'move_on_grid_container',
+							style: {
+								height: '117px',
+								maxWidth: '100%',
+								overflow: 'auto'
+							}
 						}),
 						click: () => {}
 					}
 				]
-			}, 400);
+			}, true);
 			
 			setupMoveOnGridContainer();
 

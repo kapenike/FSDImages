@@ -85,12 +85,25 @@ html, body {
 	padding: 40px;
 	box-sizing: border-box;
 }
+.image_editor_popup {
+	background-color: #00000000 !important;
+}
 .popup_inner {
 	width: 100%;
 	max-width: 800px;
 	margin: 0 auto;
 	box-sizing: border-box;
 	height: calc(100vh - 80px);
+}
+.popup_inner_image_editor {
+	width: 360px;
+	height: 127vh;
+	position: absolute;
+	right: 0;
+	top: 0;
+}
+#popup .popup_inner_image_editor #popup_form_data {
+	height: calc(100vh - 126px) !important;
 }
 .popup_title_bar {
 	background-color: #000000;

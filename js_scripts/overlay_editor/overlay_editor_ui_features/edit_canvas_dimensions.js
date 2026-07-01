@@ -38,7 +38,7 @@ function featureEditCanvasDimensions() {
 						action: true
 					}
 				]
-			});
+			}, true);
 		}
 	});
 	
