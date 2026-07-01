@@ -38,10 +38,11 @@
 		- `post_max_size=8M` -> `post_max_size=2G`
 		- `memory_limit=128M` -> `memory_limit=2G`
 		- `max_input_vars=1000` -> `max_input_vars=10000`
-		- ensure the php_zip extension is enabled `extension=zip`, no `;` preceding it
-		- ensure the php_sockets extension is enabled `extension=sockets`, no `;` preceding it
-    - ensure the php_fileinfo extension is enabled `extension=file_info`, no `;` preceding it
-		- ensure the php_curl extension is enabled `extension=curl`, no `;` preceding it
+		- ensure the php_zip extension is enabled `extension=zip`, no `;` preceding it ...
+		- ensure the php_sockets extension is enabled `extension=sockets`
+    - ensure the php_fileinfo extension is enabled `extension=file_info`
+		- ensure the php_curl extension is enabled `extension=curl`
+		- ensure the php_openssl extension is enabled `extension=openssl`
 		
 - Clone or Download and extract the repository
 - Rename the primary directory to `FSDImages` NOT `FSDImages-main`
@@ -67,7 +68,6 @@
 
 
 ## To-DO
-- Create in-app updater
 - Overlay Editor
 	- change UI to support an initial screen with all overlays and +create overlay, allowing single click into an overlay
 	- ctrl + z, ctrl + y

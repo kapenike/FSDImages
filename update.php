@@ -61,6 +61,7 @@ const PROJECT = 'https://github.com/kapenike/FSDImages/archive/main.zip';
 const IGNORE = [
 	'./FSDImages.hta',
 	'./loader.gif',
+	'./output.log',
 	'./.git',
 	'./php_apps/app_data',
 	'./php',
