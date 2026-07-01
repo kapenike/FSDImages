@@ -223,6 +223,14 @@ class server {
 		return true;
 	}
 	
+	function updateApplication() {
+		if ($this->OS == 'Windows') {
+			pclose(popen('start /k "'.$this->win_php.'" update.php', 'r'));
+		} else {
+			shell_exec('php update.php'));
+		}
+	}
+	
 	function isApiServerRunning() {
 		$server_data = $this->getServerData();
 		if ($server_data->api_ip == null || $server_data->api_client_port == null) {

@@ -15,6 +15,7 @@ forEach(app('directoryFileList')->get([], './js_scripts') as $file) {
 <?php app('fonts')->generateFontCSS(); ?>
 
 <script>
+const VERSION = '<?php echo file_get_contents('./version.txt'); ?>';
 // global font object
 var FONTS = null;
 // global api server object

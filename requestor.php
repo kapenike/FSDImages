@@ -13,6 +13,10 @@ if (isset($_GET['download_export'])) {
 // application switch, defined by string value in $_POST['application']
 switch($_POST['application']) {
 	
+	case 'update_application':
+		app('server')->updateApplication();
+		break;
+	
 	case 'request_whitelisted_ips':
 		if (app('security')->isLocalMachine()) {
 			app('respond')->json(true, 'Whitelisted IPv4 Addresses', (object)['ipv4' => app('security')->requestAcceptsIPs()]);

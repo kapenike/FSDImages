@@ -97,7 +97,7 @@ if (file_exists('FSDImages.zip')) {
 	unlink('FSDImages.zip');
 }
 if (is_dir('./temp')) {
-	delete('./temp', true);
+	delete('./temp', false);
 }
 
 // #
@@ -134,7 +134,7 @@ copyDir('./temp/FSDImages-main','./');
 unlink('FSDImages.zip');
 
 // remove temp directory
-delete('./temp', true);
+delete('./temp', false);
 
 // look for any files that have been removed from the project since last update and remove
 foreach (array_diff($current_files, $update_files) as $diff) {

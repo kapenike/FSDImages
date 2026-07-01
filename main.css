@@ -926,6 +926,17 @@ button, input[type="submit"] {
 	cursor: pointer;
 }
 
+.version_text {
+	text-align: center;
+	font-size: 10px;
+	padding-top: 10px;
+	margin-bottom: -10px;
+	cursor: pointer;
+}
+.click_to_update {
+	color: green;
+}
+
 /* prevent text selection on */
 #image_editor,
 .create_data_key,
