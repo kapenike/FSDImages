@@ -86,7 +86,7 @@ function generateprojectSelectionScreen() {
 								if (status && msg.status) {
 									if (msg.msg != VERSION) {
 										notify({
-												message: 'A new version of FSDImages is available!<br /><strong>'+msg.msg+'</strong><br /><br /><strong>IMPORTANT!</strong> Choosing to update now will shutdown the application, update will only take a few second. You must manually re-start the application.',
+												text: 'A new version of FSDImages is available!<br /><strong>'+msg.msg+'</strong><br /><br /><strong>IMPORTANT!</strong> Choosing to update now will shutdown the application, update will only take a few second. You must manually re-start the application.',
 												confirm: 'Update Now',
 												cancel: 'Cancel'
 											},

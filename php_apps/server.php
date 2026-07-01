@@ -227,7 +227,7 @@ class server {
 		if ($this->OS == 'Windows') {
 			pclose(popen('start /k "'.$this->win_php.'" update.php', 'r'));
 		} else {
-			shell_exec('php update.php'));
+			shell_exec('php update.php');
 		}
 	}
 	
