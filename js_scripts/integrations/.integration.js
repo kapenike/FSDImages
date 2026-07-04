@@ -10,6 +10,11 @@ const INTEGRATIONS = {
 		display: 'OBS Studio',
 		ui: function () { return getObsEntryUI(); }
 	},
+	parrygg: {
+		class_name: 'parrygg',
+		display: 'Parry GG',
+		ui: function () { return getParryGGEntryUI(); }
+	},
 	startgg: {
 		class_name: 'startgg',
 		display: 'Start GG',

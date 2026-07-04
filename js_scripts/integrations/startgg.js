@@ -314,15 +314,14 @@ class startgg extends integration {
 		}
 		phase_lookup_uid = Object.keys(phase_ref)[phase_lookup_uid];
 		let phase_lookup = phase_ref[phase_lookup_uid];
-		let start_lookup_time = Date.now();
 		
 		this.query(
 			`
-				query PhaseSets($phaseId: ID!, $page: Int!, $perPage: Int!, $updateTime: Timestamp!) {
+				query PhaseSets($phaseId: ID!, $page: Int!, $perPage: Int!) {
 					phase(id: $phaseId) {
 						id
 						name
-						sets(page: $page, perPage: $perPage, sortType: STANDARD, filters: { updatedAfter: $updateTime }) {
+						sets(page: $page, perPage: $perPage, sortType: STANDARD) {
 							pageInfo {
 								page
 								totalPages
@@ -356,8 +355,7 @@ class startgg extends integration {
 			{
 				phaseId: phase_id,
 				page: 1,
-				perPage: 50,
-				updateTime: parseInt(phase_lookup.last_set_update)
+				perPage: 50
 			},
 			(data) => {
 				
@@ -405,30 +403,7 @@ class startgg extends integration {
 					Object.keys(entries[0]), 
 					{ entries: 'set_id', preserve: true },
 					() => {
-						// update phase last set lookup time
-						let pin_point_timestamp_update = [JSON.stringify({
-							source: '$var$sets/SGG_Tournament/entries/'+phase_lookup_uid+'/last_set_update$/var$',
-							value: start_lookup_time
-						})];
-						ajax('POST', '/requestor.php', {
-							application: 'update_project_details',
-							uid: GLOBAL.active_project.uid,
-							pinpoint_dataset_updates: pin_point_timestamp_update,
-							create_delete: []
-						}, (status, data) => {
-							if (status && data.status) {
-								// make local pinpointed changes
-								pin_point_timestamp_update.forEach(pin => {
-									let data = JSON.parse(pin);
-									setRealValue(data.source, data.value);
-								});
-								this.checkForSwitchBoardRefresh();
-							} else {
-								this.checkForSwitchBoardRefresh();
-								notify(data.msg);
-							}
-						});
-						
+						this.checkForSwitchBoardRefresh();
 					}
 				);
 				

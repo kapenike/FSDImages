@@ -1,56 +1,4 @@
 <?php
-function delete($dir, $preserve_master = true) {
-	$files = scandir($dir);
-	forEach($files as $file) {
-		if ($file != '.' && $file != '..') {
-			if (is_dir($dir.'/'.$file)) {
-				delete($dir.'/'.$file, true);
-				rmdir($dir.'/'.$file);
-			} else {
-				unlink($dir.'/'.$file);
-			}
-		}
-	}
-	if ($preserve_master == false) {
-		rmdir($dir);
-	}
-	return true;
-}
-
-function copyDir($source, $destination) {
-	if (!is_dir($destination)) {
-		mkdir($destination, 0755, true);
-	}
-	$files = scandir($source);
-	foreach ($files as $file) {
-		if ($file != '.' && $file != '..') {
-			$source_file = $source.'/'.$file;
-			$dest_file = $destination.'/'.$file;
-			if (is_dir($source_file)) {
-				copyDir($source_file, $dest_file);
-			} else {
-				copy($source_file, $dest_file);
-			}
-		}
-	}
-}
-
-function getList($list, $dir, $ignored) {
-	$files = scandir($dir);
-	forEach($files as $file) {
-		if ($file != '.' && $file != '..') {
-			if (in_array($dir.'/'.$file, $ignored)) {
-				continue;
-			}
-			if (is_dir($dir.'/'.$file)) {
-				$list = array_merge(getList($list, $dir.'/'.$file, $ignored));
-			} else {
-				$list[] = $dir.'/'.$file;
-			}
-		}
-	}
-	return $list;
-}
 
 require('app.php');
 
@@ -91,14 +39,14 @@ app('FSDImages')->stop(['all']);
 echo "Initializing install...";
 
 // stash current files
-$current_files = getList([], '.', IGNORE);
+$current_files = app('directoryFileList')->get([], '.', IGNORE);
 
 // if existing project import or temp directory exists remove it
 if (file_exists('FSDImages.zip')) {
 	unlink('FSDImages.zip');
 }
 if (is_dir('./temp')) {
-	delete('./temp', false);
+	app('directoryFileList')->delete('./temp', false);
 }
 
 // #
@@ -126,16 +74,16 @@ echo "Installing * ".file_get_contents('./temp/FSDImages-main/version.txt')."\n"
 // get update file list and strip parent directory paths
 $update_files = array_map(function ($n) {
 	return './'.substr($n, 22);
-}, getList([], './temp', IGNORE));
+}, app('directoryFileList')->get([], './temp', IGNORE));
 
 // copy new files into current project
-copyDir('./temp/FSDImages-main','./');
+app('directoryFileList')->copyDir('./temp/FSDImages-main','./');
 
 // remove archive
 unlink('FSDImages.zip');
 
 // remove temp directory
-delete('./temp', false);
+app('directoryFileList')->delete('./temp', false);
 
 // look for any files that have been removed from the project since last update and remove
 foreach (array_diff($current_files, $update_files) as $diff) {
