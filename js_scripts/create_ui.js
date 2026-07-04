@@ -962,6 +962,17 @@ function removeUIField(elem) {
 	// remove UI field from data and document
 	let current_location = JSON.parse(elem.data);
 	GLOBAL.ui.active_data[current_location.section].cols[current_location.column].fields.splice(current_location.field, 1);
+
+	// itterate following siblings and decrement field index
+	let next_elem = elem.nextElementSibling;
+	while (next_elem && next_elem.className == 'ui_field') {
+		let data = JSON.parse(next_elem.data);
+		data.field--;
+		next_elem.data = JSON.stringify(data);
+		next_elem = next_elem.nextElementSibling;
+	}
+	
+	// remove original elem
 	elem.remove();
 	removeUIEditMenu();
 }

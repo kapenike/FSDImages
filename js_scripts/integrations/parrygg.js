@@ -62,7 +62,7 @@ class parrygg extends integration {
 			: this.command_list.shift();
 			
 		if (typeof action === 'undefined') {
-			notify('Invalid StartGG Command Attempt.');
+			notify('Invalid Parry.gg Command Attempt.');
 			return;
 		}
 
@@ -97,7 +97,12 @@ class parrygg extends integration {
 			})
 		}, (status, data) => {
 			if (status) {
-				callback(JSON.parse(data.msg));
+				data = JSON.parse(data.msg);
+				if (typeof data.code === 'undefined') {
+					callback(data);
+				} else {
+					notify('Parry.gg request error code: '+data.code);
+				}
 			} else {
 				notify('Unable to reach Parry.gg API server :(');
 			}

@@ -168,6 +168,12 @@ class startgg extends integration {
 			},
 			(data) => {
 				
+				if (data.data.tournament == 'null') {
+					notify('There was an error requesting the specified tournament slug: <strong>'+GLOBAL.active_project.settings.integrations.startgg.tournament_slug+'</strong>. Please double check it and try again.');
+					ajaxRemoveLoader('body');
+					return;
+				}
+				
 				let entries = data.data.tournament.participants.nodes.map(v => {
 					return {
 						display: v.gamerTag,
