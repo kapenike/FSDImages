@@ -260,6 +260,13 @@ class parrygg extends integration {
 			this.query('BracketService', 'GetBracket', {
 				id: bracket_id
 			}, (data) => {
+
+				// if bracket empty
+				if (typeof data.bracket.matches === 'undefined' || typeof data.bracket.rounds === 'undefined') {
+					notify('Bracket is empty! Please check Parry.gg');
+					ajaxRemoveLoader('body');
+					return;
+				}
 				
 				let attendee_ref = Object.entries(GLOBAL.active_project.data.sets.PGG_Attendees.entries);
 				let team_size_lookup = bracket_lookup.team_size;
@@ -268,7 +275,7 @@ class parrygg extends integration {
 				
 				data.bracket.matches.forEach(match => {
 					
-					let match_title = data.bracket.rounds.find(v => v.number == match.round && v.winnersSide === match.winnerSide).label;
+					let match_title = data.bracket.rounds.find(v => v.number == match.round && v.winnersSide === match.winnersSide).label;
 					let team_1 = data.bracket.seeds.find(v => v.id == match.slots?.[0]?.seedId)?.eventEntrant?.entrant?.users;
 					let team_2 = data.bracket.seeds.find(v => v.id == match.slots?.[1]?.seedId)?.eventEntrant?.entrant?.users;
 					

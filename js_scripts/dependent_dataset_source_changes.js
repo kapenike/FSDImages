@@ -14,9 +14,6 @@ function dependentDatasetSourceChanges(source) {
 		return [];
 	}
 	
-	// push master dataset reference for use in API listeners, this cannot solo proc overlays because of no variable path reference to this level
-	source_list.push(depth[0]+'/'+depth[1]);
-	
 	if (depth.length == 2) {
 		
 		// dataset page update, get all sources associated with the dataset itself
