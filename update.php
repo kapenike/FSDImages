@@ -27,7 +27,7 @@ ____________________________  .___
  |     \  /        \ |    `   \   |  Y Y  \/ __ \_/ /_/  >  ___/ \___ \ 
  \___  / /_______  //_______  /___|__|_|  (____  /\___  / \___  >____  >
      \/          \/         \/          \/     \//_____/      \/     \/ 
-                                         #".file_get_contents('./version.txt')."
+                                         #".strip_tags(file_get_contents('./version.txt'))."
 
 Shutting down servers...
 ";
@@ -69,7 +69,7 @@ if ($zip->open('./FSDImages.zip') === true) {
 }
 
 // #
-echo "Installing * ".file_get_contents('./temp/FSDImages-main/version.txt')."\n";
+echo "Installing * ".strip_tags(file_get_contents('./temp/FSDImages-main/version.txt'))."\n";
 
 // get update file list and strip parent directory paths
 $update_files = array_map(function ($n) {
