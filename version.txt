@@ -1,1 +1,1 @@
-VERSION: BETA-1.21 (welcome <a href="https://parry.gg/" target="_blank" onclick="event.stopPropagation()" style="color: #38FFB7">Parry.gg</a>!)
+VERSION: BETA-1.3

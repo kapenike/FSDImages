@@ -428,7 +428,7 @@ class project {
 		}			
 	}
 	
-	function export($uid) {
+	function export($uid, $preserve_auth_tokens) {
 
 		// prevent user abort
 		ignore_user_abort(true);
@@ -464,7 +464,20 @@ class project {
 			
 			// add files to zip archive
 			foreach (app('directoryFileList')->get([], $base_path) as $file_path) {
-				$zip->addFile($file_path, str_replace($base_path.'/', '', $file_path));
+				if ($preserve_auth_tokens == 'false' && $file_path == $base_path.'/container.json') {
+					// if not preserving auth tokens, get settings integration container and strip all auth key values
+					$clean_container = json_decode(file_get_contents($file_path));
+					foreach ($clean_container->settings->integrations as $integration => $values) {
+						foreach ($values as $key => $value) {
+							if ($key == 'auth_token' || str_contains($key, 'auth')) {
+								$clean_container->settings->integrations->{$integration}->$key = '';
+							}
+						}
+					}
+					$zip->addFromString('container.json', json_encode($clean_container));
+				} else {
+					$zip->addFile($file_path, str_replace($base_path.'/', '', $file_path));
+				}
 			}
 			
 			// save project archive

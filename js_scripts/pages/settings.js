@@ -170,6 +170,22 @@ function setNavigationSettings() {
 											textAlign: 'right'
 										},
 										children: [
+											Create('label', {
+												style: {
+													textAlign: 'left',
+													display: 'block'
+												},
+												children: [
+													Create('input', {
+														type: 'checkbox',
+														id: 'preserve_auth_tokens',
+														checked: false
+													}),
+													Create('span', {
+														innerHTML: '&nbsp; Preserve integration auth tokens within export'
+													})
+												]
+											}),
 											Create('button', {
 												type: 'button',
 												innerHTML: 'Export',
@@ -177,6 +193,7 @@ function setNavigationSettings() {
 													let send_data = {
 														application: 'export_project',
 														uid: GLOBAL.active_project.uid,
+														preserve_auth_tokens: Select('#preserve_auth_tokens').checked
 													};
 													// send request to generate project archive
 													ajax('POST', '/requestor.php', send_data, (status, data) => {

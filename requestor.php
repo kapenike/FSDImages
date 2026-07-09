@@ -74,7 +74,7 @@ switch($_POST['application']) {
 		break;
 
 	case 'export_project':
-		app('project')->export($_POST['uid']);
+		app('project')->export($_POST['uid'], $_POST['preserve_auth_tokens']);
 		break;
 		
 	case 'delete_project':
