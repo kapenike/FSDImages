@@ -15,11 +15,11 @@
 - Launch `FSDImages.hta`
 - Select `Start Application` from the application launcher. Choose `Localhost` then click `APP: localhost:8000` to open the application in a browser!
 	- If the application fails to launch, please check the `output.log` file. The most likely culprit is an outdated C++ windows library for running PHP [Windows Latest C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170#latest-supported-redistributable-version).
-- Websocket server can be initialized from the launcher or within the application itself
+- API server can be initialized from the launcher or within the application itself
 
 *The windows download includes an example project by default. Check it out to learn how the application works!*
 > [!NOTE]
-> For developers running on windows, launch parameter `websocket_use_adapter=` can be used to launch the API server (client and host) on a separate network for public / private interactions. (e.g.) on Windows the default launch will use the IPv4 address under section `Ethernet adapter Ethernet:`, but with a custom script launch of `php start.php all external websocket_use_adapter="Wireless LAN adapter Wi-Fi:"` ... the application can bridge the transfer gap of a private LAN and a public WIFI network. Built for public wifi interactions that influence a private network broadcast!
+> For developers running on windows, launch parameter `api_use_adapter=` can be used to launch the API server (client and host) on a separate network for public / private interactions. (e.g.) on Windows the default launch will use the IPv4 address under section `Ethernet adapter Ethernet:`, but with a custom script launch of `php start.php all external api_use_adapter="Wireless LAN adapter Wi-Fi:"` ... the application can bridge the transfer gap of a private LAN and a public WIFI network. Built for public wifi interactions that influence a private network broadcast!
 
 
 ## Linux / MacOS install
@@ -38,9 +38,9 @@
 		- `post_max_size=8M` -> `post_max_size=2G`
 		- `memory_limit=128M` -> `memory_limit=2G`
 		- `max_input_vars=1000` -> `max_input_vars=10000`
-		- ensure the php_zip extension is enabled `extension=zip`, no `;` preceding it ...
+		- ensure the php_zip extension is enabled `extension=zip`, no `;` preceding it
 		- ensure the php_sockets extension is enabled `extension=sockets`
-    - ensure the php_fileinfo extension is enabled `extension=file_info`
+		- ensure the php_fileinfo extension is enabled `extension=file_info`
 		- ensure the php_curl extension is enabled `extension=curl`
 		- ensure the php_openssl extension is enabled `extension=openssl`
 		
@@ -54,6 +54,10 @@
 	> php start.php external all
 	
 	- to start the websocket API server during launch: `all` and start the application on your external ipv4 rather than localhost using: `external`
+	
+	> php start.php api
+	
+	- to start the websocket API server only
 	
 - Close the application with
 	> php stop.php
