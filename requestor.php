@@ -68,9 +68,13 @@ switch($_POST['application']) {
 	case 'remove_font':
 		app('fonts')->remove($_POST['font_face']);
 		break;
+		
+	case 'chunk_upload_project':
+		app('project')->chunkUploadProject($_POST['page'], $_POST['pages'], $_FILES['chunk']);
+		break;
 
 	case 'import_project':
-		app('project')->import($_POST['uid'], $_FILES['file_0'], isset($_POST['use_import_uid']));
+		app('project')->import($_POST['uid'], isset($_POST['use_import_uid']));
 		break;
 
 	case 'export_project':

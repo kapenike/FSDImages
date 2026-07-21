@@ -273,15 +273,50 @@ class project {
 		app('respond')->json(true, 'Project UI successfully updated.');
 	}
 	
-	function import($uid, $file, $use_import_uid) {
+	function chunkUploadProject($page, $pages, $chunk) {
 		
-		// upload archive
-		$zip = app('files')->upload($file, getBasePath().'/data/', ['fname' => true]);
-		 
-		if ($zip['status'] == true) {
+		if (!isset($chunk)) {
+			app('respond')->json(false, 'File chunk was not sent.');
+		}
+		
+		$location = getBasePath().'/data/import.tmp';
+		$end_location = getBasePath().'/data/import.zip';
+		
+		// init temp file
+		if ($page == 0) {
+			if (file_exists($location)) {
+				unlink($location);
+			}
+			if (file_exists($end_location)) {
+				unlink($end_location);
+			}
+			file_put_contents($location, '');
+		}
+		
+		// get chunk
+		$file_chunk = file_get_contents($_FILES['chunk']['tmp_name']);
+		
+		// append chunk or error out
+		if (file_put_contents($location, $file_chunk, FILE_APPEND) === false) {
+			app('respond')->json(false, 'Failed to properly store file chunk.');
+		}
+		
+		// end process or send back status
+		if ($page == $pages-1) {
+			rename($location, $end_location);
+			app('respond')->json(true, 'Upload Complete');
+		} else {
+			app('respond')->json(true, 'Chunk Uploaded: '.($page+1).' of '.$pages.'.');
+		}
+		
+	}
+	
+	function import($uid, $use_import_uid) {
+
+		if (file_exists(getBasePath().'/data/import.zip')) {
 			
 			// uploaded file name
-			$file_name = $zip['msg'];
+			$file_name = 'import.zip';
 			
 			// notify response if importing fonts
 			$importing_fonts = false;
@@ -424,7 +459,7 @@ class project {
 			
 			
 		}	else {
-			app('respond')->json(false, 'An error occurred while uploading the project archive.');
+			app('respond')->json(false, 'An error occurred while retrieving the uploaded project archive.');
 		}			
 	}
 	

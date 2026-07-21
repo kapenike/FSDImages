@@ -90,64 +90,72 @@ function setNavigationSettings() {
 														cancel: 'Nevermind'
 													}, function () {
 														if (Select('#import_file').files.length > 0) {
-															let send_data = {
-																application: 'import_project',
-																uid: GLOBAL.active_project.uid,
-																file: Select('#import_file').files,
-															};
-															// overwrite project uid
-															if (Select('#overwrite_project_uid').checked) {
-																send_data.use_import_uid = true;
-															}
-															// import
-															ajax('POST', '/requestor.php', send_data, (status, data) => {
-																if (status && data.status) {
-																	// update project name in local registry
-																	if (data.font_import) {
-																		notify({
-																			text: 'Your project has imported some dependent fonts. This requires a browser refresh to properly manage your project overlays. Would you like to refresh now?',
-																			confirm: 'Refresh Now',
-																			cancel: 'Continue to Imported Project'
-																		},
-																		() => {
-																			location.reload();
-																		},
-																		() => {
+															let chunk_size = 5242880; // 5 Megabytes
+															let file = Select('#import_file').files[0];
+															chunkUploadProject({
+																file: file,
+																chunk_size: chunk_size,
+																pages: Math.ceil(file.size / chunk_size),
+																page: 0
+															}, () => {
+																let send_data = {
+																	application: 'import_project',
+																	uid: GLOBAL.active_project.uid
+																};
+																// overwrite project uid
+																if (Select('#overwrite_project_uid').checked) {
+																	send_data.use_import_uid = true;
+																}
+																// import
+																ajax('POST', '/requestor.php', send_data, (status, data) => {
+																	if (status && data.status) {
+																		// update project name in local registry
+																		if (data.font_import) {
+																			notify({
+																				text: 'Your project has imported some dependent fonts. This requires a browser refresh to properly manage your project overlays. Would you like to refresh now?',
+																				confirm: 'Refresh Now',
+																				cancel: 'Continue to Imported Project'
+																			},
+																			() => {
+																				location.reload();
+																			},
+																			() => {
+																				GLOBAL.project_registry[GLOBAL.active_project.uid] = data.project_name;
+																				// load new project
+																				ajax('POST', '/requestor.php', {
+																					application: 'load_project_data',
+																					uid: data.return_uid
+																				}, streamDataLoaded, 'body');
+																			});
+																		} else {
 																			GLOBAL.project_registry[GLOBAL.active_project.uid] = data.project_name;
 																			// load new project
 																			ajax('POST', '/requestor.php', {
 																				application: 'load_project_data',
 																				uid: data.return_uid
 																			}, streamDataLoaded, 'body');
+																		}
+																	} else if (data.import_uid) {
+																		notify({
+																			text: data.text,
+																			confirm: 'Load local project UID: "'+data.import_uid+'"',
+																			cancel: 'Cancel'
+																		}, () => {
+																			// on confirm, load local project
+																			ajax('POST', '/requestor.php', {
+																				application: 'load_project_data',
+																				uid: data.import_uid
+																			}, streamDataLoaded, 'body');
 																		});
 																	} else {
-																		GLOBAL.project_registry[GLOBAL.active_project.uid] = data.project_name;
-																		// load new project
-																		ajax('POST', '/requestor.php', {
-																			application: 'load_project_data',
-																			uid: data.return_uid
-																		}, streamDataLoaded, 'body');
+																		notify({
+																			text: data.msg || data,
+																			confirm: 'Ok',
+																			cancel: 'Okay'
+																		});
 																	}
-																} else if (data.import_uid) {
-																	notify({
-																		text: data.text,
-																		confirm: 'Load local project UID: "'+data.import_uid+'"',
-																		cancel: 'Cancel'
-																	}, () => {
-																		// on confirm, load local project
-																		ajax('POST', '/requestor.php', {
-																			application: 'load_project_data',
-																			uid: data.import_uid
-																		}, streamDataLoaded, 'body');
-																	});
-																} else {
-																	notify({
-																		text: data.msg || data,
-																		confirm: 'Ok',
-																		cancel: 'Okay'
-																	});
-																}
-															}, 'body');
+																}, 'body');
+															})
 														}
 													});
 												}
@@ -262,6 +270,28 @@ function setNavigationSettings() {
 		]
 	});
 		
+}
+
+function chunkUploadProject(chunk_data, callback) {
+	let start = chunk_data.page*chunk_data.chunk_size;
+	let chunk = chunk_data.file.slice(start, Math.min(start+chunk_data.chunk_size, chunk_data.file.size));
+	ajax('POST', '/requestor.php', {
+		application: 'chunk_upload_project',
+		page: chunk_data.page,
+		pages: chunk_data.pages,
+		chunk: chunk
+	}, (status, data) => {
+		if (status && data.status) {
+			if (data.msg == 'Upload Complete') {
+				callback();
+			} else {
+				chunk_data.page++;
+				chunkUploadProject(chunk_data, callback);
+			}
+		} else {
+			notify('Project import has failed. '+data.msg);
+		}
+	}, 'body');
 }
 
 function updateProjectSettings() {
