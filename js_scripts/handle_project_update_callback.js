@@ -1,35 +1,39 @@
-function handleProjectUpdateCallback(form_details, created, api_write = false) {
+function handleProjectUpdateCallback(form_details, created = null, api_write = false) {
 	
 	// insert separate dataset paths into standard local side data injection
-	if (form_details.pinpoint_dataset_updates.length > 0) {
-		form_details.pinpoint_dataset_updates.forEach(key_pair => {
-			
-			key_pair = JSON.parse(key_pair);
-			form_details[key_pair.source] = key_pair.value;
-			
-			// detect and push dependent source changes
-			GLOBAL.source_changes.push(key_pair.source);
-			GLOBAL.source_changes.push(...dependentDatasetSourceChanges(key_pair.source));
+	if (typeof form_details.pinpoint_dataset_updates !== 'undefined') {
+		if (form_details.pinpoint_dataset_updates.length > 0) {
+			form_details.pinpoint_dataset_updates.forEach(key_pair => {
+				
+				key_pair = JSON.parse(key_pair);
+				form_details[key_pair.source] = key_pair.value;
+				
+				// detect and push dependent source changes
+				GLOBAL.source_changes.push(key_pair.source);
+				GLOBAL.source_changes.push(...dependentDatasetSourceChanges(key_pair.source));
 
-		});
+			});
+		}
 	}
 	
 	// removed deleted dataset entries
-	let formatted_create_delete = [];
-	form_details.create_delete.forEach(create_delete => {
-		formatted_create_delete.push(JSON.parse(create_delete));
-	});
-	if (formatted_create_delete.length > 0) {
-		formatted_create_delete.filter(v => v.type == 'delete').forEach(delete_entry => {
-			delete GLOBAL.active_project.data.sets[delete_entry.set_name].entries[delete_entry.data];
-			GLOBAL.source_changes.push('$var$sets/'+delete_entry.set_name+'/entries/'+delete_entry.data+'$/var$');
-			GLOBAL.source_changes.push(...dependentDatasetSourceChanges('$var$sets/'+delete_entry.set_name+'/entries/'+delete_entry.data+'$/var$'));
+	if (typeof form_details.create_delete !== 'undefined') {
+		let formatted_create_delete = [];
+		form_details.create_delete.forEach(create_delete => {
+			formatted_create_delete.push(JSON.parse(create_delete));
 		});
+		if (formatted_create_delete.length > 0) {
+			formatted_create_delete.filter(v => v.type == 'delete').forEach(delete_entry => {
+				delete GLOBAL.active_project.data.sets[delete_entry.set_name].entries[delete_entry.data];
+				GLOBAL.source_changes.push('$var$sets/'+delete_entry.set_name+'/entries/'+delete_entry.data+'$/var$');
+				GLOBAL.source_changes.push(...dependentDatasetSourceChanges('$var$sets/'+delete_entry.set_name+'/entries/'+delete_entry.data+'$/var$'));
+			});
+		}
 	}
 	
 	// add created dataset entries
 	// no field can rely on something that didn't exist, so just push the dataset to source_changes if not already included
-	if (created.length > 0) {
+	if (created?.length > 0) {
 		created.forEach(create_entry => {
 			let set_name = Object.keys(GLOBAL.active_project.data.sets).find(v => GLOBAL.active_project.data.sets[v].uid == create_entry.dataset_uid);
 			GLOBAL.active_project.data.sets[set_name].entries[create_entry.entry_uid] = create_entry.entry;

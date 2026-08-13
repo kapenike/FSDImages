@@ -1196,9 +1196,9 @@ function editUIField(elem, is_create = false) {
 		}),
 		function (form_data) {
 			
-			// if source path exists (display field it will not) and the path is empty, return error
-			if (form_data.source_path && form_data.source_path == '') {
-				console.error('Save To Path cannot be empty!');
+			// if source path exists (display and button do not have a save to path) and the path is empty, return error
+			if (!['display','button'].includes(form_data.input_type) && form_data.source_path.trim() == '') {
+				notify('Save To Path cannot be empty!', () => {}, () => {});
 				return;
 			}
 			

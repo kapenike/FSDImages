@@ -6,7 +6,7 @@ function notify(message, confirm = ()=>{}, cancel = ()=>{}) {
 	let cancel_text = is_obj ? message.cancel : 'Cancel';
 	
 	Select('#body').appendChild(Create('div', {
-		id: 'popup',
+		id: 'notif_popup',
 		children: [
 			Create('div', {
 				className: 'notification',
@@ -27,7 +27,7 @@ function notify(message, confirm = ()=>{}, cancel = ()=>{}) {
 								innerHTML: confirm_text,
 								onclick: () => {
 									confirm();
-									Select('#popup').remove();
+									Select('#notif_popup').remove();
 								}
 							}),
 							Create('button', {
@@ -38,7 +38,7 @@ function notify(message, confirm = ()=>{}, cancel = ()=>{}) {
 								innerHTML: cancel_text,
 								onclick: () => {
 									cancel();
-									Select('#popup').remove();
+									Select('#notif_popup').remove();
 								}
 							})
 						]

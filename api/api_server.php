@@ -237,6 +237,10 @@ class websocket {
 				if ($project !== false) {
 					$project = app('dataPathing')->convertAll($project);
 					foreach ($client_details->listeners->data as $data_point) {
+						// for general client requests (not auth specific request function), prevent access to highest level "sets" to allow specific datasets to be hidden behind a key value
+						if ($data_point == 'sets') {
+							continue;
+						}
 						$init_data['data']->{$data_point} = app('dataPathing')->getRealValue($project, '$var$'.$data_point.'$/var$');
 					}
 				}

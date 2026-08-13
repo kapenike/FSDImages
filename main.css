@@ -74,7 +74,8 @@ html, body {
 }
 
 /* popup styling */
-#popup {
+#popup,
+#notif_popup {
 	position: absolute;
 	z-index: 888;
 	top: 0;
@@ -153,7 +154,7 @@ html, body {
 }
 
 /* notification secondary popup */
-#popup .notification {
+#notif_popup .notification {
 	position: absolute;
 	top: 50%;
 	left: 50%;
@@ -168,7 +169,7 @@ html, body {
 	filter: drop-shadow(0 0 20px #132937);
 }
 
-#popup .notification .notification_message {
+#notif_popup .notification .notification_message {
 	color: #ffffff;
 	padding-bottom: 20px;
 }

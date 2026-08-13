@@ -366,20 +366,47 @@ function getRealValue(value, depth = null, base_path = GLOBAL.active_project.dat
 		// temporary buffer of head variable sources to allow duplicate sources inline rather than nested (does not create infinite loop)
 		let temp_head = [];
 		
+		// exit on infinite loop
+		let exit = null;
+		
 		// loop variable parts
 		var_real_parts.forEach(split_part => {
-			if (split_part.variable) {
-				
+			if (exit == null && split_part.variable) {
 				// if source is already in head, return to prevent infinite loop
 				if (head.includes(split_part.variable)) {
-					return '';
+					exit = split_part.variable;
 				} else {
+					// do NOT log dataset entries as they cannot predict an infinite loop, they are an object which have multiple nodes to traverse past
+					// - dataset entries cannot be written to by the user and therefore cannot contain an infinite loop reference
+					if (pathIsDirectDatasetEntry('$var$'+split_part.variable+'$/var$')) {
+						return;
+					}
 					// otherwise, log current source
 					temp_head.push(split_part.variable);
 				}
-				
 			}
 		});
+		
+		// if exiting
+		if (exit !== null) {
+			notify({
+				text: 'An infinite loop has been created within variable path: "'+exit+'". Would you like to clear that variable now?',
+				confirm: 'Clear Variable',
+				cancel: 'Cancel'
+			}, () => {
+				let form_details = {
+					application: 'update_project_details',
+					uid: GLOBAL.active_project.uid,
+					['$var$'+exit+'$/var$']: ''
+				};
+				ajax('POST', '/requestor.php', form_details, (status, data) => {
+					if (status) {
+						handleProjectUpdateCallback(form_details);
+					}
+				}, 'body');
+			});
+			return 'INFINITE';
+		}
 		
 		// push temp head into head
 		head.push(...temp_head);
