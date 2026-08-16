@@ -211,34 +211,43 @@ function createUIFromData(container, data, submit_to_application, editor = false
 													children: [
 														Create('div', {
 															className: 'radio_group',
-															children: field.values.map(radio => {
+															children: [
+																Create('div', {
+																	style: {
+																		fontSize: '11px',
+																		marginTop: '-17px'
+																	},
+																	innerHTML: getRealValue(field.title)
+																}),
+																...field.values.map(radio => {
 																
-																// source save to path comparisons can be complex
-																let depth_value = getSetterComparisonValue(field.source);
-																
-																// get value of radio based on depth value
-																let radio_value = getDepthComparisonValue(radio.value);
-																
-																return Create('label', {
-																	children: [
-																		Create('input', {
-																			type: 'radio',
-																			onclick: function () { logSourceChange(this); },
-																			onchange: (field.auto_save == 'true'
-																				?	function () { onSaveAction(); }
-																				: () => {}
-																			),
-																			name: field.source,
-																			value: radio_value,
-																			checked: radio_value == depth_value,
-																			sub_setters: JSON.stringify(radio.sub_setters ?? null)
-																		}),
-																		Create('span', {
-																			innerHTML: getRealValue(radio.display)+'&nbsp;'
-																		})
-																	]
-																});
-															})
+																	// source save to path comparisons can be complex
+																	let depth_value = getSetterComparisonValue(field.source);
+																	
+																	// get value of radio based on depth value
+																	let radio_value = getDepthComparisonValue(radio.value);
+																	
+																	return Create('label', {
+																		children: [
+																			Create('input', {
+																				type: 'radio',
+																				onclick: function () { logSourceChange(this); },
+																				onchange: (field.auto_save == 'true'
+																					?	function () { onSaveAction(); }
+																					: () => {}
+																				),
+																				name: field.source,
+																				value: radio_value,
+																				checked: radio_value == depth_value,
+																				sub_setters: JSON.stringify(radio.sub_setters ?? null)
+																			}),
+																			Create('span', {
+																				innerHTML: getRealValue(radio.display)+'&nbsp;'
+																			})
+																		]
+																	});
+																})
+															]
 														})
 													]
 												});
