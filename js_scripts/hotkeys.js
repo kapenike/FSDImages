@@ -5,6 +5,8 @@ function initHotKeyListeners() {
 		ctrl: false,
 		shift: false,
 		alt: false,
+		c: false,
+		v: false,
 		s: false,
 		d: false,
 		e: false,
@@ -44,6 +46,10 @@ function initHotKeyListeners() {
 			GLOBAL.held_keys.d = true;
 		} else if (event.keyCode == 69) {
 			GLOBAL.held_keys.e = true;
+		} else if (event.keyCode == 67) {
+			GLOBAL.held_keys.c = true;
+		} else if (event.keyCode == 86) {
+			GLOBAL.held_keys.v = true;
 		}
 		
 		// detect if is overlay editor and not input field
@@ -70,6 +76,20 @@ function initHotKeyListeners() {
 				GLOBAL.overlay_editor.tools.transform = !GLOBAL.overlay_editor.tools.transform;
 			}
 			printCurrentCanvas();
+		} else if (GLOBAL.held_keys.ctrl && GLOBAL.held_keys.c && is_oec) {
+			// copy current active layer
+			event.preventDefault();
+			GLOBAL.held_keys.reset = true;
+			if (GLOBAL.overlay_editor.active_layer != null) {
+				GLOBAL.overlay_editor.copy_buffer = JSON.stringify(getLayerById(GLOBAL.overlay_editor.active_layer));
+			}
+			printCurrentCanvas();
+		} else if (GLOBAL.held_keys.ctrl && GLOBAL.held_keys.v && is_oec && GLOBAL.overlay_editor.copy_buffer) {
+			// paste 
+			event.preventDefault();
+			GLOBAL.held_keys.reset = true;
+			addNewTypeLayer(null, GLOBAL.overlay_editor.active_layer, false, false, JSON.parse(GLOBAL.overlay_editor.copy_buffer));
+			printCurrentCanvas();
 		}
 	});
 	
@@ -86,6 +106,10 @@ function initHotKeyListeners() {
 			GLOBAL.held_keys.d = false;
 		} else if (event.keyCode == 69) {
 			GLOBAL.held_keys.e = false;
+		} else if (event.keyCode == 67) {
+			GLOBAL.held_keys.c = false;
+		} else if (event.keyCode == 86) {
+			GLOBAL.held_keys.v = false;
 		}
 		GLOBAL.held_keys.reset = false;
 	});

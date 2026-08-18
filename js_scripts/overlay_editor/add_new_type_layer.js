@@ -106,15 +106,19 @@ function requestNewLayer(type = 'text', pass_starting_location = false) {
 
 // create a new layer of the given type, index passed from addNewLayer will determine its insert location
 // boolian determines if the new layer will be duplcated from the layer at the specified index
-function addNewTypeLayer(type, index, pass_starting_location = false, duplicate = false) {
+function addNewTypeLayer(type, index, pass_starting_location = false, duplicate = false, copy = false) {
 	
 	// new layer object container
 	let new_layer = null;
 	
 	// if not a duplicate, generate a new layer object
 	if (duplicate == false) {
-	
-		new_layer = requestNewLayer(type, pass_starting_location);
+		
+		if (copy) {
+			new_layer = copy;
+		} else {
+			new_layer = requestNewLayer(type, pass_starting_location);
+		}
 		
 	} else {
 		

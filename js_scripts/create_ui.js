@@ -233,7 +233,7 @@ function createUIFromData(container, data, submit_to_application, editor = false
 																				type: 'radio',
 																				onclick: function () { logSourceChange(this); },
 																				onchange: (field.auto_save == 'true'
-																					?	function () { onSaveAction(); }
+																					? function () { onSaveAction(); }
 																					: () => {}
 																				),
 																				name: field.source,
