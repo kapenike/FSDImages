@@ -61,7 +61,7 @@ function initHotKeyListeners() {
 			event.preventDefault();
 			GLOBAL.held_keys.reset = true;
 			onSaveAction();
-		} else if (GLOBAL.held_keys.ctrl && GLOBAL.held_keys.d && is_oec) {
+		} else if (GLOBAL.held_keys.ctrl && GLOBAL.held_keys.d) {
 			// remove layer selection
 			event.preventDefault();
 			GLOBAL.held_keys.reset = true;
@@ -118,6 +118,6 @@ function initHotKeyListeners() {
 
 function isInputField(e) {
 	return ['INPUT','TEXTAREA'].includes(e?.target.tagName)
-		? ['text','password','date','datetime-local','email'].includes(e.target.type)
+		? ['text','password','date','datetime-local','email','number'].includes(e.target.type)
 		: e?.target.isContentEditable;
 }
