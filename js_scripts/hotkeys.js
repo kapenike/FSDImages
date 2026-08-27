@@ -10,6 +10,8 @@ function initHotKeyListeners() {
 		s: false,
 		d: false,
 		e: false,
+		z: false,
+		y: false,
 		reset: false
 	};
 	
@@ -50,10 +52,17 @@ function initHotKeyListeners() {
 			GLOBAL.held_keys.c = true;
 		} else if (event.keyCode == 86) {
 			GLOBAL.held_keys.v = true;
+		} else if (event.keyCode == 90) {
+			GLOBAL.held_keys.z = true;
+		} else if (event.keyCode == 89) {
+			GLOBAL.held_keys.y = true;
 		}
 		
+		// detect if overlay editor
+		let is_ol = Select('#image_editor');
+		
 		// detect if is overlay editor and not input field
-		let is_oec = Select('#image_editor') && !isInputField(event);
+		let is_oec = is_ol && !isInputField(event);
 		
 		// hotkey actions
 		if (GLOBAL.held_keys.ctrl && GLOBAL.held_keys.s) {
@@ -61,14 +70,14 @@ function initHotKeyListeners() {
 			event.preventDefault();
 			GLOBAL.held_keys.reset = true;
 			onSaveAction();
-		} else if (GLOBAL.held_keys.ctrl && GLOBAL.held_keys.d) {
+		} else if (GLOBAL.held_keys.ctrl && GLOBAL.held_keys.d && is_ol) {
 			// remove layer selection
 			event.preventDefault();
 			GLOBAL.held_keys.reset = true;
 			if (GLOBAL.overlay_editor.active_layer != null) {
 				setActiveLayer(null);
 			}
-		} else if (GLOBAL.held_keys.ctrl && GLOBAL.held_keys.e && is_oec) {
+		} else if (GLOBAL.held_keys.ctrl && GLOBAL.held_keys.e && is_ol) {
 			// enabled transform tool
 			event.preventDefault();
 			GLOBAL.held_keys.reset = true;
@@ -90,6 +99,18 @@ function initHotKeyListeners() {
 			GLOBAL.held_keys.reset = true;
 			addNewTypeLayer(null, GLOBAL.overlay_editor.active_layer, false, false, JSON.parse(GLOBAL.overlay_editor.copy_buffer));
 			printCurrentCanvas();
+		} else if (GLOBAL.held_keys.ctrl && GLOBAL.held_keys.z && is_oec) {
+			// undo 
+			event.preventDefault();
+			GLOBAL.held_keys.reset = true;
+			GLOBAL.overlay_editor.state.undo();
+			printCurrentCanvas();
+		} else if (GLOBAL.held_keys.ctrl && GLOBAL.held_keys.y && is_oec) {
+			// redo 
+			event.preventDefault();
+			GLOBAL.held_keys.reset = true;
+			GLOBAL.overlay_editor.state.redo();
+			printCurrentCanvas();
 		}
 	});
 	
@@ -110,6 +131,10 @@ function initHotKeyListeners() {
 			GLOBAL.held_keys.c = false;
 		} else if (event.keyCode == 86) {
 			GLOBAL.held_keys.v = false;
+		} else if (event.keyCode == 90) {
+			GLOBAL.held_keys.z = false;
+		} else if (event.keyCode == 89) {
+			GLOBAL.held_keys.y = false;
 		}
 		GLOBAL.held_keys.reset = false;
 	});

@@ -20,6 +20,9 @@ function editOverlay(slug) {
 		}
 	}
 	
+	// init undo redo tool
+	GLOBAL.overlay_editor.state.init();
+	
 	// container for overlay editor tool states
 	resetToolState();
 	

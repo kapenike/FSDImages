@@ -79,6 +79,9 @@ function imageEditorMouseUp(event) {
 		
 	} else if (GLOBAL.overlay_editor.layer_selection_drag) {
 		
+		// push drag end state to undoredo
+		GLOBAL.overlay_editor.state.action();
+		
 		// end cursor drag
 		GLOBAL.overlay_editor.layer_selection_drag = null;
 		setupLayerInfoEditor();

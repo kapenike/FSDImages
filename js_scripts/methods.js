@@ -23,6 +23,18 @@ function spaceTrim(v) {
 	return v.toString().trim().replaceAll('&nbsp;', '');
 }
 
+function arraysAreEqual(a, b) {
+	if (a.length != b.length) {
+		return false;
+	}
+	for (let i=0; i<a.length; i++) {
+		if (a[i] != b[i]) {
+			return false;
+		}
+	}
+	return true;
+}
+
 function searchPageItemList(value) {
 	value = value.toLowerCase();
 	Array.from(MSelect('.selection_list_block')).forEach(elem => {

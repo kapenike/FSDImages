@@ -37,6 +37,9 @@ function initStreamOverlay() {
 	// init global var
 	initGlobal();
 	
+	// init overlay editor state manager
+	GLOBAL.overlay_editor.state = new ols;
+	
 	// listen for hotkey commands (./js_scripts/hotkeys.js)
 	initHotKeyListeners();
 	

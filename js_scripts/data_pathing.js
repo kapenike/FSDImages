@@ -611,7 +611,14 @@ function setRealValue(string_path, value) {
 		
 	}
 
+	let last = path.shift();
+	
+	if (isObject(reference_path[last]) && Object.keys(reference_path[last]).length > 0) {
+		notify('Attempting to write value to a data structure object. Please remove the data structure sub_keys or set your value to a sub property instead of the parent <strong>"'+last+'"</strong>.');
+		return;
+	}
+	
 	// set passed value as reference path value using last available parent (js reference things)
-	reference_path[path.shift()] = value;
+	reference_path[last] = value;
 
 }
