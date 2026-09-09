@@ -25,6 +25,7 @@ function featureDimensionsAndPosition(layer) {
 											getLayerById(GLOBAL.overlay_editor.active_layer).offset.x = precise(this.value);
 											this.value = preciseAndTrim(this.value);
 											printCurrentCanvas();
+											olsGeneralLog();
 										}
 									})
 								]
@@ -47,6 +48,7 @@ function featureDimensionsAndPosition(layer) {
 											getLayerById(GLOBAL.overlay_editor.active_layer).offset.y = precise(this.value);
 											this.value = preciseAndTrim(this.value);
 											printCurrentCanvas();
+											olsGeneralLog();
 										}
 									})
 								]
@@ -75,6 +77,7 @@ function featureDimensionsAndPosition(layer) {
 											getLayerById(GLOBAL.overlay_editor.active_layer).dimensions.width = precise(this.value);
 											this.value = preciseAndTrim(this.value);
 											printCurrentCanvas();
+											olsGeneralLog();
 										}
 									})
 								]
@@ -99,6 +102,7 @@ function featureDimensionsAndPosition(layer) {
 													getLayerById(GLOBAL.overlay_editor.active_layer).dimensions.height = precise(this.value);
 													this.value = preciseAndTrim(this.value);
 													printCurrentCanvas();
+													olsGeneralLog();
 												}
 											})
 										]

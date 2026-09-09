@@ -23,6 +23,10 @@ function spaceTrim(v) {
 	return v.toString().trim().replaceAll('&nbsp;', '');
 }
 
+function noRef(v) {
+	return JSON.parse(JSON.stringify(v));
+}
+
 function arraysAreEqual(a, b) {
 	if (a.length != b.length) {
 		return false;

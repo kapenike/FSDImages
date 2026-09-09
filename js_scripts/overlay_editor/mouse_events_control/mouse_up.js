@@ -67,6 +67,9 @@ function imageEditorMouseUp(event) {
 				// set new active layer
 				setActiveLayer([...insert_ids, last_insert_id].join('_'));	
 				
+				// push layer id change to undoredo
+				// TODO: GLOBAL.overlay_editor.state.action('id_change');
+				
 			}
 			
 			// remove drag clone
@@ -80,7 +83,7 @@ function imageEditorMouseUp(event) {
 	} else if (GLOBAL.overlay_editor.layer_selection_drag) {
 		
 		// push drag end state to undoredo
-		GLOBAL.overlay_editor.state.action();
+		olsGeneralLog();
 		
 		// end cursor drag
 		GLOBAL.overlay_editor.layer_selection_drag = null;
@@ -93,10 +96,16 @@ function imageEditorMouseUp(event) {
 		
 	} else if (GLOBAL.overlay_editor.custom_clip_path.drag_point != null) {
 		
+		// push drag point end state to undoredo
+		olsGeneralLog();
+		
 		// reset custom clip path point drag
 		GLOBAL.overlay_editor.custom_clip_path.drag_point = null;
 		
 	} else if (GLOBAL.overlay_editor.transform_action_drag != null) {
+		
+		// push transform end state to undoredo
+		olsGeneralLog();
 		
 		// reset transform drag
 		GLOBAL.overlay_editor.transform_action_drag = null;

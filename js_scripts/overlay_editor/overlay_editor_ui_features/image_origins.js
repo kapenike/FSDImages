@@ -22,6 +22,7 @@ function featureImageOrigins(layer) {
 										onchange: function () {
 											getLayerById(GLOBAL.overlay_editor.active_layer).origins.vertical = this.value;
 											printCurrentCanvas();
+											olsGeneralLog();
 										},
 										children: ['top','center','bottom'].map(origin => {
 											return Create('option', {
@@ -48,6 +49,7 @@ function featureImageOrigins(layer) {
 										onchange: function () {
 											getLayerById(GLOBAL.overlay_editor.active_layer).origins.horizontal = this.value;
 											printCurrentCanvas();
+											olsGeneralLog();
 										},
 										children: ['left','center','right'].map(origin => {
 											return Create('option', {

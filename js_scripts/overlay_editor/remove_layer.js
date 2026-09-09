@@ -1,6 +1,6 @@
-function removeLayer(index) {
+function removeLayer(id, prevent_log = false) {
 	
-	ids = index.toString().split('_').filter(v => v != 'layer');
+	ids = id.toString().split('_').filter(v => v != 'layer');
 	let layer = GLOBAL.overlay_editor.current;
 	let i=0;
 	for (i=0; i<ids.length-1; i++) {
@@ -13,4 +13,9 @@ function removeLayer(index) {
 	
 	// remove edit layer dialog
 	removeUIEditMenu();
+	
+	// log removal for undo redo
+	if (!prevent_log) {
+		GLOBAL.overlay_editor.state.action('remove', id);
+	}
 }

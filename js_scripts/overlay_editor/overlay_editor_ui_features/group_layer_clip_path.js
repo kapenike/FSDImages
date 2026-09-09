@@ -32,6 +32,7 @@ function featureGroupLayerClipPath(layer) {
 							Select('#custom_clip_editor_section').style.display = (this.value == 'custom' ? 'block' : 'none');
 							Select('#clip_editor_background_color').style.display = (this.value == 'none' ? 'none' : 'block');
 							printCurrentCanvas();
+							olsGeneralLog();
 						}
 					})
 				]
@@ -53,6 +54,7 @@ function featureGroupLayerClipPath(layer) {
 							createColorPicker(layer.clip_path.color || '#ffffffff', function (value) {
 								getLayerById(GLOBAL.overlay_editor.active_layer).clip_path.color = value;
 								printCurrentCanvas();
+								olsGeneralLog();
 							})
 						]
 					}),
@@ -65,6 +67,7 @@ function featureGroupLayerClipPath(layer) {
 									Select('#clip_path_border_use').style.display = this.checked ? 'block' : 'none';
 									getLayerById(GLOBAL.overlay_editor.active_layer).clip_path.border.use = this.checked;
 									printCurrentCanvas();
+									olsGeneralLog();
 								}
 							}),
 							Create('span', { innerHTML: 'Use Border' })
@@ -89,6 +92,7 @@ function featureGroupLayerClipPath(layer) {
 											createColorPicker(layer.clip_path.border.color || '#ffffffff', function (value) {
 												getLayerById(GLOBAL.overlay_editor.active_layer).clip_path.border.color = value;
 												printCurrentCanvas();
+												olsGeneralLog();
 											})
 										]
 									})
@@ -110,6 +114,7 @@ function featureGroupLayerClipPath(layer) {
 												onchange: function () {
 													getLayerById(GLOBAL.overlay_editor.active_layer).clip_path.border.width = this.value;
 													printCurrentCanvas();
+													olsGeneralLog();
 												}
 											})
 										]
@@ -172,6 +177,7 @@ function featureGroupLayerClipPath(layer) {
 													});
 													this.value = preciseAndTrim(this.value);
 													printCurrentCanvas();
+													olsGeneralLog();
 												}
 											})
 										]
@@ -196,6 +202,7 @@ function featureGroupLayerClipPath(layer) {
 													});
 													this.value = preciseAndTrim(this.value);
 													printCurrentCanvas();
+													olsGeneralLog();
 												}
 											})
 										]
@@ -223,6 +230,7 @@ function featureGroupLayerClipPath(layer) {
 													getLayerById(GLOBAL.overlay_editor.active_layer).clip_path.dimensions.width = precise(this.value);
 													this.value = preciseAndTrim(this.value);
 													printCurrentCanvas();
+													olsGeneralLog();
 												}
 											})
 										]
@@ -245,6 +253,7 @@ function featureGroupLayerClipPath(layer) {
 													getLayerById(GLOBAL.overlay_editor.active_layer).clip_path.dimensions.height = precise(this.value);
 													this.value = preciseAndTrim(this.value);
 													printCurrentCanvas();
+													olsGeneralLog();
 												}
 											})
 										]

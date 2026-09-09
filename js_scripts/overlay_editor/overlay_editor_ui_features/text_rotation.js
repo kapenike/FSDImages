@@ -15,7 +15,7 @@ function featureTextRotation(layer) {
 								type: 'number',
 								step: '0.2',
 								value: layer.style.rotation ?? 0,
-								onkeyup: function () {
+								onaction: function () {
 									let rotation = precise(this.value);
 									if (rotation > 360) {
 										rotation = 0;
@@ -27,19 +27,13 @@ function featureTextRotation(layer) {
 									}
 									getLayerById(GLOBAL.overlay_editor.active_layer).style.rotation = rotation;
 									printCurrentCanvas();
+									olsGeneralLog();
+								},
+								onkeyup: function () {
+									this.onaction();
 								},
 								onchange: function () {
-									let rotation = precise(this.value);
-									if (rotation > 360) {
-										rotation = 0;
-										this.value = rotation;
-									}
-									if (rotation < -360) {
-										rotation = 0;
-										this.value = rotation;
-									}
-									getLayerById(GLOBAL.overlay_editor.active_layer).style.rotation = rotation;
-									printCurrentCanvas();
+									this.onaction();
 								}
 							})
 						]

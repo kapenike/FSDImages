@@ -26,6 +26,7 @@ function featureImageEffects(layer) {
 										onchange: function () {
 											getLayerById(GLOBAL.overlay_editor.active_layer).effects.grayscale = this.checked;
 											printCurrentCanvas();
+											olsGeneralLog();
 										}
 									})
 								]
@@ -49,6 +50,7 @@ function featureImageEffects(layer) {
 										onchange: function () {
 											getLayerById(GLOBAL.overlay_editor.active_layer).effects.mirror = this.checked;
 											printCurrentCanvas();
+											olsGeneralLog();
 										}
 									})
 								]

@@ -66,6 +66,7 @@ function createColorPicker(value, on_save) {
 									onchange: () => {
 										// "this" is at the popup init level so the current element must be grabbed by id reference
 										on_save(Select('#color').dataset.currentColor);
+										olsGeneralLog();
 									}
 								})
 							]
@@ -94,6 +95,7 @@ function createColorPicker(value, on_save) {
 					Select(form_data.instanced_select_id).dataset.value = use_color;
 					on_save(form_value);
 					closePopup();
+					olsGeneralLog();
 				},
 				true
 			)

@@ -84,7 +84,7 @@ function featureCreateGridPlacement() {
 											children: [
 												Create('select', {
 													onchange: function () {
-														GLOBAL.overlay_editor.grid_settings.origin.x = this.value
+														GLOBAL.overlay_editor.grid_settings.origin.x = this.value;
 													},
 													children: ['left', 'center', 'right'].map(origin => {
 														return Create('option', {
@@ -109,7 +109,7 @@ function featureCreateGridPlacement() {
 											children: [
 												Create('select', {
 													onchange: function () {
-														GLOBAL.overlay_editor.grid_settings.origin.y = this.value
+														GLOBAL.overlay_editor.grid_settings.origin.y = this.value;
 													},
 													children: ['top', 'center', 'bottom'].map(origin => {
 														return Create('option', {
@@ -217,6 +217,7 @@ function setupMoveOnGridContainer() {
 							}
 							
 							printCurrentCanvas();
+							olsGeneralLog();
 						}
 					})
 				})

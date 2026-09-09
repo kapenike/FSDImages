@@ -14,6 +14,7 @@ function featureImageSource(layer) {
 				on_edit: function () {
 					getLayerById(GLOBAL.overlay_editor.active_layer).value = this.value;
 					printCurrentCanvas();
+					olsGeneralLog();
 				}
 			})
 		]

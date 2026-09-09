@@ -29,6 +29,7 @@ function featureTextStyle(layer) {
 										onchange: function () {
 											getLayerById(GLOBAL.overlay_editor.active_layer).style.font = this.value;
 											printCurrentCanvas();
+											olsGeneralLog();
 										}
 									})
 								]
@@ -53,6 +54,7 @@ function featureTextStyle(layer) {
 											getLayerById(GLOBAL.overlay_editor.active_layer).style.fontSize = precise(this.value);
 											this.value = preciseAndTrim(this.value);
 											printCurrentCanvas();
+											olsGeneralLog();
 										}
 									})
 								]
@@ -79,6 +81,7 @@ function featureTextStyle(layer) {
 										onchange: function () {
 											getLayerById(GLOBAL.overlay_editor.active_layer).style.fontMeasure = this.value;
 											printCurrentCanvas();
+											olsGeneralLog();
 										}
 									})
 								]
@@ -110,6 +113,7 @@ function featureTextStyle(layer) {
 										onchange: function () {
 											getLayerById(GLOBAL.overlay_editor.active_layer).style.fontStyle = this.value;
 											printCurrentCanvas();
+											olsGeneralLog();
 										}
 									})
 								]
@@ -136,6 +140,7 @@ function featureTextStyle(layer) {
 										onchange: function () {
 											getLayerById(GLOBAL.overlay_editor.active_layer).style.fontWeight = this.value;
 											printCurrentCanvas();
+											olsGeneralLog();
 										}
 									})
 								]
@@ -154,6 +159,7 @@ function featureTextStyle(layer) {
 									createColorPicker(layer.style.color, function (value) {
 										getLayerById(GLOBAL.overlay_editor.active_layer).style.color = value;
 										printCurrentCanvas();
+										olsGeneralLog();
 									})
 								]
 							})
@@ -195,6 +201,7 @@ function featureTextStyle(layer) {
 											current.style.align = this.value;
 											printCurrentCanvas();
 											setupLayerInfoEditor();
+											olsGeneralLog();
 										}
 									})
 								]
@@ -219,6 +226,7 @@ function featureTextStyle(layer) {
 											getLayerById(GLOBAL.overlay_editor.active_layer).style.letter_spacing = this.value;
 											printCurrentCanvas();
 											setupLayerInfoEditor();
+											olsGeneralLog();
 										}
 									})
 								]
@@ -240,6 +248,7 @@ function featureTextStyle(layer) {
 										onchange: function () {
 											getLayerById(GLOBAL.overlay_editor.active_layer).style.caps = this.checked;
 											printCurrentCanvas();
+											olsGeneralLog();
 										}
 									})
 								]
