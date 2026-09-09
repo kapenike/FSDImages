@@ -1,12 +1,15 @@
 // will need changes to nested general functions when transform feature affects clipping paths
+// will also need to prevent nested log when alt+drag allows clip path to move without affecting children
 class ols {
 	
-	pos = -1;
-	changes = [];
-	original = null;
+	pos = -1; // position within state diff
+	changes = []; // state diff
+	original = null; // original state
 	
 	layer_comparisons = {};
 	
+	
+	// generate skeletons of layer types for general diff
 	constructor() {
 		this.layer_comparisons = {
 			text: this.getStructure(requestNewLayer('text')),
@@ -14,7 +17,6 @@ class ols {
 			clip_path: this.getStructure(requestNewLayer('clip_path'))
 		}
 	}
-	
 	getStructure(obj) {
 		return this.getStructureNest(obj).map(v => {
 			if (v.indexOf('/') > -1) {
@@ -32,118 +34,16 @@ class ols {
 		}).filter(v => v != 'layers');
 	}
 	
+	// init for current overlay in editor
 	init() {
 		this.pos = -1;
 		this.changes = [];
 		this.original = noRef(GLOBAL.overlay_editor.current);
 	}
 	
-	pushState(action, id, diff, nest) {
-
-		if (this.pos < this.changes.length-1) {
-			this.changes.length = this.pos < 0 ? 0 : this.pos+1;
-		}
-		
-		this.pos++;
-		this.changes.push({
-			id: id,
-			forward: {
-				action: action,
-				id: id,
-				diff: diff,
-				nest: nest
-			},
-			back: this.prevLookup(id)
-		});
-		
-	}
-	
-	prevLookup(id) {
-		
-		let i = this.pos-1;
-		while (i > -1) {
-			if (
-				this.changes[i].id == id || 
-				(
-					this.changes[i].forward.nest != null &&
-					id.startsWith(this.changes[i].id)
-				)
-			) {
-				break;
-			}
-			i--;
-		}
-		
-		if (i < 0) {
-			return {
-				id: id,
-				original: true
-			}
-		} else {
-			return i;
-		}
-		
-	}
-	
-	undo() {
-		if (this.pos < 0) {
-			this.pos = -1;
-			return;
-		}
-		this.pullState(-1);
-		// reduce position after undo, since the current state has lookup for previous position
-		this.pos--;
-	}
-	
-	redo() {
-		// next state then redo
-		this.pos++;
-		if (this.pos < this.changes.length) {
-			this.pullState(1);
-		} else {
-			this.pos = this.changes.length-1;
-		}
-	}
-	
-	pullState(dir) {
-		let state = this.changes[this.pos];
-		let use_state = dir > 0 ? state.forward : (Number.isInteger(state.back) ? this.changes[state.back].forward : state.back);
-		
-		if (dir > 0 && use_state.action == 'remove') {
-			removeLayer(use_state.id, true);
-		} else if (dir < 0 && state.forward.action == 'remove') {
-			addNewTypeLayer(null, state.id, false, false, this.compile(state.id));
-		} else {
-			this.updateLayers(use_state);
-		}
-		
-		if (GLOBAL.overlay_editor.active_layer == use_state.id) {
-			setupLayerInfoEditor();
-		}
-	}
-	
-	updateLayers(obj, local_ref = null) {
-		let layer = local_ref != null ? local_ref : getLayerById(obj.id);
-		if (typeof obj.original !== 'undefined') {
-			Object.assign(layer, noRef(getLayerById(obj.id, this.original)));
-		} else {
-			obj.diff.forEach(set_diff => {
-				let ref = layer;
-				let i = 0;
-				for (i=0; i<set_diff.path.length-1; i++) {
-					ref = ref[set_diff.path[i]];
-				}
-				ref[set_diff.path[i]] = set_diff.value;
-			});
-			if (obj.nest !== null) {
-				obj.nest.forEach((diff, i) => {
-					this.updateLayers(diff, layer.layers[i]);
-				});
-			}
-		}
-	}
-	
+	// entry point for call to state logging
 	action(action = 'general', id = GLOBAL.overlay_editor.active_layer) {
+		// santitize index incase called directly from html element
 		if (id.indexOf('layer_') > -1) {
 			id = id.replace('layer_','');
 		}
@@ -157,12 +57,118 @@ class ols {
 		}
 	}
 	
+	// push state to the undo / redo states array
+	pushState(action, id, diff, nest) {
+
+		// if change after undo, clip trailing states
+		if (this.pos < this.changes.length-1) {
+			this.changes.length = this.pos < 0 ? 0 : this.pos+1;
+		}
+		
+		// push new state
+		this.pos++;
+		this.changes.push({
+			id: id,
+			action: action,
+			id: id,
+			diff: diff,
+			nest: nest
+		});
+		
+	}
+	
+	undo() {
+		if (this.pos < 0) {
+			this.pos = -1;
+			return;
+		}
+		// undo pullstate is predictive, decrement after (checks if current state was a removal and then compiles UP TO, but not including, the current state)
+		this.pullState(-1);
+		this.pos--;
+	}
+	
+	redo() {
+		this.pos++;
+		if (this.pos < this.changes.length) {
+			this.pullState(1);
+		} else {
+			this.pos = this.changes.length-1;
+		}
+	}
+	
+	pullState(dir) {
+		
+		// current state
+		let state = this.changes[this.pos];
+		
+		// undo / redo on removals cannot proc the overlay info editor refresh
+		if (state.action == 'remove') {
+			if (dir > 0) {
+				// redo, remove layer again. boolean to prevent removeLayer from logging remove state again
+				removeLayer(state.id, true);
+			} else {
+				// undo, add layer back. state id is a direct index location, so final index insert location must be decremented unless 0
+				let insert_ids = state.id.split('_');
+				if (insert_ids.length > 1) {
+					let insert_id = parseInt(insert_ids[insert_ids.length-1]);
+					if (insert_id > 0) {
+						insert_ids[insert_ids.length-1] = insert_id-1;
+					}
+				}
+				addNewTypeLayer(null, insert_ids.join('_'), false, false, this.compile(state.id));
+			}
+			return;
+		}
+		
+		if (state.action == 'general') {
+			// general state update. undo will compile and assign object while redo will push state changes
+			if (dir > 0) {
+				this.updateLayers(state);
+			} else {
+				Object.assign(getLayerById(state.id), this.compile(state.id));
+			}
+		}
+		
+		// refresh layer info editor if active layer was affected
+		if (GLOBAL.overlay_editor.active_layer == state.id) {
+			setupLayerInfoEditor();
+		}
+		
+	}
+	
+	updateLayers(obj, local_ref = null) {
+		
+		// update local object or overlay directly
+		let layer = local_ref != null ? local_ref : getLayerById(obj.id);
+		
+		// apply current state diffs to layer
+		obj.diff.forEach(set_diff => {
+			let ref = layer;
+			let i = 0;
+			for (i=0; i<set_diff.path.length-1; i++) {
+				ref = ref[set_diff.path[i]];
+			}
+			ref[set_diff.path[i]] = set_diff.value;
+		});
+		
+		// traverse layer update on child diffs
+		if (obj.nest !== null) {
+			obj.nest.forEach((diff, i) => {
+				this.updateLayers(diff, layer.layers[i]);
+			});
+		}
+		
+	}
+	
 	generalDiff(id) {
 		
+		// general diff pulls structures from "layer_comparisons" and determines the difference of the current state from the previous
+		// !!TODO: clip paths will call for a check into nested position changes ... dimension changes will follow when transform feature is built for clipping paths
 		let check_for_nested_changes = false;
 		let layer = noRef(getLayerById(id));
 		let diff = [];
 		
+		// prevent layer diff check if non clipping group, this layer will never actually change only its children
 		if (layer.type == 'clip_path' && layer.clip_path.type == 'none') {
 			check_for_nested_changes = true;
 		}
@@ -192,6 +198,7 @@ class ols {
 						path: path,
 						value: ref
 					});
+					// if difference in position changes, call for potential child traversal
 					if (['x','y','clip_points'].includes(path[path.length-1])) {
 						check_for_nested_changes = true;
 					}
@@ -210,42 +217,61 @@ class ols {
 	}
 	
 	compile(id) {
+		// return a de-referenced object by id with up-to (non-inclusive) current state changes included
 		
+		// get non reference original object by layer id
 		let obj = noRef(getLayerById(id, this.original));
 		let i = 0;
 		
-		while (i < this.pos) {
-			
-			if (this.changes[i].forward.action == 'remove' && this.changes[i].id.startsWith(id)) {
-				
-				let ref = obj;
-				let id_list = this.changes[i].id.split('_');
-				for (let i2=id.split('_').length; i2<id_list.length-1; i2++) {
-					ref = ref.layers[id_list[i2]];
-				}
-				ref.layers.splice(id_list.pop(), 1);
-				
-			} else if (this.changes[i].id == id) {
-				
-				this.updateLayers(this.changes[i].forward, obj);
-				
-			} else if (this.changes[i].forward.nest != null && id.startsWith(this.changes[i].id)) {
+		// loop changes from start to previous element and compile into finished object
+		while (i < this.pos) { 
 
-				let ref = this.changes[i].forward;
-				let id_diff = this.changes[i].id.split('_').length;
-				id.split('_').forEach((layer_id, i) => {
-					if (i >= id_diff) {
-						ref = ref.nest[layer_id];
-					}
-				});
-				if (ref != null) {
-					this.updateLayers(ref, obj);
-				}
+			if (this.changes[i].id == id) {
 				
+				// exact math, pull in all state changes
+				this.updateLayers(this.changes[i], obj);
+				
+			} else {
+				
+				let is_child = id.startsWith(this.changes[i].id); // compile id is a child of this state change
+				let is_parent = this.changes[i].id.startsWith(id); // compile id is a parent of this state change
+			
+				if (this.changes[i].action == 'remove' && this.changes[i].nest != null && is_parent) {
+					
+					// removal can never match exact id because it doesnt exist in the state to request it
+					// however it can be a child of the current
+					// find and splice
+					let ref = obj;
+					let id_list = this.changes[i].id.split('_');
+					for (let i2=id.split('_').length; i2<id_list.length-1; i2++) {
+						ref = ref.layers[id_list[i2]];
+					}
+					ref.layers.splice(id_list.pop(), 1);
+					
+				} else if (is_parent) {
+					
+					// if state change is a child of this compile id, pull in changes to specific child of object
+					let ref = obj;
+					let id_list = this.changes[i].id.split('_');
+					for (let i2=id.split('_').length; i2<id_list.length; i2++) {
+						ref = ref.layers[id_list[i2]];
+					}
+					this.updateLayers(this.changes[i], ref);
+					
+				} else if (is_child) {
+					
+					// if state change is a parent of the compile id, search for sub changes and pull them in
+					let ref = this.changes[i];
+					let id_list = id.split('_');
+					for (let i2=this.changes[i].id.split('_').length; i2<id_list.length; i2++) {
+						ref = ref.nest[id_list[i2]];
+					}
+					this.updateLayers(ref, obj);
+					
+				}
 			}
 			
 			i++;
-			
 		}
 		
 		return obj;
@@ -253,6 +279,8 @@ class ols {
 	}
 	
 	nestedPositionChanges(layers, id) {
+		
+		// traverse all child layers and log current positioning as a diff
 		let diff = [];
 		layers.forEach((layer, i) => {
 			let append_id = id+'_'+i;
@@ -300,6 +328,7 @@ class ols {
 		
 }
 
+// quick call for general action state logging
 function olsGeneralLog() {
 	GLOBAL.overlay_editor.state.action();
 }
