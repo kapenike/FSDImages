@@ -1,1 +1,1 @@
-VERSION: BETA-1.5
+VERSION: BETA-1.6 (experimental)

@@ -78,8 +78,12 @@ class ols {
 			
 			// if id paths are equal, calculate entirely on siblings
 			if (arraysAreEqual(id_split.slice(0,-1), new_id_split.slice(0, -1))) {
-				
+
 				let base = id_split.slice(0,-1).join('_')+'_';
+				// remove empty base for highest level movement
+				if (base == '_') {
+					base = '';
+				}
 				let id_inc = parseInt(id_split.pop());
 				let new_id_inc = parseInt(new_id_split.pop());
 				let dir = new_id_inc > id_inc ? 1 : -1;
@@ -93,7 +97,6 @@ class ols {
 				}
 
 			} else {
-				
 				// ids are not equal, calculate id changes on affected groups
 				
 				// new group
@@ -102,17 +105,16 @@ class ols {
 					map.f_map['id_'+v.id] = v.new_id;
 				});
 				
-				// if initial new id conversion affects position of previous location, convert id before lookup
-				let convert_id = id_split.slice(0,-1).join('_');
-				if (typeof map.f_map['id_'+convert_id] !== 'undefined') {
-					convert_id = map.f_map['id_'+convert_id]+'_0';
+				// detect change to original id location
+				id = this.lookupParentChange(id, map.f_map);
+
+				// if new id map didnt update old
+				if (typeof map.b_map['id_'+id] === 'undefined') {
+					this.logIdBatchMap(id).forEach(v => {
+						map.b_map['id_'+v.new_id] = v.id;
+						map.f_map['id_'+v.id] = v.new_id;
+					});
 				}
-				
-				// old group
-				this.logIdBatchMap(convert_id).forEach(v => {
-					map.b_map['id_'+v.new_id] = v.id;
-					map.f_map['id_'+v.id] = v.new_id;
-				});
 				
 			}
 		} else {
@@ -121,15 +123,31 @@ class ols {
 				map.f_map['id_'+v.id] = v.new_id;
 			});
 		}
+		
 		this.id_map.push(map);
+	}
+	
+	lookupParentChange(id, map) {
+		let keys = Object.keys(map);
+		for (let i=0; i<keys.length; i++) {
+			if (('id_'+id).startsWith(keys[i])) {
+				id = map[keys[i]]+id.slice(keys[i].length-3);
+				break;
+			}
+		}
+		return id;
 	}
 	
 	// get original id of layer, exclusive prevents id tracking of current position (used for undoing layer removal)
 	lookupOriginalId(id, exclusive = false, pos = this.pos) {
 		pos = pos-(exclusive ? 1 : 0);
 		for (let i=this.id_map.length-1; i>-1; i--) {
-			if (this.id_map[i].pos <= pos && typeof this.id_map[i].b_map['id_'+id] !== 'undefined') {
-				id = this.id_map[i].b_map['id_'+id];
+			if (this.id_map[i].pos <= pos) {
+				if (typeof this.id_map[i].b_map['id_'+id] !== 'undefined') {
+					id = this.id_map[i].b_map['id_'+id];
+				} else {					
+					id = this.lookupParentChange(id, this.id_map[i].b_map);
+				}
 			}
 		}
 		return id;
@@ -138,8 +156,12 @@ class ols {
 	// get id conversion at current position
 	lookupCurrentId(id, pos = this.pos) {
 		for (let i=0; i<this.id_map.length; i++) {
-			if (this.id_map[i].pos == pos && typeof this.id_map[i].f_map['id_'+id] !== 'undefined') {
-				id = this.id_map[i].f_map['id_'+id];
+			if (this.id_map[i].pos == pos) {
+				if (typeof this.id_map[i].f_map['id_'+id] !== 'undefined') {
+					id = this.id_map[i].f_map['id_'+id];
+				} else {
+					id = this.lookupParentChange(id, this.id_map[i].f_map);
+				}
 				break;
 			}
 			if (this.id_map[i].pos > pos) {
