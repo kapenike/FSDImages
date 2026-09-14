@@ -106,7 +106,7 @@ function requestNewLayer(type = 'text', pass_starting_location = false) {
 
 // create a new layer of the given type, index passed from addNewLayer will determine its insert location
 // boolian determines if the new layer will be duplcated from the layer at the specified index
-function addNewTypeLayer(type, index, pass_starting_location = false, duplicate = false, copy = false) {
+function addNewTypeLayer(type, index, pass_starting_location = false, duplicate = false, copy = false, prevent_log = false) {
 	
 	// new layer object container
 	let new_layer = null;
@@ -123,7 +123,7 @@ function addNewTypeLayer(type, index, pass_starting_location = false, duplicate 
 	} else {
 		
 		// if duplicate layer, detach reference from original and duplicate as current new layer, append duplicate to layer title
-		new_layer = JSON.parse(JSON.stringify(getLayerById(index)));
+		new_layer = noRef(getLayerById(index));
 		new_layer.title += ' (duplicate)';
 		
 	}
@@ -137,8 +137,7 @@ function addNewTypeLayer(type, index, pass_starting_location = false, duplicate 
 		// scroll to new insert
 		Select('#lower_editor').scrollTop = 0;
 		
-		// set first layer (this) to be active
-		setActiveLayer(0);
+		index = 0;
 		
 	} else {
 
@@ -152,12 +151,20 @@ function addNewTypeLayer(type, index, pass_starting_location = false, duplicate 
 		}
 		insert_layer.splice(ids.pop(), 0, new_layer);
 		
-		// set layer at specified index as active (splice has pushed the new layer to the current insert index)
-		setActiveLayer(index);
-		
 	}
 	
-	// remove new layer creation menu
-	removeUIEditMenu();
+	
+	
+	// not a call from undoredo ... log and affect overlay editor
+	if (!prevent_log) {
+		
+		// set active layer
+		setActiveLayer(index);
+		
+		// remove new layer creation menu
+		removeUIEditMenu();
+		
+		GLOBAL.overlay_editor.state.action('create', index);
+	}
 	
 }

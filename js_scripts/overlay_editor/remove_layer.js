@@ -8,14 +8,15 @@ function removeLayer(id, prevent_log = false) {
 	}
 	layer.layers.splice(ids[i], 1);
 	
-	// set to no active layer
-	setActiveLayer(null);
-	
 	// remove edit layer dialog
 	removeUIEditMenu();
 	
 	// log removal for undo redo
 	if (!prevent_log) {
+		
+		// set to no active layer
+		setActiveLayer(null);
+		
 		GLOBAL.overlay_editor.state.action('remove', id);
 	}
 }

@@ -65,10 +65,11 @@ function imageEditorMouseUp(event) {
 				pull_reference.splice(last_pull_id, 1);
 					
 				// set new active layer
-				setActiveLayer([...insert_ids, last_insert_id].join('_'));	
+				let new_id = [...insert_ids, last_insert_id].join('_');
+				setActiveLayer(new_id);	
 				
-				// push layer id change to undoredo
-				// TODO: GLOBAL.overlay_editor.state.action('id_change');
+				// log layer swap
+				GLOBAL.overlay_editor.state.action('move', GLOBAL.overlay_editor.image_editor_drag.id, new_id);
 				
 			}
 			
