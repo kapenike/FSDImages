@@ -5,7 +5,6 @@ class ols {
 	pos = -1; // position within state diff
 	changes = []; // state diff
 	original = null; // original state
-	id_map = [];
 	
 	layer_comparisons = {};
 	
@@ -39,136 +38,11 @@ class ols {
 		this.pos = -1;
 		this.changes = [];
 		this.original = noRef(GLOBAL.overlay_editor.current);
-		this.id_map = [];
 	}
 	
-	// log id changes of other layers affected by a remove / create / move action
-	logIdBatchMap(id, insert = false) {
-		let id_split = id.split('_');
-		let end_id = parseInt(id_split.slice(-1));
-		let parent_id = id_split.slice(0,-1).join('_');
-		let layer_length = parent_id == '' ? GLOBAL.overlay_editor.current : getLayerById(parent_id);
-		parent_id = (parent_id == '' ? '' : parent_id+'_');
-		let return_map = [];
-		for (let i=end_id+(insert ? 1 : 0); i<layer_length.layers.length; i++) {
-			return_map.push({
-				id: parent_id+(i + (insert ? -1 : 1)),
-				new_id: parent_id+i
-			});
-		}
-		return return_map;
-	}
-	
-	// log id conversions from a layer position change
-	logIdMap(id, new_id = null, action = null) {
-		
-		let map = {
-			pos: this.pos,
-			b_map: {},
-			f_map: {}
-		};
-		let id_split = id.split('_');
-		
-		if (new_id != null) {
-			
-			// convert ids based on layer movement
-			map.b_map['id_'+new_id] = id;
-			map.f_map['id_'+id] = new_id;
-			let new_id_split = new_id.split('_');
-			
-			// if id paths are equal, calculate entirely on siblings
-			if (arraysAreEqual(id_split.slice(0,-1), new_id_split.slice(0, -1))) {
-
-				let base = id_split.slice(0,-1).join('_')+'_';
-				// remove empty base for highest level movement
-				if (base == '_') {
-					base = '';
-				}
-				let id_inc = parseInt(id_split.pop());
-				let new_id_inc = parseInt(new_id_split.pop());
-				let dir = new_id_inc > id_inc ? 1 : -1;
-				let start = (dir > 0 ? id_inc : new_id_inc)+(dir > 0 ? 1 : 0);
-				let end = dir > 0 ? new_id_inc : id_inc;
-				for (; start < end; start++) {
-					let mapped_id = base+start;
-					let mapped_new_id = base+(start-dir);
-					map.b_map['id_'+mapped_new_id] = mapped_id;
-					map.f_map['id_'+mapped_id] = mapped_new_id;
-				}
-
-			} else {
-				// ids are not equal, calculate id changes on affected groups
-				
-				// new group
-				this.logIdBatchMap(new_id, true).forEach(v => {
-					map.b_map['id_'+v.new_id] = v.id;
-					map.f_map['id_'+v.id] = v.new_id;
-				});
-				
-				// detect change to original id location
-				id = this.lookupParentChange(id, map.f_map);
-
-				// if new id map didnt update old
-				if (typeof map.b_map['id_'+id] === 'undefined') {
-					this.logIdBatchMap(id).forEach(v => {
-						map.b_map['id_'+v.new_id] = v.id;
-						map.f_map['id_'+v.id] = v.new_id;
-					});
-				}
-				
-			}
-		} else {
-			this.logIdBatchMap(id, (action == 'insert')).forEach(v => {
-				map.b_map['id_'+v.new_id] = v.id;
-				map.f_map['id_'+v.id] = v.new_id;
-			});
-		}
-		
-		this.id_map.push(map);
-	}
-	
-	lookupParentChange(id, map) {
-		let keys = Object.keys(map);
-		for (let i=0; i<keys.length; i++) {
-			if (('id_'+id).startsWith(keys[i])) {
-				id = map[keys[i]]+id.slice(keys[i].length-3);
-				break;
-			}
-		}
-		return id;
-	}
-	
-	// get original id of layer, exclusive prevents id tracking of current position (used for undoing layer removal)
-	lookupOriginalId(id, exclusive = false, pos = this.pos) {
-		pos = pos-(exclusive ? 1 : 0);
-		for (let i=this.id_map.length-1; i>-1; i--) {
-			if (this.id_map[i].pos <= pos) {
-				if (typeof this.id_map[i].b_map['id_'+id] !== 'undefined') {
-					id = this.id_map[i].b_map['id_'+id];
-				} else {					
-					id = this.lookupParentChange(id, this.id_map[i].b_map);
-				}
-			}
-		}
-		return id;
-	}
-	
-	// get id conversion at current position
-	lookupCurrentId(id, pos = this.pos) {
-		for (let i=0; i<this.id_map.length; i++) {
-			if (this.id_map[i].pos == pos) {
-				if (typeof this.id_map[i].f_map['id_'+id] !== 'undefined') {
-					id = this.id_map[i].f_map['id_'+id];
-				} else {
-					id = this.lookupParentChange(id, this.id_map[i].f_map);
-				}
-				break;
-			}
-			if (this.id_map[i].pos > pos) {
-				break;
-			}
-		}
-		return id;
+	// which actions do not cause id changes
+	isNonIdEffectAction(v) {
+		return v == 'text' || v == 'general';
 	}
 	
 	// entry point for call to state logging
@@ -192,20 +66,110 @@ class ols {
 				break;
 			case 'remove':
 				this.pushState(action, id, null, null);
-				this.logIdMap(id, null, 'remove');
 				break;
 			case 'create':
 				this.pushState(action, id, noRef(getLayerById(id)), null);
-				this.logIdMap(id, null, 'insert');
 				break;
 			case 'move':
 				this.pushState(action, id, {
 					id: id,
 					new_id: new_id
 				}, null);
-				this.logIdMap(id, new_id);
 				break;
 		}
+	}
+	
+	// log id changes of other layers affected by an insert or removal
+	logIdBatchMap(id, insert = false) {
+		let id_split = id.split('_');
+		let end_id = parseInt(id_split.slice(-1));
+		let parent_id = id_split.slice(0,-1).join('_');
+		let layer_length = parent_id == '' ? GLOBAL.overlay_editor.current : getLayerById(parent_id);
+		parent_id = (parent_id == '' ? '' : parent_id+'_');
+		let return_map = [];
+		for (let i=end_id+(insert ? 1 : 0); i<layer_length.layers.length; i++) {
+			return_map.push({
+				id: parent_id+(i + (insert ? -1 : 1)),
+				new_id: parent_id+i
+			});
+		}
+		return return_map;
+	}
+	
+	// attach list of changed ids to change state
+	detectIdDiff(action, id, diff) {
+		
+		if (this.isNonIdEffectAction(action)) {
+			return null;
+		}
+		
+		// map.f is a temporary forward looking reference
+		let map = {
+			f: {},
+			b: {}
+		};
+		
+		if (action == 'move') {
+			
+			let id_split = diff.id.split('_');
+			let new_id_split = diff.new_id.split('_');
+			let end_id = parseInt(id_split.pop());
+			let end_new_id = parseInt(new_id_split.pop());
+			
+			// if same parent, changes of affected siblings but not itself
+			if (arraysAreEqual(id_split, new_id_split)) {
+				let dir = end_new_id > end_id ? 1 : -1;
+				let start = (dir > 0 ? end_id : end_new_id)+(dir > 0 ? 1 : 0);
+				let end = dir > 0 ? end_new_id : end_id;
+				for (; start < end; start++) {
+					let mapped_id = [...id_split, start].join('_');
+					let mapped_new_id = [...id_split, start-dir].join('_');
+					map.b[mapped_new_id] = mapped_id;
+				}
+			} else {
+				
+				// moved between groups
+				
+				// get new insert group affected siblings
+				this.logIdBatchMap(diff.new_id, true).forEach(v => {
+					map.f[v.id] = v.new_id;
+					map.b[v.new_id] = v.id;
+				});
+				
+				// determine if parent of old group was affected
+				let parent_affected = this.isParentTo(diff.id, map.f);
+				if (parent_affected !== null) {
+					
+					// get changes of old group by new parent reference, then convert back to old parent id before logging
+					let original_parent = id_split.join('_');
+					this.logIdBatchMap(parent_affected).forEach(v => {
+						v.id = original_parent+v.id.slice(original_parent.length);
+						map.b[v.new_id] = v.id;
+					});
+					
+				} else {
+					
+					// get standard changes of old group siblings from removal
+					this.logIdBatchMap(diff.id).forEach(v => {
+						map.b[v.new_id] = v.id;
+					});
+					
+				}
+				
+			}
+			
+			
+		} else {
+			
+			// create action sends truthy boolean to predict id changes based on an insert
+			this.logIdBatchMap(id, action == 'create').forEach(v => {
+				map.b[v.new_id] = v.id;
+			});
+			
+		}
+		
+		return map.b;
+		
 	}
 	
 	// push state to the undo / redo states array
@@ -214,24 +178,16 @@ class ols {
 		// if change after undo, clip trailing states
 		if (this.pos < this.changes.length-1) {
 			this.changes.length = this.pos < 0 ? 0 : this.pos+1;
-			
-			// also clip id map
-			for (let i=0; i<this.id_map.length; i++) {
-				if (this.id_map[i].pos > this.pos) {
-					this.id_map.length = i;
-					break;
-				}
-			}
-			
 		}
-
+		
 		// push new state
 		this.pos++;
 		this.changes.push({
 			id: id,
 			action: action,
 			diff: diff,
-			nest: nest
+			nest: nest,
+			id_diff: this.detectIdDiff(action, id, diff)
 		});
 		
 	}
@@ -260,7 +216,7 @@ class ols {
 		// current state
 		let state = this.changes[this.pos];
 		
-		if (state.action == 'general' || state.action == 'text') {
+		if (this.isNonIdEffectAction(state.action)) {
 			
 			// general state update. undo will compile and assign object while redo will push state changes
 			if (dir > 0) {
@@ -407,7 +363,8 @@ class ols {
 			for (i=0; i<set_diff.path.length-1; i++) {
 				ref = ref[set_diff.path[i]];
 			}
-			ref[set_diff.path[i]] = set_diff.value;
+			// ternary for speed, remove reference on position point array, objects will be traveresed so never set here, direct values hold no reference when set
+			ref[set_diff.path[i]] = Array.isArray(set_diff.value) ? noRef(set_diff.value) : set_diff.value;
 		});
 		
 		// traverse layer update on child diffs
@@ -475,40 +432,108 @@ class ols {
 		
 	}
 	
+	// if id change is a parent to the active id, convert the parent portion of the id change
+	isParentTo(id, diff) {
+		let keys = Object.keys(diff);
+		for (let i=0; i<keys.length; i++) {
+			if (id != keys[i] && id.startsWith(keys[i])) {
+				return diff[keys[i]]+id.slice(keys[i].length);
+			}
+		}
+		return null;
+	}
+	
+	getOrigins(id, exclusive) {
+		
+		// inverse id change (per position index) for forward return within compile
+		let pos_id_map = {};
+		
+		for (let i=this.pos; i>-1; i--) {
+			
+			// if create action initialized this layer, return as starting point
+			// increment index to skip object creation state change
+			if (this.changes[i].action == 'create') {
+			
+				if (this.changes[i].id == id) {
+					
+					// if exact match, start found
+					return [id, noRef(this.changes[i].diff), i+1, pos_id_map];
+					
+				} else if (id.startsWith(this.changes[i].id)) {
+					
+					// starting object is child of parent creation
+					let ref = noRef(this.changes[i].diff);
+					// cut off starting portion of already-found object depth and keep remainder to traverse layers and return
+					id.slice(this.changes[i].id.length+1).split('_').forEach(nest_id => {
+						ref = ref.layers[parseInt(nest_id)];
+					});
+					return [id, ref, i+1, pos_id_map];
+				
+				}
+				
+			} else if (this.changes[i].action == 'move' && this.changes[i].diff.new_id == id) {
+				
+				// direct move conversion, log and then continue to prevent id diff change on this layer
+				pos_id_map[i] = id;
+				id = this.changes[i].diff.id;
+				continue;
+				
+			}
+			
+			// check for id changes on action
+			if (this.changes[i].id_diff != null) {
+				
+				if (typeof this.changes[i].id_diff[id] !== 'undefined') {
+					
+					// direct id conversion
+					pos_id_map[i] = id;
+					id = this.changes[i].id_diff[id];
+					
+				} else {
+					
+					// parent change to id
+					let parent_change = this.isParentTo(id, this.changes[i].id_diff);
+					if (parent_change !== null) {
+						pos_id_map[i] = id;
+						id = parent_change;
+					}
+					
+				}
+				
+			}
+			
+		}
+		
+		// object pulls ref from original object
+		return [id, noRef(getLayerById(id, this.original)), 0, pos_id_map];
+		
+	}
+	
+	
+	// return a de-referenced object by id with up-to (non-inclusive) current state changes included
 	compile(id, exclusive = false) {
-		// return a de-referenced object by id with up-to (non-inclusive) current state changes included
 
-		// original id lookup, send true boolean to prevent lookup based on current id. current id will result to the affected layer post removal
-		id = this.lookupOriginalId(id, exclusive);
-		
-		// get non reference original object by layer id
-		let layer_lookup = getLayerById(id, this.original);
-		let obj = typeof layer_lookup === 'undefined' ? null : noRef(layer_lookup);
-		let i = 0;
-		
-		// some elements may have been created rather than in original source, look for an initilizing instance until found
-		// if never found, original is assumed. initializer will always come before a state change so the original object (even if undefined) will continue or be overwritten
-		let lf_create = true;
+		let obj = null;
+		let i = null;
+		let pos_id_map = null;
+		[id, obj, i, pos_id_map] = this.getOrigins(id, exclusive);
 		
 		// loop changes from start to previous element and compile into finished object
 		while (i < this.pos) {
+			
+			// convert forward id before state change if not a removal
+			// REMOVE action functions differently in that it could allow the removed layer id to fall into the current id conversion if it is the next sibling, so it must be converted after the state change
+			// MOVE or CREATE could bump UP into the active layer id, meaning that id must be converted before the state change to prevent collision
+			if (this.changes[i].action != 'remove' && pos_id_map != null && typeof pos_id_map[i] !== 'undefined') {
+				id = pos_id_map[i];
+			}
 
 			if (this.changes[i].action == 'move') {
 				// move action just changes layer id in trailing method below, no change actions made
 			} else if (this.changes[i].id == id) {
 				
-				if (lf_create && this.changes[i].action == 'create') {
-					
-					// source is a creation, not original object
-					lf_create = false;
-					obj = noRef(this.changes[i].diff);
-					
-				} else {
-
-					// exact math, pull in all state changes
-					this.updateLayers(this.changes[i], obj);
-				
-				}
+				// exact match, pull in all state changes
+				this.updateLayers(this.changes[i], obj);
 				
 			} else {
 				
@@ -535,34 +560,32 @@ class ols {
 					for (let i2=id.split('_').length; i2<id_list.length; i2++) {
 						ref = ref.layers[id_list[i2]];
 					}
-					this.updateLayers(this.changes[i], ref);
 					
-				} else if (is_child) {
-					
-					if (lf_create && this.changes[i].action == 'create') {
-						
-						// source is a creation, not original object
-						lf_create = false;
-						obj = noRef(this.changes[i].diff);
-						
+					// if creating child, insert rather than assuming update
+					if (this.changes[i].action == 'create') {
+						ref.splice(parseInt(id_list.pop()), 0, this.changes[i].diff);
 					} else {
-					
-						// if state change is a parent of the compile id, search for sub changes and pull them in
-						let ref = this.changes[i];
-						let id_list = id.split('_');
-						for (let i2=this.changes[i].id.split('_').length; i2<id_list.length; i2++) {
-							ref = ref.nest[id_list[i2]];
-						}
-						this.updateLayers(ref, obj);
-					
+						this.updateLayers(this.changes[i], ref);
 					}
 					
+				} else if (is_child) {
+
+					// if state change is a parent of the compile id, search for sub changes and pull them in
+					let ref = this.changes[i];
+					let id_list = id.split('_');
+					for (let i2=this.changes[i].id.split('_').length; i2<id_list.length; i2++) {
+						ref = ref.nest[id_list[i2]];
+					}
+					this.updateLayers(ref, obj);
+
 				}
 			}
 			
-			// lookup new id after current state change, the new id is an effect of this state change so we set it after
-			id = this.lookupCurrentId(id, i);
-			
+			// convert forward after state change if it is a removal
+			if (this.changes[i].action == 'remove' && pos_id_map != null && typeof pos_id_map[i] !== 'undefined') {
+				id = pos_id_map[i];
+			}
+
 			i++;
 		}
 		
