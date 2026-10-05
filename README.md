@@ -74,10 +74,7 @@
 ## To-DO
 - Overlay Editor
 	- change UI to support an initial screen with all overlays and +create overlay, allowing single click into an overlay
-	- ctrl + z, ctrl + y
-	- ctrl + c, ctrl + v between overlays
 	- clipping path transform with nested support
 	- allow inside / outside path border
 	- allow gradient
 	- allow layer opacity rather than just fill / border and text opacity
-- Fix "bug" where update of dataset call to parent dataset lookup / change can find and mark path forwarded values reliant on that dataset as changed

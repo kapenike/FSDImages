@@ -270,85 +270,42 @@ class ols {
 		
 		// conditions to determine if active layer id needs to update from move / remove / create state change
 		if (GLOBAL.overlay_editor.active_layer != null) {
-			if (state.action == 'move') {
-				if (GLOBAL.overlay_editor.active_layer == state.diff.id) {
-					GLOBAL.overlay_editor.active_layer = state.diff.new_id;
-				} else if (GLOBAL.overlay_editor.active_layer == state.diff.new_id) {
-					GLOBAL.overlay_editor.active_layer = state.diff.id;
+			
+			if (this.isNonIdEffectAction(state.action)) {
+				// do nothing
+			} else {
+
+				// prevent direct move find if found from id conversions
+				let found = false;
+					
+				let id_diffs = dir < 0 ? state.id_diff : Object.fromEntries(Object.entries(state.id_diff).map(([k, v]) => [v, k]));
+				
+				// determine if direct match or attempt to find parent change
+				if (typeof id_diffs[GLOBAL.overlay_editor.active_layer] !== 'undefined') {
+					GLOBAL.overlay_editor.active_layer = id_diffs[GLOBAL.overlay_editor.active_layer];
+					found = true;
 				} else {
-					GLOBAL.overlay_editor.active_layer = this.conversionAffectsActive(state.diff.id, state.diff.new_id, GLOBAL.overlay_editor.active_layer, dir);
+					let parent_change = this.isParentTo(GLOBAL.overlay_editor.active_layer, id_diffs);
+					if (parent_change !== null) {
+						GLOBAL.overlay_editor.active_layer = parent_change;
+						found = true;
+					}
 				}
-			} else if (state.action == 'remove') {
-				if (dir > 0 && GLOBAL.overlay_editor.active_layer == state.id) {
-					setActiveLayer(null);
-				} else {
-					GLOBAL.overlay_editor.active_layer = this.conversionAffectsActive(state.id, null, GLOBAL.overlay_editor.active_layer, dir);
+					
+				// conditions for layer move of active layer
+				if (found == false && state.action == 'move') {
+					if (dir > 0 && state.diff.id == GLOBAL.overlay_editor.active_layer) {
+						GLOBAL.overlay_editor.active_layer = state.diff.new_id;
+					} else if (dir < 0 && state.diff.new_id == GLOBAL.overlay_editor.active_layer) {
+						GLOBAL.overlay_editor.active_layer = state.diff.id;
+					}
 				}
-			} else if (state.action == 'create') {
-				if (GLOBAL.overlay_editor.active_layer == state.id && dir < 0) {
-					setActiveLayer(null);
-				} else {
-					GLOBAL.overlay_editor.active_layer = this.conversionAffectsActive(null, state.id, GLOBAL.overlay_editor.active_layer, dir);
-				}
+
 			}
 		}
 		
 		setupLayersUI();
 		return;
-	}
-	
-	// detect if layer move will affect active layer id
-	conversionAffectsActive(id, new_id, active_id, dir) {
-		
-		let is_move = new_id != null && id != null;
-		
-		// if undo on move action, swap ids
-		if (is_move && dir < 0) {
-			[id, new_id] = [new_id, id];
-		}
-		
-		let active_split = active_id.split('_').map(v => parseInt(v));
-		let id_split = id == null ? [] : id.split('_').map(v => parseInt(v));
-		let new_id_split = new_id == null ? [] : new_id.split('_').map(v => parseInt(v));
-		
-		// nested beyond the depth of active layer cannot affect it, empty the array
-		if (id_split.length > active_split.length) {
-			id_split = [];
-		}
-		if (new_id_split.length > active_split.length) {
-			new_id_split = [];
-		}
-		
-		// edge case: if move of parent of active layer, update explicitly to new location
-		if (is_move && id_split.length < active_split.length && arraysAreEqual(id_split, active_split.slice(0, id_split.length))) {
-			new_id_split.forEach((v,i) => {
-				active_split[i] = v;
-			});
-			return active_split.join('_');
-		}
-		
-		// determine if id endpoint affects active layer
-		for (let i=0; i<id_split.length; i++) {
-			if (i == id_split.length-1 && id_split[i] <= active_split[i]) {
-				active_split[i] -= dir;
-			}
-			if (id_split[i] != active_split[i]) {
-				break;
-			}
-		}
-		
-		// determine if new id endpoint affects active layer
-		for (let i=0; i<new_id_split.length; i++) {
-			if (i == new_id_split.length-1 && new_id_split[i] <= active_split[i]) {
-				active_split[i] += dir;
-			}
-			if (new_id_split[i] != active_split[i]) {
-				break;
-			}
-		}
-		
-		return active_split.join('_');
-		
 	}
 	
 	updateLayers(obj, local_ref = null) {
@@ -448,7 +405,7 @@ class ols {
 		// inverse id change (per position index) for forward return within compile
 		let pos_id_map = {};
 		
-		for (let i=this.pos; i>-1; i--) {
+		for (let i=this.pos-(exclusive ? 1 : 0); i>-1; i--) {
 			
 			// if create action initialized this layer, return as starting point
 			// increment index to skip object creation state change

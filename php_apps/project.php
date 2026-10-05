@@ -468,7 +468,7 @@ class project {
 		// prevent user abort
 		ignore_user_abort(true);
 		
-		$project_name = $this->registry->{$uid};
+		$project_name = app('files')->makeFileNameSafe($this->registry->{$uid});
 		
 		$zip = new ZipArchive;
 		if ($zip->open($project_name.'.fsdi', ZipArchive::CREATE) === true) {

@@ -26,6 +26,14 @@ class files {
 		return is_file($path.$rfn) ? $this->createFileName($path, $ext) : $rfn;
 	}
 	
+	function makeFileNameSafe($v) {
+		$v = preg_replace('/[^a-zA-Z0-9_ -]/', '', $v);
+    $v = str_replace(' ', '-', $v);
+    $v = preg_replace('/-+/', '-', $v);
+    $v = trim($v, '.-');
+		return $v;
+	}
+	
 	function remove($path, $file) {
 		if ($file === null || empty($file)) {
 			return ["status" => false, "msg" => "File cannot be empty."];
