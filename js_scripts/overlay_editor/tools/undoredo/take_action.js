@@ -390,8 +390,9 @@ class ols {
 	}
 	
 	// if id change is a parent to the active id, convert the parent portion of the id change
+	// longer ids have first pick priority as their nested id changes are inclusive of any higher level id changes within the id diff map
 	isParentTo(id, diff) {
-		let keys = Object.keys(diff);
+		let keys = Object.keys(diff).sort((a,b) => b.length - a.length);
 		for (let i=0; i<keys.length; i++) {
 			if (id != keys[i] && id.startsWith(keys[i])) {
 				return diff[keys[i]]+id.slice(keys[i].length);

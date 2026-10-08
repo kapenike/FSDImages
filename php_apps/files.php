@@ -28,9 +28,9 @@ class files {
 	
 	function makeFileNameSafe($v) {
 		$v = preg_replace('/[^a-zA-Z0-9_ -]/', '', $v);
-    $v = str_replace(' ', '-', $v);
-    $v = preg_replace('/-+/', '-', $v);
-    $v = trim($v, '.-');
+		$v = str_replace(' ', '-', $v);
+		$v = preg_replace('/-+/', '-', $v);
+		$v = trim($v, '.-');
 		return $v;
 	}
 	
